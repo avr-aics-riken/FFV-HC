@@ -41,7 +41,7 @@ LICENSE         License to apply
 NEWS            Release note
 README          This document
 doc/            Documents
-example/        Example files
+examples/       Example files
 src/            Source files
    FFV          FFV source codes
 
