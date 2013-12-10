@@ -41,7 +41,6 @@ LICENSE         License to apply
 NEWS            Release note
 README          This document
 doc/            Documents
-doxygen/        Doxygen files
 example/        Example files
 src/            Source files
    FFV          FFV source codes
