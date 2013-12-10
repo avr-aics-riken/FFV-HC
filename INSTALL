@@ -1,0 +1,106 @@
+/*
+ * FFV-HC
+ * FrontFlow/violet for hierarchical Cartesian grids
+ *
+ * Copyright (c) 2013 Institute of Industrial Science, The University of Tokyo. 
+ * All rights reserved.
+ *
+ * Copyright (c) 2013 Advanced Institute for Computational Science, RIKEN. 
+ * All rights reserved.
+ *
+ */
+
+
+SOFTWARE REQUIREMENT
+====================
+
+- MPI library
+- Text parser library
+- Performance monitor library
+- Polygon management library
+- Cut information library
+- Tools for Building-cube method
+
+
+HOW TO BUILD
+============
+
+*** Only "manual build" is available in this release. ***
+*** Sorry for the inconvenience.                      ***
+
+
+0. Move to the FFV source directory
+-----------------------------------
+
+    $cd FFV-HC-(version)/src
+
+
+1. Edit make_setting.{fx,gnu,intel}
+-----------------------------------
+
+1.1 Select one from make_setting.{fx,gnu,intel}
+    according to your compiler.
+
+      -------------------------------
+      Compiler | File name
+      =========+=====================
+      K/FX10   | make_setting.fx
+      GNU      | make_setting.gnu
+      Intel    | make_setting.intel
+      ---------+---------------------
+
+1.2 Edit the selected file to specify the path to each library.
+
+    * For typical Linux machines
+      MPI_DIR     := /usr/lib/opnmpi
+      FFV_HOME    := $(HOME)/FFV
+      TP_DIR      := $(FFV_HOME)/TextParser
+      PMLIB_DIR   := $(FFV_HOME)/PMlib
+      POLYLIB_DIR := $(FFV_HOME)/Polylib
+      CUTLIB_DIR  := $(FFV_HOME)/Cutlib
+      BCM_DIR     := $(FFV_HOME)/BCMTools
+      BCM_FILEIO  := $(BCM_DIR)/FileIO
+      BCM_UTILS   := $(BCM_DIR)/Utils
+
+1.3 Select precision for floating number operations.
+    Default is "double(64bit)".
+    Comment out the following lines if you prefer "float(32bit)".
+
+    * For double-precision
+      CFLAGS     += -D_REAL_IS_DOUBLE_
+      CXXFLAGS   += -D_REAL_IS_DOUBLE_
+      FCFLAGS    += -D_REAL_IS_DOUBLE_ -r8
+      F90FLAGS   += -D_REAL_IS_DOUBLE_ -r8
+
+    * For single-precision
+      #CFLAGS     += -D_REAL_IS_DOUBLE_
+      #CXXFLAGS   += -D_REAL_IS_DOUBLE_
+      #FCFLAGS    += -D_REAL_IS_DOUBLE_ -r8
+      #F90FLAGS   += -D_REAL_IS_DOUBLE_ -r8
+
+1.4 Select the size of BCM blocks.
+    Default is "small", and is optimal for most cases.
+    Define the macro "_BLOCK_IS_LARGE_" only if it is necessary and you understand the meaning.
+
+    * For small blocks
+      CFLAGS     += -D_BLOCK_IS_SMALL_
+      CXXFLAGS   += -D_BLOCK_IS_SMALL_
+      FCFLAGS    += -D_BLOCK_IS_SMALL_
+      F90FLAGS   += -D_BLOCK_IS_SMALL_
+
+    * For large blocks
+      CFLAGS     += -D_BLOCK_IS_LARGE_
+      CXXFLAGS   += -D_BLOCK_IS_LARGE_
+      FCFLAGS    += -D_BLOCK_IS_LARGE_
+      F90FLAGS   += -D_BLOCK_IS_LARGE_
+
+2. Compilation
+--------------
+
+2.1 Execute the following command.
+
+    $ make
+
+    If compilation succeeds,
+    the executable module, named "ffv", is generated in $(FFV)/bin.
+

@@ -1,0 +1,24 @@
+#############################################################################
+#
+# FFV-HC
+# FrontFlow/violet for hierarchical Cartesian grids
+#
+# Copyright (c) 2013 Institute of Industrial Science, The University of Tokyo. 
+# All rights reserved.
+#
+# Copyright (c) 2013 Advanced Institute for Computational Science, RIKEN. 
+# All rights reserved.
+#
+#############################################################################
+
+.PHONY: depend clean
+
+all:
+	(cd FFV; make)
+
+clean:
+	(cd FFV; make clean)
+
+depend:
+	(cd FFV; make depend)
+

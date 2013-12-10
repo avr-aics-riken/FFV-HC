@@ -1,0 +1,54 @@
+/*
+ * FFV-HC
+ * FrontFlow/violet for hierarchical Cartesian grids
+ *
+ * Copyright (c) 2013 Institute of Industrial Science, The University of Tokyo. 
+ * All rights reserved.
+ *
+ * Copyright (c) 2013 Advanced Institute for Computational Science, RIKEN. 
+ * All rights reserved.
+ *
+ */
+
+
+OUTLINE
+=======
+
+FFV-HC is an experimental branch of FFV, which aims at effective control of grid density
+by using hierarchical Cartesian grids. 
+
+In FFV-HC, a block-based octree data structure
+is employed to organize Cartesian grids. Thanks to this data structure, it is possible
+to share basic algorithms for the computation of fluid dynamics with FFV-C, and thus
+the key features are still retained - high performance on massively parallel computers.
+
+CAUTION
+=======
+
+This is a prototype version of FFV-HC.
+Compared with FFV-C, less functions are implemented and available for use.
+A regular version with full functionality, and less bugs, will be released in April 2014.
+
+
+INGREDIENTS
+===========
+
+AUTHORS         Contributors
+ChangeLog       History of development
+COPYING         Copyright
+INSTALL         Description of how to install
+LICENSE         License to apply
+NEWS            Release note
+README          This document
+doc/            Documents
+doxygen/        Doxygen files
+example/        Example files
+src/            Source files
+   FFV          FFV source codes
+
+
+COMMENTS & KNOWN ISSUES
+=======================
+
+See doc/ffv-hc-ug.pdf
+
