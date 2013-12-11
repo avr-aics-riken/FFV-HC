@@ -44,8 +44,8 @@ LIBS        :=
 ## iff double
 CFLAGS     += -D_REAL_IS_DOUBLE_
 CXXFLAGS   += -D_REAL_IS_DOUBLE_
-FCFLAGS    += -D_REAL_IS_DOUBLE_ -fdefault-real-8
-F90FLAGS   += -D_REAL_IS_DOUBLE_ -fdefault-real-8
+FCFLAGS    += -D_REAL_IS_DOUBLE_ -CcdRR8
+F90FLAGS   += -D_REAL_IS_DOUBLE_ -CcdRR8
 
 ## iff large block
 #CFLAGS     += -D_BLOCK_IS_LARGE_
