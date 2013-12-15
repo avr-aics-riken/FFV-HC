@@ -1674,6 +1674,7 @@ void Solver::PrintForce(int step) {
 	real fsv_local[3] = {0.0, 0.0, 0.0};
 #ifdef _BLOCK_IS_LARGE_
 #else
+#pragma omp parallel for private(fsp_local, fsv_local)
 #endif
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
 		BlockBase* block = blockManager.getBlock(n);
