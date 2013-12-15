@@ -1672,9 +1672,15 @@ void Solver::PrintForce(int step) {
 
 	real fsp_local[3] = {0.0, 0.0, 0.0};
 	real fsv_local[3] = {0.0, 0.0, 0.0};
+	real fsp_local_x = 0.0;
+	real fsp_local_y = 0.0;
+	real fsp_local_z = 0.0;
+	real fsv_local_x = 0.0;
+	real fsv_local_y = 0.0;
+	real fsv_local_z = 0.0;
 #ifdef _BLOCK_IS_LARGE_
 #else
-#pragma omp parallel for private(fsp_local, fsv_local)
+#pragma omp parallel for reduction(+:fsp_local_x, fsp_local_y, fsp_local_z, fsv_local_x, fsv_local_y, fsv_local_z)
 #endif
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
 		BlockBase* block = blockManager.getBlock(n);
@@ -1748,43 +1754,43 @@ void Solver::PrintForce(int step) {
 				&Uc,
 				sz, g);
 
-		fsp_local[0] += fsp_block[0];
-		fsp_local[1] += fsp_block[1];
-		fsp_local[2] += fsp_block[2];
-		fsv_local[0] += fsv_block[0];
-		fsv_local[1] += fsv_block[1];
-		fsv_local[2] += fsv_block[2];
+		fsp_local_x += fsp_block[0];
+		fsp_local_y += fsp_block[1];
+		fsp_local_z += fsp_block[2];
+		fsv_local_x += fsv_block[0];
+		fsv_local_y += fsv_block[1];
+		fsv_local_z += fsv_block[2];
 	}
 
 	real fsp_global[3] = {0.0, 0.0, 0.0};
 	real fsv_global[3] = {0.0, 0.0, 0.0};
 
-	real sum = fsp_local[0];
+	real sum = fsp_local_x;
 	real sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsp_global[0] = sum;
 
-	sum = fsp_local[1];
+	sum = fsp_local_y;
 	sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsp_global[1] = sum;
 
-	sum = fsp_local[2];
+	sum = fsp_local_z;
 	sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsp_global[2] = sum;
 
-	sum = fsv_local[0];
+	sum = fsv_local_x;
 	sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsv_global[0] = sum;
 
-	sum = fsv_local[1];
+	sum = fsv_local_y;
 	sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsv_global[1] = sum;
 
-	sum = fsv_local[2];
+	sum = fsv_local_z;
 	sum_tmp = sum;
 	allreduce_(&sum, &sum_tmp);
 	fsv_global[2] = sum;
