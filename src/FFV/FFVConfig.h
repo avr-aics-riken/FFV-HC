@@ -108,12 +108,12 @@ public:
 
 //Output
 	bool					OutputLogBase;
+	bool					OutputLogBlock;
 	bool					OutputLogLaptime;
 	bool					OutputLogIteration;
+	bool					OutputLogProfiling;
 	bool					OutputLogStatistics;
 	bool					OutputLogForce;
-	bool					OutputLogProfiling;
-	bool					OutputLogBlock;
 	std::string		OutputLogFilenameBase;
 	std::string		OutputLogFilenameProfiling;
 	std::string		OutputLogFilenameLaptime;
@@ -123,6 +123,15 @@ public:
 	std::string		OutputLogFileIntervalType;
 	int						OutputLogFileIntervalI;
 	double				OutputLogFileIntervalD;
+
+	int						OutputLogFileIntervalBase;
+	int						OutputLogFileIntervalBlock;
+	int						OutputLogFileIntervalLaptime;
+	int						OutputLogFileIntervalIteration;
+	int						OutputLogFileIntervalProfiling;
+	int						OutputLogFileIntervalStatistics;
+	int						OutputLogFileIntervalForce;
+
 	std::string		OutputLogConsoleIntervalType;
 	int						OutputLogConsoleIntervalI;
 	double				OutputLogConsoleIntervalD;

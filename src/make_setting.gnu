@@ -15,8 +15,8 @@
 # GCC
 ########################
 
-MPI_DIR			:= /usr/local
 MPI_DIR			:= /usr/lib/openmpi
+MPI_DIR			:= /usr/local
 
 FFV_HOME		:= $(HOME)/FFV
 TP_DIR      := $(FFV_HOME)/TextParser

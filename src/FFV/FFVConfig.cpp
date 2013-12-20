@@ -222,6 +222,21 @@ void FFVConfig::Load(std::string filename) {
 													= Read<int>						("/Output/Log/Console/Interval");
 	}
 
+	OutputLogFileIntervalBase
+													= Read<int>						("/Output/Log/Interval/Base", OutputLogFileIntervalI);
+	OutputLogFileIntervalProfiling
+													= Read<int>						("/Output/Log/Interval/Profiling", OutputLogFileIntervalI);
+	OutputLogFileIntervalLaptime
+													= Read<int>						("/Output/Log/Interval/Laptime", OutputLogFileIntervalI);
+	OutputLogFileIntervalIteration
+													= Read<int>						("/Output/Log/Interval/Iteration", OutputLogFileIntervalI);
+	OutputLogFileIntervalBlock
+													= Read<int>						("/Output/Log/Interval/Block", OutputLogFileIntervalI);
+	OutputLogFileIntervalStatistics
+													= Read<int>						("/Output/Log/Interval/Statistics", OutputLogFileIntervalI);
+	OutputLogFileIntervalForce
+													= Read<int>						("/Output/Log/Interval/Force", OutputLogFileIntervalI);
+
 	OutputDataBasicVariablesFormat
 													= Read<std::string>		("/Output/Data/BasicVariables/Format");
 	OutputDataBasicVariablesTemporalType

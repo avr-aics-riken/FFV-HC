@@ -1475,7 +1475,7 @@ void Solver::PrintData(int step) {
 }
 
 void Solver::PrintTime(int step) {
-	if( step%g_pFFVConfig->OutputLogFileIntervalI == 0 ) {
+	if( step%g_pFFVConfig->OutputLogFileIntervalLaptime == 0) {
 	} else {
 		return;
 	}
@@ -1522,7 +1522,7 @@ void Solver::PrintTime(int step) {
 }
 
 void Solver::PrintILS(int step) {
-	if( step%g_pFFVConfig->OutputLogFileIntervalI == 0 ) {
+	if( step%g_pFFVConfig->OutputLogFileIntervalIteration == 0 ) {
 	} else {
 		return;
 	}
@@ -1591,7 +1591,7 @@ void Solver::PrintILS(int step) {
 }
 
 void Solver::PrintStats(int step) {
-	if( step%g_pFFVConfig->OutputLogFileIntervalI == 0 ) {
+	if( step%g_pFFVConfig->OutputLogFileIntervalStatistics == 0 ) {
 	} else {
 		return;
 	}
@@ -1665,7 +1665,7 @@ void Solver::PrintStats(int step) {
 }
 
 void Solver::PrintForce(int step) {
-	if( step%g_pFFVConfig->OutputLogFileIntervalI == 0 ) {
+	if( step%g_pFFVConfig->OutputLogFileIntervalForce == 0 ) {
 	} else {
 		return;
 	}
