@@ -275,6 +275,8 @@ void FFVConfig::Load(std::string filename) {
 													= false;
 	OutputDataBasicVariablesFormatBCM
 													= false;
+	OutputDataBasicVariablesFormatSILO
+													= false;
 	if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "VTK") ) {
 		OutputDataBasicVariablesFormatVTK
 													= true;
@@ -284,6 +286,9 @@ void FFVConfig::Load(std::string filename) {
 	} else if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "BCM") ) {
 		OutputDataBasicVariablesFormatBCM
 													= true;
+	} else if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "SILO") ) {
+		OutputDataBasicVariablesFormatSILO
+													= true;
 	}
 
 	OutputDataDerivedVariablesFormatVTK
@@ -291,6 +296,8 @@ void FFVConfig::Load(std::string filename) {
 	OutputDataDerivedVariablesFormatPLOT3D
 													= false;
 	OutputDataDerivedVariablesFormatBCM
+													= false;
+	OutputDataDerivedVariablesFormatSILO
 													= false;
 	if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "VTK") ) {
 		OutputDataDerivedVariablesFormatVTK
@@ -301,8 +308,10 @@ void FFVConfig::Load(std::string filename) {
 	} else if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "BCM") ) {
 		OutputDataDerivedVariablesFormatBCM
 													= true;
+	} else if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "SILO") ) {
+		OutputDataDerivedVariablesFormatSILO
+													= true;
 	}
-
 
 	if( OutputDataBasicVariablesFormatVTK || OutputDataDerivedVariablesFormatVTK ) {
 		OutputDataFormatOptionVTKPath
@@ -315,6 +324,7 @@ void FFVConfig::Load(std::string filename) {
 		OutputDataFormatOptionPLOT3DPrefix
 														= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Prefix");
 	} else if( OutputDataBasicVariablesFormatBCM || OutputDataDerivedVariablesFormatBCM ) {
+	} else if( OutputDataBasicVariablesFormatSILO || OutputDataDerivedVariablesFormatSILO ) {
 	}
 
 //PhysicalParameter

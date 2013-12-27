@@ -158,6 +158,8 @@ public:
 	bool					OutputDataDerivedVariablesFormatPLOT3D;
 	bool					OutputDataBasicVariablesFormatBCM;
 	bool					OutputDataDerivedVariablesFormatBCM;
+	bool					OutputDataBasicVariablesFormatSILO;
+	bool					OutputDataDerivedVariablesFormatSILO;
 
 //PhysicalParameter
 	double				GravityX;

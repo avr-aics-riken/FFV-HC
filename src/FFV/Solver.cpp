@@ -1456,6 +1456,9 @@ void Solver::PrintData(int step) {
 			if( g_pFFVConfig->OutputDataBasicVariablesFormatBCM ) {
 				PrintBasicVariablesBCM(step);
 			}
+			if( g_pFFVConfig->OutputDataBasicVariablesFormatSILO ) {
+				PrintBasicVariablesSILO(step);
+			}
 		}
 	}
 
@@ -1469,6 +1472,9 @@ void Solver::PrintData(int step) {
 			}
 			if( g_pFFVConfig->OutputDataDerivedVariablesFormatBCM ) {
 				PrintDerivedVariablesBCM(step);
+			}
+			if( g_pFFVConfig->OutputDataDerivedVariablesFormatSILO ) {
+				PrintDerivedVariablesSILO(step);
 			}
 		}
 	}
@@ -1840,6 +1846,10 @@ void Solver::PrintBasicVariablesBCM(int step) {
 	BCMFileSaverPrint(step);
 }
 
+void Solver::PrintBasicVariablesSILO(int step) {
+	WriteBasicVariablesInSILOFormat(step, diffLevel, rootGrid, tree, partition);
+}
+
 void Solver::PrintDerivedVariablesVTK(int step) {
 	WriteDerivedVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 }
@@ -1848,6 +1858,9 @@ void Solver::PrintDerivedVariablesPLOT3D(int step) {
 }
 
 void Solver::PrintDerivedVariablesBCM(int step) {
+}
+
+void Solver::PrintDerivedVariablesSILO(int step) {
 }
 
 void Solver::PrintLog(int level, const char* format, ...) {

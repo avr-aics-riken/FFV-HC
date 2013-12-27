@@ -188,9 +188,11 @@ private:
 	void PrintBasicVariablesVTK(int step);
 	void PrintBasicVariablesPLOT3D(int step);
 	void PrintBasicVariablesBCM(int step);
+	void PrintBasicVariablesSILO(int step);
 	void PrintDerivedVariablesVTK(int step);
 	void PrintDerivedVariablesPLOT3D(int step);
 	void PrintDerivedVariablesBCM(int step);
+	void PrintDerivedVariablesSILO(int step);
 
 private:
 	void Dump(const int step);
@@ -478,6 +480,53 @@ private:
 		psaver->SaveLeafBlock("P32", step);
 		psaver->SaveLeafBlock("Vel32", step);
 #endif
+	}
+
+	void WriteBasicVariablesInSILOFormat(
+						int step,
+						int difflevel,
+						RootGrid* rootGrid,
+						BCMOctree* tree,
+						Partition* partition) {
+/*
+		SiloWriter writer("data-flow", "mesh", false);
+		VtkWriter writer;
+		writer.writePUT<real>(
+						this->plsP0->GetID(),
+						this->plsUX0->GetID(),
+						this->plsUY0->GetID(),
+						this->plsUZ0->GetID(),
+						this->plsT0->GetID(),
+						this->vc,
+						g_pFFVConfig->OutputDataFormatOptionVTKPath,
+						g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+						string("flow"),
+						step,
+						difflevel,
+						rootGrid,
+						tree,
+						partition,
+						g_pFFVConfig->RootBlockOrigin,
+						g_pFFVConfig->RootBlockLength);
+
+		writer.writeVtkOverlappingAMR_PUT<real>(
+						this->plsP0->GetID(),
+						this->plsUX0->GetID(),
+						this->plsUY0->GetID(),
+						this->plsUZ0->GetID(),
+						this->plsT0->GetID(),
+						this->vc,
+						g_pFFVConfig->OutputDataFormatOptionVTKPath,
+						g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+						string("flow"),
+						step,
+						difflevel,
+						rootGrid,
+						tree,
+						partition,
+						g_pFFVConfig->RootBlockOrigin,
+						g_pFFVConfig->RootBlockLength);
+*/
 	}
 
 private:
