@@ -43,6 +43,7 @@ CXXFLAGS    := $(CFLAGS)
 F90FLAGS    := $(FCFLAGS)
 LDFLAGS     := -openmp
 LIBS        := -lifport -lifcore -lmpi -lmpi_cxx -lmpi_f77 -lmpi_f90 
+LIBS				+= -lz
 #LIBS				+= -lsiloh5 -lhdf5 -lz
 
 ## iff double

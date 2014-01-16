@@ -15,6 +15,7 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <mpi.h>
+#include <zlib.h>
 
 #include "BCMTools.h"
 #include "BlockManager.h"
@@ -541,6 +542,232 @@ public:
 
 		delete [] pScalar;
 		delete [] pVector;
+	}
+
+	unsigned long GetMaxCompressionSpace(unsigned long size) {
+		return size + (size + 999)/1000 + 12;
+	}
+
+  template <typename T>
+	void printVTIC_Z(
+								T* sDataP, 
+								T* sDataUX, 
+								T* sDataUY, 
+								T* sDataUZ, 
+								T* sDataT, 
+								const char* path,
+								const char* prefix,
+								const char* label,
+								int step, int rank, int block,
+								int NX, int NY, int NZ,
+								int vc,
+								double ox, double oy, double oz,
+								double dx) {
+		ostringstream ossFileName;
+		ossFileName << path;
+		ossFileName << "/";
+		ossFileName.width(10);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << step;
+		ossFileName << "/";
+		ossFileName << prefix;
+		ossFileName << label;
+		ossFileName << "-";
+		ossFileName.width(5);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << rank;
+		ossFileName << "-";
+		ossFileName.width(5);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << block;
+		ossFileName << "-";
+		ossFileName.width(10);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << step;
+		ossFileName << ".vti";
+
+		int iNX1 = 0;
+		int iNY1 = 0;
+		int iNZ1 = 0;
+		int iNXN = NX;
+		int iNYN = NY;
+		int iNZN = NZ;
+
+		unsigned int nSizeX = NX;
+		unsigned int nSizeY = NY;
+		unsigned int nSizeZ = NZ;
+		unsigned int nSize = nSizeX*nSizeY*nSizeZ;
+
+		float* pP = new float[nSize];
+		int nBytesP = sizeof(float)*nSize;
+		for(int k=0; k<NZ; k++) {
+			for(int j=0; j<NY; j++) {
+				for(int i=0; i<NX; i++) {
+					int i0 = i + vc;
+					int j0 = j + vc;
+					int k0 = k + vc;
+					int m0 = i0 + (NX+2*vc)*( j0 + (NY+2*vc)*k0 );
+					int m = i + NX*( j + NY*k );
+					pP[m] = (float)sDataP[m0];
+				}
+			}
+		}
+		const unsigned char* pP_u = (const unsigned char*)pP;
+		unsigned long        nP_u = nSize*sizeof(float);
+		unsigned long        nP_c = GetMaxCompressionSpace(nP_u);
+		unsigned char*       pP_c = new unsigned char [nP_c];
+		if( compress2(pP_c, &nP_c, pP_u, nP_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
+			std::cout << "Error: zlib" << std::endl;
+		}
+//		delete [] pP;
+
+		float* pU = new float[nSize*3];
+		int nBytesU = sizeof(float)*nSize*3;
+		for(int k=0; k<NZ; k++) {
+			for(int j=0; j<NY; j++) {
+				for(int i=0; i<NX; i++) {
+					int i0 = i + vc;
+					int j0 = j + vc;
+					int k0 = k + vc;
+					int m0 = i0 + (NX+2*vc)*( j0 + (NY+2*vc)*k0 );
+					int m = i + NX*( j + NY*k );
+					pU[3*m + 0] = (float)sDataUX[m0];
+					pU[3*m + 1] = (float)sDataUY[m0];
+					pU[3*m + 2] = (float)sDataUZ[m0];
+				}
+			}
+		}
+		const unsigned char* pU_u = (const unsigned char*)pU;
+		unsigned long        nU_u = 3*nSize*sizeof(float);
+		unsigned long        nU_c = GetMaxCompressionSpace(nU_u);
+		unsigned char*       pU_c = new unsigned char [nU_c];
+		if( compress2(pU_c, &nU_c, pU_u, nU_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
+			std::cout << "Error: zlib" << std::endl;
+		}
+//		delete [] pU;
+
+		float* pT = new float[nSize];
+		int nBytesT = sizeof(float)*nSize;
+		for(int k=0; k<NZ; k++) {
+			for(int j=0; j<NY; j++) {
+				for(int i=0; i<NX; i++) {
+					int i0 = i + vc;
+					int j0 = j + vc;
+					int k0 = k + vc;
+					int m0 = i0 + (NX+2*vc)*( j0 + (NY+2*vc)*k0 );
+					int m = i + NX*( j + NY*k );
+					pT[m] = (float)sDataT[m0];
+				}
+			}
+		}
+		const unsigned char* pT_u = (const unsigned char*)pT;
+		unsigned long        nT_u = nSize*sizeof(float);
+		unsigned long        nT_c = GetMaxCompressionSpace(nT_u);
+		unsigned char*       pT_c = new unsigned char [nT_c];
+		if( compress2(pT_c, &nT_c, pT_u, nT_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
+			std::cout << "Error: zlib" << std::endl;
+		}
+//		delete [] pT;
+
+		ofstream ofs;
+		ofs.open(ossFileName.str().c_str(), ios::out);
+		ofs << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"";
+#ifdef __FUJITSU
+		ofs << "BigEndian";
+#else
+		ofs << "LittleEndian";
+#endif
+		ofs << "\" compressor=\"vtkZLibDataCompressor\">" << endl;
+//		ofs << "\">" << endl;
+		ofs << "<ImageData WholeExtent=\"";
+		ofs << iNX1 << " ";
+		ofs << iNXN << " ";
+		ofs << iNY1 << " ";
+		ofs << iNYN << " ";
+		ofs << iNZ1 << " ";
+		ofs << iNZN << "\" ";
+		ofs << "Origin=\"";
+		ofs.setf(std::ios::scientific, std::ios::floatfield);
+		ofs.precision(16);
+		ofs << ox << " ";
+		ofs << oy << " ";
+		ofs << oz << "\" ";
+		ofs << "Spacing=\"";
+		ofs << dx << " ";
+		ofs << dx << " ";
+		ofs << dx << "\">" << std::endl;
+		ofs << "<Piece Extent=\"";
+		ofs << iNX1 << " ";
+		ofs << iNXN << " ";
+		ofs << iNY1 << " ";
+		ofs << iNYN << " ";
+		ofs << iNZ1 << " ";
+		ofs << iNZN << "\">" << std::endl;
+		ofs << "<PointData>" << endl;
+		ofs << "</PointData>" << endl;
+		ofs << "<CellData>" << endl;
+
+		ofs << "<DataArray type=\"Float32\" Name=\"";
+		ofs << "p";
+		ofs << "\" format=\"appended\" offset=\"";
+		ofs << sizeof(int)*0 + 0;
+		ofs << "\"/>" << endl;
+
+		ofs << "<DataArray type=\"Float32\" Name=\"";
+		ofs << "u";
+		ofs << "\" NumberOfComponents=\"3\" format=\"appended\" offset=\"";
+		ofs << sizeof(int)*4 + nP_c;
+		ofs << "\"/>" << endl;
+
+		ofs << "<DataArray type=\"Float32\" Name=\"";
+		ofs << "t";
+		ofs << "\" format=\"appended\" offset=\"";
+		ofs << sizeof(int)*8 + nP_c + nU_c;
+		ofs << "\"/>" << endl;
+
+		ofs << "</CellData>" << endl;
+		ofs << "<Coordinates>" << endl;
+		ofs << "</Coordinates>" << endl;
+		ofs << "</Piece>" << endl;
+		ofs << "</ImageData>" << endl;
+		ofs << "<AppendedData encoding=\"raw\">" << endl;
+		ofs << "_";
+		ofs.close();
+
+		int nB = 1;
+		int psize = 0;
+		ofs.open(ossFileName.str().c_str(), ios::out | ios::app | ios::binary);
+
+		ofs.write((const char*)&nB, sizeof(int));
+		ofs.write((const char*)&nP_u, sizeof(int));
+		ofs.write((const char*)&psize, sizeof(int));
+		ofs.write((const char*)&nP_c, sizeof(int));
+		ofs.write((const char*)pP_c, nP_c);
+
+		ofs.write((const char*)&nB, sizeof(int));
+		ofs.write((const char*)&nU_u, sizeof(int));
+		ofs.write((const char*)&psize, sizeof(int));
+		ofs.write((const char*)&nU_c, sizeof(int));
+		ofs.write((const char*)pU_c, nU_c);
+
+		ofs.write((const char*)&nB, sizeof(int));
+		ofs.write((const char*)&nT_u, sizeof(int));
+		ofs.write((const char*)&psize, sizeof(int));
+		ofs.write((const char*)&nT_c, sizeof(int));
+		ofs.write((const char*)pT_c, nT_c);
+
+		ofs.close();
+
+		ofs.open(ossFileName.str().c_str(), ios::out | ios::app);
+		ofs << endl;
+		ofs << "</AppendedData>" << endl;
+		ofs << "</VTKFile>" << endl;
+		ofs.close();
+
 	}
 
   template <typename T>
