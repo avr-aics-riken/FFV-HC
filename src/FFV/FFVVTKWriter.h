@@ -623,7 +623,7 @@ public:
 		if( compress2(pP_c, &nP_c, pP_u, nP_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
 			std::cout << "Error: zlib" << std::endl;
 		}
-//		delete [] pP;
+		delete [] pP;
 
 		float* pU = new float[nSize*3];
 		int nBytesU = sizeof(float)*nSize*3;
@@ -648,7 +648,7 @@ public:
 		if( compress2(pU_c, &nU_c, pU_u, nU_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
 			std::cout << "Error: zlib" << std::endl;
 		}
-//		delete [] pU;
+		delete [] pU;
 
 		float* pT = new float[nSize];
 		int nBytesT = sizeof(float)*nSize;
@@ -671,7 +671,7 @@ public:
 		if( compress2(pT_c, &nT_c, pT_u, nT_u, Z_DEFAULT_COMPRESSION) != Z_OK ) {
 			std::cout << "Error: zlib" << std::endl;
 		}
-//		delete [] pT;
+		delete [] pT;
 
 		ofstream ofs;
 		ofs.open(ossFileName.str().c_str(), ios::out);
@@ -768,6 +768,9 @@ public:
 		ofs << "</VTKFile>" << endl;
 		ofs.close();
 
+		delete [] pP_c;
+		delete [] pU_c;
+		delete [] pT_c;
 	}
 
   template <typename T>
@@ -1141,7 +1144,7 @@ public:
       Scalar3D<T>* st = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_T));
       T* sDataT = st->getData();
 
-			printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+			printVTIC_Z(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
     }
 
     delete[] dataP;
