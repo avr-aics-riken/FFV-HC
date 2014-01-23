@@ -225,6 +225,9 @@ public:
 
 	void GetOuterBoundary(std::string FaceId, OBC& obcP, OBC& obcUX, OBC& obcUY, OBC& obcUZ, OBC& obcT);
 
+	int    BCInternalBoundaryType[32];
+	double BCInternalBoundaryValue[32];
+	
 public:
 	void Load(std::string filename);
 	void Check();
