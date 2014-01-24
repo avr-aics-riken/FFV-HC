@@ -40,6 +40,7 @@ CXXFLAGS    := $(CFLAGS)
 F90FLAGS    := $(FCFLAGS)
 LDFLAGS     := --linkfortran $(OPT_FLAGS)
 LIBS        :=
+LIBS				+= -lz
 
 ## iff double
 CFLAGS     += -D_REAL_IS_DOUBLE_

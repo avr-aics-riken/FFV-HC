@@ -43,6 +43,7 @@ F90FLAGS    := $(FCFLAGS)
 LDFLAGS     := -fopenmp
 LIBS        := -lgfortran -lmpi -lmpi_cxx -lmpi_mpifh
 LIBS        := -lgfortran -lmpi -lmpi_cxx -lmpi_f77 -lmpi_f90
+LIBS				+= -lz
 
 ## iff double
 CFLAGS     += -D_REAL_IS_DOUBLE_
