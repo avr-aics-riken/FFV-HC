@@ -1266,8 +1266,11 @@ subroutine bcut_calc_d_t( &
 								rhof, rhos, &
 								cpf, cps, &
 								kf, ks, &
+								bc_n, &
+								bc_type, &
+								bc_value, &
+								org, &
 								dx, dt, &
-								Tc, &
 								sz, g)
   implicit none
   integer                 :: i, j, k
@@ -1285,13 +1288,19 @@ subroutine bcut_calc_d_t( &
 	real										:: rhof, rhos
 	real										:: cpf, cps
 	real										:: kf, ks
+	integer									    :: bc_n
+	integer, dimension(0:bc_n-1):: bc_type
+	real, dimension(0:bc_n-1)   :: bc_value
   real                    :: dx, dt
-	real										:: Tc
+	real, dimension(3)			:: org
 	real										:: d0, d1, d2, d3, d4, d5
 	real										:: k0, k1, k2, k3, k4, k5
 	real										:: m0, m1, m2, m3, m4, m5
 	real										:: l0, l1, l2, l3, l4, l5
-	real										:: tp, tw, te, ts, tn, tb, tt
+	real										:: bp, b0, b1, b2, b3, b4, b5
+	real										:: tp, t0, t1, t2, t3, t4, t5
+	real										:: nx, ny, nz
+	real										:: x, y, z, r2, rl, xi, yi, zi, theta, phi
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
@@ -1304,7 +1313,10 @@ subroutine bcut_calc_d_t( &
 !$omp					 private(k0, k1, k2, k3, k4, k5) &
 !$omp					 private(m0, m1, m2, m3, m4, m5) &
 !$omp					 private(l0, l1, l2, l3, l4, l5) &
-!$omp					 private(tp, tw, te, ts, tn, tb, tt)
+!$omp					 private(bp, b0, b1, b2, b3, b4, b5) &
+!$omp					 private(tp, t0, t1, t2, t3, t4, t5) &
+!$omp					 private(nx, ny, nz) &
+!$omp					 private(x, y, z, r2, rl, xi, yi, zi, theta, phi)
 !$omp do schedule(static, 1)
 #else
 #endif
@@ -1312,27 +1324,9 @@ subroutine bcut_calc_d_t( &
   do j=1, jx
 !ocl nouxsimd
   do i=1, ix
-		k0 = kf
-		k1 = kf
-		k2 = kf
-		k3 = kf
-		k4 = kf
-		k5 = kf
-
-		m0 = 0.0d0
-		m1 = 0.0d0
-		m2 = 0.0d0
-		m3 = 0.0d0
-		m4 = 0.0d0
-		m5 = 0.0d0
-
-		tp = t0_(i, j, k)
-		tw = t0_(i-1, j, k)
-		te = t0_(i+1, j, k)
-		ts = t0_(i, j-1, k)
-		tn = t0_(i, j+1, k)
-		tb = t0_(i, j, k-1)
-		tt = t0_(i, j, k+1)
+		x = org(1) + (real(i) - 0.5)*dx
+		y = org(2) + (real(j) - 0.5)*dx
+		z = org(3) + (real(k) - 0.5)*dx
 
 		d0 = c0(i, j, k)
 		d1 = c1(i, j, k)
@@ -1350,66 +1344,177 @@ subroutine bcut_calc_d_t( &
 
 		pidp = pid(i, j, k)
 
+		m0 = 0.0
+		m1 = 0.0
+		m2 = 0.0
+		m3 = 0.0
+		m4 = 0.0
+		m5 = 0.0
 		if( cidp0 /= 0 ) then
-			k0 = kf/d0*2.0/(d0 + d1)
-			k1 = kf/d1*2.0/(d0 + d1)
-			tw = Tc
 			m0 = 1.0
 		endif
-
 		if( cidp1 /= 0 ) then
-			k0 = kf/d0*2.0/(d0 + d1)
-			k1 = kf/d1*2.0/(d0 + d1)
-			te = Tc
 			m1 = 1.0
 		endif
-
 		if( cidp2 /= 0 ) then
-			k2 = kf/d2*2.0/(d2 + d3)
-			k3 = kf/d3*2.0/(d2 + d3)
-			ts = Tc
 			m2 = 1.0
 		endif
-
 		if( cidp3 /= 0 ) then
-			k2 = kf/d2*2.0/(d2 + d3)
-			k3 = kf/d3*2.0/(d2 + d3)
-			tn = Tc
 			m3 = 1.0
 		endif
-
 		if( cidp4 /= 0 ) then
-			k4 = kf/d4*2.0/(d4 + d5)
-			k5 = kf/d5*2.0/(d4 + d5)
-			tb = Tc
 			m4 = 1.0
 		endif
-
 		if( cidp5 /= 0 ) then
-			k4 = kf/d4*2.0/(d4 + d5)
-			k5 = kf/d5*2.0/(d4 + d5)
-			tt = Tc
 			m5 = 1.0
 		endif
 
-		l0 = k0/(rhof*cpf)*dt/(dx*dx)
-		l1 = k1/(rhof*cpf)*dt/(dx*dx)
-		l2 = k2/(rhof*cpf)*dt/(dx*dx)
-		l3 = k3/(rhof*cpf)*dt/(dx*dx)
-		l4 = k4/(rhof*cpf)*dt/(dx*dx)
-		l5 = k5/(rhof*cpf)*dt/(dx*dx)
+		k0 = kf
+		k1 = kf
+		k2 = kf
+		k3 = kf
+		k4 = kf
+		k5 = kf
+		tp = t0_(i, j, k)
+		t0 = t0_(i-1, j, k) 
+		t1 = t0_(i+1, j, k) 
+		t2 = t0_(i, j-1, k) 
+		t3 = t0_(i, j+1, k) 
+		t4 = t0_(i, j, k-1) 
+		t5 = t0_(i, j, k+1) 
+		b0 = 0.0
+		b1 = 0.0
+		b2 = 0.0
+		b3 = 0.0
+		b4 = 0.0
+		b5 = 0.0
+		if( bc_type(cidp0) == 0 ) then
+			k0 = kf/d0*2.0/(d0 + d1)
+			k1 = kf/d1*2.0/(d0 + d1)
+			t0 = bc_value(cidp0)
+		else if( bc_type(cidp0) == 1 ) then
+			xi = x - d0*dx
+			yi = y
+			zi = z
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
 
-		td0_(i, j, k) = ( &
-												l1*(te - tp) &
-											- l0*(tp - tw) &
-											+ l3*(tn - tp) &
-											- l2*(tp - ts) &
-											+ l5*(tt - tp) &
-											- l4*(tp - tb) &
-										)
+			k0 = 0.0
+			k1 = kf/(d0 + 0.5)
+			t0 = 0.0
+			b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+		endif
+		if( bc_type(cidp1) == 0 ) then
+			k0 = kf/d0*2.0/(d0 + d1)
+			k1 = kf/d1*2.0/(d0 + d1)
+			t1 = bc_value(cidp1)
+		else if( bc_type(cidp1) == 1 ) then
+			xi = x + d1*dx
+			yi = y
+			zi = z
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
+			k0 = kf/(d1 + 0.5)
+			k1 = 0.0
+			t1 = 0.0
+			b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+		endif
+		if( bc_type(cidp2) == 0 ) then
+			k2 = kf/d2*2.0/(d2 + d3)
+			k3 = kf/d3*2.0/(d2 + d3)
+			t2 = bc_value(cidp2)
+		else if( bc_type(cidp2) == 1 ) then
+			xi = x
+			yi = y - d2*dx
+			zi = z
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
+			k2 = 0.0
+			k3 = kf/(d2 + 0.5)
+			t2 = 0.0
+			b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+		endif
+		if( bc_type(cidp3) == 0 ) then
+			k2 = kf/d2*2.0/(d2 + d3)
+			k3 = kf/d3*2.0/(d2 + d3)
+			t3 = bc_value(cidp3)
+		else if( bc_type(cidp3) == 1 ) then
+			xi = x
+			yi = y + d3*dx
+			zi = z
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
+			k2 = kf/(d3 + 0.5)
+			k3 = 0.0
+			t3 = 0.0
+			b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+		endif
+		if( bc_type(cidp4) == 0 ) then
+			k4 = kf/d4*2.0/(d4 + d5)
+			k5 = kf/d5*2.0/(d4 + d5)
+			t4 = bc_value(cidp4)
+		else if( bc_type(cidp4) == 1 ) then
+			xi = x
+			yi = y
+			zi = z - d4*dx
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
+			k4 = 0.0
+			k5 = kf/(d4 + 0.5)
+			t4 = 0.0
+			b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+		endif
+		if( bc_type(cidp5) == 0 ) then
+			k4 = kf/d4*2.0/(d4 + d5)
+			k5 = kf/d5*2.0/(d4 + d5)
+			t5 = bc_value(cidp5)
+		else if( bc_type(cidp5) == 1 ) then
+			xi = x
+			yi = y
+			zi = z + d5*dx
+			r2 = xi*xi + yi*yi + zi*zi
+			rl = sqrt(r2)
+			nx = xi/rl
+			ny = yi/rl
+			nz = zi/rl
+			k4 = kf/(d5 + 0.5)
+			k5 = 0.0
+			t5 = 0.0
+			b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+		endif
+
+		l0 = k0/(rhof*cpf)/(dx*dx)*dt
+		l1 = k1/(rhof*cpf)/(dx*dx)*dt
+		l2 = k2/(rhof*cpf)/(dx*dx)*dt
+		l3 = k3/(rhof*cpf)/(dx*dx)*dt
+		l4 = k4/(rhof*cpf)/(dx*dx)*dt
+		l5 = k5/(rhof*cpf)/(dx*dx)*dt
+
+		td0_(i, j, k) = ( k1*(t1 - tp) &
+										- k0*(tp - t0) &
+										+ k3*(t3 - tp) &
+										- k2*(tp - t2) &
+										+ k5*(t5 - tp) &
+										- k4*(tp - t4) &
+										)/(rhof*cpf)/(dx*dx)
 
 		if( pidp /= 1 ) then
-			td0_(i, j, k) = 0.0d0
+			td0_(i, j, k) = 0.0
 		endif
 
   end do
@@ -3039,7 +3144,6 @@ subroutine bcut_update_t( &
 								cpf, cps, &
 								kf, ks, &
 								dx, dt, &
-								Tc, &
 								sz, g)
   implicit none
   integer                 :: i, j, k
@@ -3090,7 +3194,7 @@ subroutine bcut_update_t( &
 									+ (1.5*td0_(i, j, k) - 0.5*tdp_(i, j, k))*dt 
 
 		if( pidp /= 1 ) then
-			t0_(i, j, k) = Tc
+			t0_(i, j, k) = 0.0
 		endif
 
   end do

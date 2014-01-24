@@ -2591,6 +2591,7 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
 		
 		real* t0  = plsT0->GetBlockData(block);
 		real* tc0 = plsTC->GetBlockData(block);
@@ -2670,6 +2671,15 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					sz, g);
 		}
 
+		int bc_n[1] = {32};
+		int bc_type[32];
+		real bc_value[32];
+		for(int n=0; n<bc_n[0]; n++) {
+			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
+			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
+//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+		}
+
 		bcut_calc_d_t_(
 				td0,
 				t0,
@@ -2679,8 +2689,11 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				&rhof, &rhos,
 				&cpf, &cps,
 				&kf, &ks,
+				bc_n,
+				bc_type,
+				bc_value,
+				org,
 				&dx, &dt,
-				&Tc,
 				sz, g);
 
 		if( step==0 ) {
@@ -2705,7 +2718,6 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				&cpf, &cps,
 				&kf, &ks,
 				&dx, &dt,
-				&Tc,
 				sz, g);
 
 		copy_(
@@ -3883,21 +3895,16 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
+		int bc_n[1] = {32};
+		int bc_type[32];
+		real bc_value[32];
+		for(int n=0; n<bc_n[0]; n++) {
+			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
+			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
+//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+		}
+
 		real Tc = 1.0;
-/*
-		bcut_calc_d_t_(
-				td0,
-				t0,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof, &rhos,
-				&cpf, &cps,
-				&kf, &ks,
-				&dx, &dt,
-				&Tc,
-				sz, g);
-*/
 		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					tc0,
@@ -3961,22 +3968,6 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				&dx, &dt,
 				&Tc,
 				sz, g);
-*/
-
-		int bc_n[1] = {32};
-		int bc_type[32];
-		real bc_value[32];
-		for(int n=0; n<bc_n[0]; n++) {
-			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
-			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
-//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
-		}
-
-/*
-		bc_type[10] = 0;
-		bc_value[10] = 1.0;
-		bc_type[11] = 1;
-		bc_value[11] = -1.0;
 */
 
 		bcut_calc_abd_t_(
