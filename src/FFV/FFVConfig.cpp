@@ -404,7 +404,7 @@ void FFVConfig::Load(std::string filename) {
 
 //Tuning
 	TuningMasking						= Read<bool>					("/Tuning/Masking", true);
-	TuningBlockOrdering			= Read<std::string>		("/Tuning/BlockOrdering", "Z");
+	TuningBlockOrdering			= Read<std::string>		("/Tuning/BlockOrdering", "Hilbert");
 	TuningVCUpdate					= Read<std::string>		("/Tuning/VCUpdate", "AtOnce");
 
 //BC
