@@ -6,7 +6,7 @@
 #endif
 
 #ifndef FFV_VERSION
-#define FFV_VERSION  "0.9.2"
+#define FFV_VERSION  "Unknown"
 #endif
 
 #ifndef FFV_REVISION
