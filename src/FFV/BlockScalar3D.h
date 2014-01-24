@@ -312,16 +312,12 @@ private:
 	}
 
 	void ImposeBlockBoundaryCondition_X_M_POISEUILLE_U() {
-//		bc_x3_poiseuille_u_(this->blockData, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), this->origin, this->blockSize, this->cellSize);
 	}
 	void ImposeBlockBoundaryCondition_Aw_POISEUILLE_U(real* Ap, real* Aw, real* Ae, real* b) {
-//		bc_aw_poiseuille_u_(Ap, Aw, b, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), this->origin, this->blockSize, this->cellSize);
 	}
 	void ImposeBlockBoundaryCondition_X_M_POISEUILLE_P() {
-//		bc_x3_poiseuille_p_(this->blockData, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), this->origin, this->blockSize, this->cellSize);
 	}
 	void ImposeBlockBoundaryCondition_Aw_POISEUILLE_P(real* Ap, real* Aw, real* Ae, real* b) {
-//		bc_aw_poiseuille_p_(Ap, Aw, b, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), this->origin, this->blockSize, this->cellSize);
 	}
 };
 
