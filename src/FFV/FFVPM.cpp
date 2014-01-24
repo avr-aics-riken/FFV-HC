@@ -59,6 +59,7 @@ char* label[] = {
 	"PrintILS",
 	"PrintStats",
 	"PrintForce",
+	"PrintHeatFlux",
 	"PrintData",
 };
 

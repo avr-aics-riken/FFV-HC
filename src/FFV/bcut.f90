@@ -1397,6 +1397,7 @@ subroutine bcut_calc_d_t( &
 			yi = y
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -1416,6 +1417,7 @@ subroutine bcut_calc_d_t( &
 			yi = y
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -1434,6 +1436,7 @@ subroutine bcut_calc_d_t( &
 			yi = y - d2*dx
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -1452,6 +1455,7 @@ subroutine bcut_calc_d_t( &
 			yi = y + d3*dx
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -1470,6 +1474,7 @@ subroutine bcut_calc_d_t( &
 			yi = y
 			zi = z - d4*dx
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -1488,6 +1493,7 @@ subroutine bcut_calc_d_t( &
 			yi = y
 			zi = z + d5*dx
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -2974,6 +2980,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -2993,6 +3000,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -3011,6 +3019,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y - d2*dx
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -3029,6 +3038,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y + d3*dx
 			zi = z
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -3047,6 +3057,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y
 			zi = z - d4*dx
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -3065,6 +3076,7 @@ subroutine bcut_calc_abd_t( &
 			yi = y
 			zi = z + d5*dx
 			r2 = xi*xi + yi*yi + zi*zi
+			r2 = xi*xi + zi*zi
 			rl = sqrt(r2)
 			nx = xi/rl
 			ny = yi/rl
@@ -3598,15 +3610,20 @@ subroutine bcut_calc_q( &
 								qy, &
 								qz, &
 								q, &
-								t, &
+								sa, &
+								cid_target, &
+								t0_, &
 								c0, c1, c2, c3, c4, c5, &
 								cid0, cid1, cid2, cid3, cid4, cid5, &
 								pid, &
-								rhof, &
-								cpf, &
-								kf, &
+								rhof, rhos, &
+								cpf, cps, &
+								kf, ks, &
+								bc_n, &
+								bc_type, &
+								bc_value, &
+								org, &
 								dx, dt, &
-								Tc, &
 								sz, g)
 	implicit none
 	integer									:: i, j, k
@@ -3615,52 +3632,65 @@ subroutine bcut_calc_q( &
 	integer, dimension(3)		:: sz
 	real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)	:: qx, qy, qz
 	real, dimension(1:3)		:: q
-	real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)	:: t
+	real										:: sa
+	integer									:: cid_target
+	real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)	:: t0_
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-	real										:: rhof
-	real										:: cpf
-	real										:: kf
-  real                    :: dx, dt
-	real										:: Tc
-	real										:: tp, tw, te, ts, tn, tb, tt
 	integer									:: cidp
 	integer									:: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
 	integer									:: pidp, pidw, pide, pids, pidn, pidb, pidt
+	real										:: rhof, rhos
+	real										:: cpf, cps
+	real										:: kf, ks
+	integer									    :: bc_n
+	integer, dimension(0:bc_n-1):: bc_type
+	real, dimension(0:bc_n-1)   :: bc_value
+  real                    :: dx, dt
+	real, dimension(3)			:: org
 	real										:: d0, d1, d2, d3, d4, d5
+	real										:: k0, k1, k2, k3, k4, k5
 	real										:: m0, m1, m2, m3, m4, m5
+	real										:: l0, l1, l2, l3, l4, l5
+	real										:: bp, b0, b1, b2, b3, b4, b5
+	real										:: tp, t0, t1, t2, t3, t4, t5
+	real										:: nx, ny, nz
+	real										:: x, y, z, r2, rl, xi, yi, zi, theta, phi
 	real										:: qx0, qy0, qz0
+	real										:: qxt, qyt, qzt
 	ix = sz(1)
 	jx = sz(2)
 	kx = sz(3)
-	qx0 = 0.0
-	qy0 = 0.0
-	qz0 = 0.0
+	qxt = 0.0
+	qyt = 0.0
+	qzt = 0.0
+	sa = 0.0
 #ifdef _BLOCK_IS_LARGE_
 !$omp parallel private(i, j, k) 
+!$omp					 private(cidp) &
+!$omp					 private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp					 private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp					 private(d0, d1, d2, d3, d4, d5) &
+!$omp					 private(k0, k1, k2, k3, k4, k5) &
+!$omp					 private(m0, m1, m2, m3, m4, m5) &
+!$omp					 private(l0, l1, l2, l3, l4, l5) &
+!$omp					 private(bp, b0, b1, b2, b3, b4, b5) &
+!$omp					 private(tp, t0, t1, t2, t3, t4, t5) &
+!$omp					 private(nx, ny, nz) &
+!$omp					 private(qx0, qy0, qz0) &
+!$omp					 private(x, y, z, r2, rl, xi, yi, zi, theta, phi)
 !$omp do schedule(static, 1), &
-!$omp		 reduction(+:qx0, qy0, qz0)
+!$omp		 reduction(+:qxt, qyt, qzt, sa)
 #else
 #endif
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
 	do i=1, ix
-		tp = t(i, j, k)
-		tw = t(i-1, j, k)
-		te = t(i+1, j, k)
-		ts = t(i, j-1, k)
-		tn = t(i, j+1, k)
-		tb = t(i, j, k-1)
-		tt = t(i, j, k+1)
-
-		m0 = 0.0d0
-		m1 = 0.0d0
-		m2 = 0.0d0
-		m3 = 0.0d0
-		m4 = 0.0d0
-		m5 = 0.0d0
+		x = org(1) + (real(i) - 0.5)*dx
+		y = org(2) + (real(j) - 0.5)*dx
+		z = org(3) + (real(k) - 0.5)*dx
 
 		d0 = c0(i, j, k)
 		d1 = c1(i, j, k)
@@ -3678,50 +3708,317 @@ subroutine bcut_calc_q( &
 
 		pidp = pid(i, j, k)
 
-		if( cidp0 /= 0 ) then
-			tw  = (1.0d0 - 1.0d0/d0)*tp + (1.0d0/d0)*Tc
+		if( pidp /= 1 ) then
+			cycle
+		endif
+
+		m0 = 0.0d0
+		m1 = 0.0d0
+		m2 = 0.0d0
+		m3 = 0.0d0
+		m4 = 0.0d0
+		m5 = 0.0d0
+		if( cidp0 == cid_target ) then
 			m0 = 1.0d0
 		endif
-		if( cidp1 /= 0 ) then
-			te  = (1.0d0 - 1.0d0/d1)*tp + (1.0d0/d1)*Tc
+		if( cidp1 == cid_target ) then
 			m1 = 1.0d0
 		endif
-		if( cidp2 /= 0 ) then
-			ts  = (1.0d0 - 1.0d0/d2)*tp + (1.0d0/d2)*Tc
+		if( cidp2 == cid_target ) then
 			m2 = 1.0d0
 		endif
-		if( cidp3 /= 0 ) then
-			tn  = (1.0d0 - 1.0d0/d3)*tp + (1.0d0/d3)*Tc
+		if( cidp3 == cid_target ) then
 			m3 = 1.0d0
 		endif
-		if( cidp4 /= 0 ) then
-			tb  = (1.0d0 - 1.0d0/d4)*tp + (1.0d0/d4)*Tc
+		if( cidp4 == cid_target ) then
 			m4 = 1.0d0
 		endif
-		if( cidp5 /= 0 ) then
-			tt  = (1.0d0 - 1.0d0/d5)*tp + (1.0d0/d5)*Tc
+		if( cidp5 == cid_target ) then
 			m5 = 1.0d0
 		endif
 
-		if( pidp /= 1 ) then
-			m0 = 0.0d0
-			m1 = 0.0d0
-			m2 = 0.0d0
-			m3 = 0.0d0
-			m4 = 0.0d0
-			m5 = 0.0d0
+		k0 = kf
+		k1 = kf
+		k2 = kf
+		k3 = kf
+		k4 = kf
+		k5 = kf
+		tp = t0_(i, j, k)
+		t0 = t0_(i-1, j, k) 
+		t1 = t0_(i+1, j, k) 
+		t2 = t0_(i, j-1, k) 
+		t3 = t0_(i, j+1, k) 
+		t4 = t0_(i, j, k-1) 
+		t5 = t0_(i, j, k+1) 
+		b0 = 0.0
+		b1 = 0.0
+		b2 = 0.0
+		b3 = 0.0
+		b4 = 0.0
+		b5 = 0.0
+
+		if( cidp0 == cid_target ) then
+			if( bc_type(cidp0) == 0 ) then
+				xi = x - d0*dx
+				yi = y
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k0 = kf/d0*2.0/(d0 + d1)
+				k1 = kf/d1*2.0/(d0 + d1)
+				t0 = bc_value(cidp0)
+				qx0 = -(tp - t0)/(d0*dx)
+
+				qx(i, j, k) = qx0
+				qxt = qxt + abs(qx0)*dx*dx
+				sa = sa + abs(nx)*dx*dx
+			else if( bc_type(cidp0) == 1 ) then
+				xi = x - d0*dx
+				yi = y
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k0 = 0.0
+				k1 = kf/(d0 + 0.5)
+				t0 = 0.0
+				b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+				t0 = tp - nx*bc_value(cidp0)*d0*dx
+				qx0 = 1.0/t0
+
+				qx(i, j, k) = qx0
+				qxt = qxt + qx0*abs(nx)*dx*dx
+				sa = sa + abs(nx)*dx*dx
+			endif
 		endif
 
-		qx(i, j, k) = - kf*(tp - tw)/dx*m0 &
-									+ kf*(te - tp)/dx*m1
-		qy(i, j, k) = - kf*(tp - ts)/dx*m2 &
-									+ kf*(tn - tp)/dx*m3
-		qz(i, j, k) = - kf*(tp - tb)/dx*m4 &
-									+ kf*(tt - tp)/dx*m5
+		if( cidp1 == cid_target ) then
+			if( bc_type(cidp1) == 0 ) then
+				xi = x + d1*dx
+				yi = y
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
 
-		qx0 = qx0 + qx(i, j, k)
-		qy0 = qy0 + qy(i, j, k)
-		qz0 = qz0 + qz(i, j, k)
+				k0 = kf/d0*2.0/(d0 + d1)
+				k1 = kf/d1*2.0/(d0 + d1)
+				t1 = bc_value(cidp1)
+				qx0 = -(t1 - tp)/(d1*dx)
+
+				qx(i, j, k) = qx0
+				qxt = qxt + abs(qx0)*dx*dx
+				sa = sa + abs(nx)*dx*dx
+			else if( bc_type(cidp1) == 1 ) then
+				xi = x + d1*dx
+				yi = y
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k0 = kf/(d1 + 0.5)
+				k1 = 0.0
+				t1 = 0.0
+				b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+				t1 = tp + nx*bc_value(cidp0)*d1*dx
+				qx0 = 1.0/t1
+
+				qx(i, j, k) = qx0
+				qxt = qxt + qx0*abs(nx)*dx*dx
+				sa = sa + abs(nx)*dx*dx
+			endif
+		endif
+
+		if( cidp2 == cid_target ) then
+			if( bc_type(cidp2) == 0 ) then
+				xi = x
+				yi = y - d2*dx
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k2 = kf/d2*2.0/(d2 + d3)
+				k3 = kf/d3*2.0/(d2 + d3)
+				t2 = bc_value(cidp2)
+				qy0 = -(tp - t2)/(d2*dx)
+
+				qy(i, j, k) = qy0
+				qyt = qyt + abs(qy0)*dx*dx
+				sa = sa + abs(ny)*dx*dx
+			else if( bc_type(cidp2) == 1 ) then
+				xi = x
+				yi = y - d2*dx
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k2 = 0.0
+				k3 = kf/(d2 + 0.5)
+				t2 = 0.0
+				b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+				t2 = tp - ny*bc_value(cidp2)*d2*dx
+				qy0 = 1.0/t2
+
+				qy(i, j, k) = qy0
+				qyt = qyt + qy0*abs(ny)*dx*dx
+				sa = sa + abs(ny)*dx*dx
+			endif
+		endif
+
+		if( cidp3 == cid_target ) then
+			if( bc_type(cidp3) == 0 ) then
+				xi = x
+				yi = y + d3*dx
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k2 = kf/d2*2.0/(d2 + d3)
+				k3 = kf/d3*2.0/(d2 + d3)
+				t3 = bc_value(cidp3)
+				qy0 = -(t3 - tp)/(d3*dx)
+
+				qy(i, j, k) = qy0
+				qyt = qyt + abs(qy0)*dx*dx
+				sa = sa + abs(ny)*dx*dx
+			else if( bc_type(cidp3) == 1 ) then
+				xi = x
+				yi = y + d3*dx
+				zi = z
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k2 = kf/(d3 + 0.5)
+				k3 = 0.0
+				t3 = 0.0
+				b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+				t3 = tp + ny*bc_value(cidp3)*d3*dx
+
+				qy(i, j, k) = qy0
+				qyt = qyt + qy0*abs(ny)*dx*dx
+				sa = sa + abs(ny)*dx*dx
+			endif
+		endif
+
+		if( cidp4 == cid_target ) then
+			if( bc_type(cidp4) == 0 ) then
+				xi = x
+				yi = y
+				zi = z - d4*dx
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k4 = kf/d4*2.0/(d4 + d5)
+				k5 = kf/d5*2.0/(d4 + d5)
+				t4 = bc_value(cidp4)
+				qz0 = -(tp - t4)/(d4*dx)
+
+				qz(i, j, k) = qz0
+				qzt = qzt + abs(qz0)*dx*dx
+				sa = sa + abs(nz)*dx*dx
+			else if( bc_type(cidp4) == 1 ) then
+				xi = x
+				yi = y
+				zi = z - d4*dx
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k4 = 0.0
+				k5 = kf/(d4 + 0.5)
+				t4 = 0.0
+				b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+				t4 = tp - nz*bc_value(cidp4)*d4*dx
+				qz0 = 1.0/t4
+
+				qz(i, j, k) = qz0
+				qzt = qzt + qz0*abs(nz)*dx*dx
+				sa = sa + abs(nz)*dx*dx
+			endif
+		endif
+
+		if( cidp5 == cid_target ) then
+			if( bc_type(cidp5) == 0 ) then
+				xi = x
+				yi = y
+				zi = z + d5*dx
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k4 = kf/d4*2.0/(d4 + d5)
+				k5 = kf/d5*2.0/(d4 + d5)
+				t5 = bc_value(cidp5)
+				qz0 = -(t5 - tp)/(d5*dx)
+
+				qz(i, j, k) = qz0
+				qzt = qzt + abs(qz0)*dx*dx
+				sa = sa + abs(nz)*dx*dx
+			else if( bc_type(cidp5) == 1 ) then
+				xi = x
+				yi = y
+				zi = z + d5*dx
+				r2 = xi*xi + yi*yi + zi*zi
+				r2 = xi*xi + zi*zi
+				rl = sqrt(r2)
+				nx = xi/rl
+				ny = yi/rl
+				nz = zi/rl
+
+				k4 = kf/(d5 + 0.5)
+				k5 = 0.0
+				t5 = 0.0
+				b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+				t5 = tp + nz*bc_value(cidp5)*d5*dx
+				qz0 = 1.0/t5
+
+				qz(i, j, k) = qz0
+				qzt = qzt + qz0*abs(nz)*dx*dx
+				sa = sa + abs(nz)*dx*dx
+			endif
+		endif
 	end do
 	end do
 	end do
@@ -3730,9 +4027,9 @@ subroutine bcut_calc_q( &
 !$omp end parallel
 #else
 #endif
-	q(1) = qx0
-	q(2) = qy0
-	q(3) = qz0
+	q(1) = qxt
+	q(2) = qyt
+	q(3) = qzt
 end subroutine bcut_calc_q
 
 subroutine bcut_set_fluidseed( &

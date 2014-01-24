@@ -235,6 +235,26 @@ extern "C" {
 				real* org,
 				real* dx, real* dt,
 				int *sz, int *g);
+	void bcut_calc_q_(
+				real* qx,
+				real* qy,
+				real* qz,
+				real* q,
+				real* sa,
+				int* cid_target,
+				real* t0_,
+				real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+				int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+				int* pid,
+				real* rhof, real* rhos,
+				real* cpf, real* cps,
+				real* kf, real* ks,
+				int* bc_n,
+				int* bc_type,
+				real* bc_value,
+				real* org,
+				real* dx, real* dt,
+				int *sz, int *g);
 }
 
 #endif

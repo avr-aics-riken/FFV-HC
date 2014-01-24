@@ -122,6 +122,10 @@ private:
 	LocalScalar3D<real> *plsFsvy;
 	LocalScalar3D<real> *plsFsvz;
 
+	LocalScalar3D<real> *plsQx;
+	LocalScalar3D<real> *plsQy;
+	LocalScalar3D<real> *plsQz;
+
 	LocalScalar3D<real> *plsM;
 	LocalScalar3D<int> *plsMaskId;
 
@@ -177,6 +181,7 @@ private:
 	void PrintILS(int step);
 	void PrintStats(int step);
 	void PrintForce(int step);
+	void PrintHeatFlux(int step);
 	void PrintLog(int level, const char* format, ...);
 	void PrintCS(int step);
 

@@ -114,6 +114,8 @@ public:
 	bool					OutputLogProfiling;
 	bool					OutputLogStatistics;
 	bool					OutputLogForce;
+	bool					OutputLogHeatFlux;
+	int						OutputLogHeatFluxTargetID;
 	std::string		OutputLogFilenameBase;
 	std::string		OutputLogFilenameProfiling;
 	std::string		OutputLogFilenameLaptime;
@@ -131,6 +133,7 @@ public:
 	int						OutputLogFileIntervalProfiling;
 	int						OutputLogFileIntervalStatistics;
 	int						OutputLogFileIntervalForce;
+	int						OutputLogFileIntervalHeatFlux;
 
 	std::string		OutputLogConsoleIntervalType;
 	int						OutputLogConsoleIntervalI;
@@ -147,6 +150,7 @@ public:
 	bool					OutputDataDerivedVariablesHelicity;
 	bool					OutputDataDerivedVariablesQcriterion;
 	bool					OutputDataDerivedVariablesForce;
+	bool					OutputDataDerivedVariablesHeatFlux;
 	std::string		OutputDataFormatOptionPLOT3DPath;
 	std::string		OutputDataFormatOptionPLOT3DPrefix;
 	std::string		OutputDataFormatOptionVTKPath;

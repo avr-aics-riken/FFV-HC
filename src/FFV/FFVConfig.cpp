@@ -190,6 +190,9 @@ void FFVConfig::Load(std::string filename) {
 	OutputLogIteration			= Read<bool>					("/Output/Log/Iteration");
 	OutputLogStatistics			= Read<bool>					("/Output/Log/Statistics");
 	OutputLogForce					= Read<bool>					("/Output/Log/Force", false);
+	OutputLogHeatFlux				= Read<bool>					("/Output/Log/HeatFlux", false);
+	OutputLogHeatFluxTargetID
+													= Read<int>						("/Output/Log/HeatFluxTargetID", -1);
 	OutputLogBlock					= Read<bool>					("/Output/Log/Block");
 	OutputLogProfiling			= Read<bool>					("/Output/Log/Profiling");
 
@@ -236,6 +239,8 @@ void FFVConfig::Load(std::string filename) {
 													= Read<int>						("/Output/Log/Interval/Statistics", OutputLogFileIntervalI);
 	OutputLogFileIntervalForce
 													= Read<int>						("/Output/Log/Interval/Force", OutputLogFileIntervalI);
+	OutputLogFileIntervalHeatFlux
+													= Read<int>						("/Output/Log/Interval/HeatFlux", OutputLogFileIntervalI);
 
 	OutputDataBasicVariablesFormat
 													= Read<std::string>		("/Output/Data/BasicVariables/Format");
@@ -268,6 +273,8 @@ void FFVConfig::Load(std::string filename) {
 													= Read<bool>					("/Output/Data/DerivedVariables/Qcriterion");
 	OutputDataDerivedVariablesForce
 													= Read<bool>					("/Output/Data/DerivedVariables/Force");
+	OutputDataDerivedVariablesHeatFlux
+													= Read<bool>					("/Output/Data/DerivedVariables/HeatFlux");
 
 	OutputDataBasicVariablesFormatVTK
 													= false;

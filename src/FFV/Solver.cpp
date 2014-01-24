@@ -137,6 +137,7 @@ int Solver::Init(int argc, char** argv){
 	g_pPM->setProperties(tm_PrintILS,   "PrintILS",  pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_PrintStats, "PrintStats",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_PrintForce, "PrintForce",pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_PrintHeatFlux, "PrintHeatFlux",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_PrintData,  "PrintData", pm_lib::PerfMonitor::CALC, true);
 	int nThreads = 1;
 #ifdef _OPENMP
@@ -1344,6 +1345,19 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plsFsvz->Fill(blockManager, 0.0);
 /* ---------------------------------------------------------- */
 
+
+/* ---------------------------------------------------------- */
+/* Init Heat flux                                             */
+/* ---------------------------------------------------------- */
+	int vc3 = 2;
+	plsQx = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQy = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQz = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQx->Fill(blockManager, 0.0);
+	plsQy->Fill(blockManager, 0.0);
+	plsQz->Fill(blockManager, 0.0);
+/* ---------------------------------------------------------- */
+
 	PM_Stop(tm_Init_InitVars);
 
 /* ---------------------------------------------------------- */
@@ -1433,6 +1447,12 @@ PM_Stop(tm_PrintStats);
 PM_Start(tm_PrintForce, 0, 0, true);
 		PrintForce(step);
 PM_Stop(tm_PrintForce);
+	}
+
+	if( g_pFFVConfig->OutputLogHeatFlux ) {
+PM_Start(tm_PrintHeatFlux, 0, 0, true);
+		PrintHeatFlux(step);
+PM_Stop(tm_PrintHeatFlux);
 	}
 
 PM_Start(tm_PrintData, 0, 0, true);
@@ -1668,6 +1688,145 @@ void Solver::PrintStats(int step) {
 		PrintData(step);
 		exit(EX_FAILURE);
 	}
+}
+
+void Solver::PrintHeatFlux(int step) {
+	if( step%g_pFFVConfig->OutputLogFileIntervalHeatFlux == 0 ) {
+	} else {
+		return;
+	}
+
+	real q_local_x = 0.0;
+	real q_local_y = 0.0;
+	real q_local_z = 0.0;
+	real sa_local = 0.0;
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for reduction(+:q_local_x, q_local_y, q_local_z, sa_local)
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		::Vec3i size = block->getSize();
+		::Vec3r origin = block->getOrigin();
+		::Vec3r blockSize = block->getBlockSize();
+		::Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+		
+		real* t0   = plsT0 ->GetBlockData(block);
+
+		real* pCut0 = plsCut0->GetBlockData(block);
+		real* pCut1 = plsCut1->GetBlockData(block);
+		real* pCut2 = plsCut2->GetBlockData(block);
+		real* pCut3 = plsCut3->GetBlockData(block);
+		real* pCut4 = plsCut4->GetBlockData(block);
+		real* pCut5 = plsCut5->GetBlockData(block);
+		int* pCutId0 = plsCutId0->GetBlockData(block);
+		int* pCutId1 = plsCutId1->GetBlockData(block);
+		int* pCutId2 = plsCutId2->GetBlockData(block);
+		int* pCutId3 = plsCutId3->GetBlockData(block);
+		int* pCutId4 = plsCutId4->GetBlockData(block);
+		int* pCutId5 = plsCutId5->GetBlockData(block);
+
+		int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+		int bc_n[1] = {32};
+		int bc_type[32];
+		real bc_value[32];
+		for(int n=0; n<bc_n[0]; n++) {
+			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
+			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
+//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+		}
+
+		real* qx = plsQx->GetBlockData(block);
+		real* qy = plsQy->GetBlockData(block);
+		real* qz = plsQz->GetBlockData(block);
+
+		real q_block[3] = {0.0, 0.0, 0.0};
+		real sa_block[1] = {0.0};
+		int cid_target = g_pFFVConfig->OutputLogHeatFluxTargetID;
+
+		bcut_calc_q_(
+				qx,
+				qy,
+				qz,
+				q_block,
+				sa_block,
+				&cid_target,
+				t0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				&rhof, &rhos,
+				&cpf, &cps,
+				&kf, &ks,
+				bc_n,
+				bc_type,
+				bc_value,
+				org,
+				&dx, &dt,
+				sz, g);
+
+		q_local_x += q_block[0];
+		q_local_y += q_block[1];
+		q_local_z += q_block[2];
+		sa_local  += sa_block[0];
+	}
+
+	real q_global[3] = {0.0, 0.0, 0.0};
+	real sa_global = 0.0;
+
+	real sum = q_local_x;
+	real sum_tmp = sum;
+	allreduce_(&sum, &sum_tmp);
+	q_global[0] = sum;
+
+	sum = q_local_y;
+	sum_tmp = sum;
+	allreduce_(&sum, &sum_tmp);
+	q_global[1] = sum;
+
+	sum = q_local_z;
+	sum_tmp = sum;
+	allreduce_(&sum, &sum_tmp);
+	q_global[2] = sum;
+
+	sum = sa_local;
+	sum_tmp = sum;
+	allreduce_(&sum, &sum_tmp);
+	sa_global = sum;
+
+	if( myrank != 0 ) {
+		return;
+	}
+
+	std::string filename = "data-heatflux.txt";
+
+	std::ofstream ofs;
+	if( step==0 ) {
+		ofs.open(filename.c_str(), std::ios::out);
+		ofs.close();
+	}
+	ofs.open(filename.c_str(), std::ios::out | std::ios::app);
+
+	ofs.width(10);
+	ofs.setf(std::ios::fixed);
+	ofs.fill('0');
+	ofs << step << " ";
+
+	ofs.setf(std::ios::scientific, std::ios::floatfield);
+	ofs.precision(16);
+	ofs << q_global[0] << " ";
+	ofs << q_global[1] << " ";
+	ofs << q_global[2] << " ";
+	ofs << sa_global << " ";
+	ofs << std::endl;
+	ofs.close();
 }
 
 void Solver::PrintForce(int step) {
