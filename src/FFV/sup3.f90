@@ -87,8 +87,8 @@ subroutine sup3_copy_from_neighbor_c2f_x_m( &
     k1 = (k0 + 1)/2
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
-		data_dst(i + i1_dst(1), j + i1_dst(2), k + i1_dst(3)) = data_dst(i + i1_dst(1) + 1, j + i1_dst(2), k + i1_dst(3)) &
-																														- 0.125*( data_src(i1 + 1, j1, k1) - data_src(i1, j1, k1) )
+    data_dst(i + i1_dst(1), j + i1_dst(2), k + i1_dst(3)) = data_dst(i + i1_dst(1) + 1, j + i1_dst(2), k + i1_dst(3)) &
+                                                            - 0.125*( data_src(i1 + 1, j1, k1) - data_src(i1, j1, k1) )
   end do
   end do
   end do
