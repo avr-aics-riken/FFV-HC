@@ -2259,6 +2259,48 @@ subroutine bcut_update_u( &
 #endif
 end subroutine bcut_update_u
 
+subroutine bcut_add_g( &
+                ux_, uy_, uz_, &
+								t_, &
+                gx, gy, gz, &
+								betag, tr, &
+								dx, dt, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux_, uy_, uz_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: t_
+	real										:: gx, gy, gz
+	real										:: betag, tr
+	real										:: dx, dt
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp do
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+		ux_(i, j, k) = ux_(i, j, k) + gx*dt
+		uy_(i, j, k) = uy_(i, j, k) + gy*dt
+		uz_(i, j, k) = uz_(i, j, k) + gz*dt + betag*(t_(i, j, k) - tr)*dt
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_add_g
+
 subroutine bcut_remove_p( &
                 ux, uy, uz, &
                 p0_, &

@@ -3858,6 +3858,7 @@ PM_Start(tm_UpdateP01, 0, 0, true);
 		real* vt = plsVt->GetBlockData(block);
 
 		real* p0 = plsP0->GetBlockData(block);
+		real* t0 = plsT0->GetBlockData(block);
 
 		real* ux = plsUX0->GetBlockData(block);
 		real* uy = plsUY0->GetBlockData(block);
@@ -3877,6 +3878,20 @@ PM_Start(tm_UpdateP01, 0, 0, true);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+		real gx = 0.0;
+		real gy = 0.0;
+		real gz = 0.0;
+		real betag = 1.0;
+		real tr = 0.0;
+
+		bcut_add_g_(
+				ux, uy, uz,
+				t0,
+				&gx, &gy, &gz,
+				&betag, &tr,
+				&dx, &dt,
+				sz, g);
 
 		bcut_remove_p_(
 				ux, uy, uz,
