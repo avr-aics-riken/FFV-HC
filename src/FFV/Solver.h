@@ -74,7 +74,6 @@ private:
 
 	LocalScalar3D<real> *plsP0;
 	LocalScalar3D<real> *plsP1;
-	LocalScalar3D<real> *plsLapP;
 
 	LocalScalar3D<real> *plsT0;
 	LocalScalar3D<real> *plsT1;
@@ -97,6 +96,17 @@ private:
 	LocalScalar3D<int> *plsCutId4;
 	LocalScalar3D<int> *plsCutId5;
 
+	int *pNormalN;
+	real **pNormalX;
+	real **pNormalY;
+	real **pNormalZ;
+	LocalScalar3D<int> *plsNormalIndex0;
+	LocalScalar3D<int> *plsNormalIndex1;
+	LocalScalar3D<int> *plsNormalIndex2;
+	LocalScalar3D<int> *plsNormalIndex3;
+	LocalScalar3D<int> *plsNormalIndex4;
+	LocalScalar3D<int> *plsNormalIndex5;
+
 	LocalScalar3D<real> *plsAp;
 	LocalScalar3D<real> *plsAw;
 	LocalScalar3D<real> *plsAe;
@@ -114,6 +124,8 @@ private:
 	LocalScalar3D<real> *plss;
 	LocalScalar3D<real> *plss_;
 	LocalScalar3D<real> *plst_;
+
+	LocalScalar3D<real> *plsLapP;
 
 	LocalScalar3D<real> *plsFspx;
 	LocalScalar3D<real> *plsFspy;

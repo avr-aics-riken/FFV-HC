@@ -19,6 +19,7 @@
 #include "Polylib.h"
 #include "Cutlib.h"
 #include "CutInfo/CutInfo.h"
+#include "CutInfo/CutNormalArray.h"
 #include "GridAccessor/Cell.h"
 
 #include "bcut.h"
@@ -98,6 +99,7 @@ int Solver::Init(int argc, char** argv){
 	g_pPM->setProperties(tm_Init_CalcCutInfo05,"CalcCutInfo05",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_CalcCutInfo06,"CalcCutInfo06",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_Filling,      "Filling",      pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_Init_GeometricalProperties, "GeometricalProperties",  pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_InitVars,     "InitVars",     pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Update,     "Update",    pm_lib::PerfMonitor::CALC, false);
 	g_pPM->setProperties(tm_UpdateT,    "UpdateT",   pm_lib::PerfMonitor::CALC, false);
@@ -459,6 +461,16 @@ int Solver::Init(int argc, char** argv){
 	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
 	plsPhaseId->Fill(blockManager, -1);
 
+	pNormalN = new int   [blockManager.getNumBlock()];
+	pNormalX = new real* [blockManager.getNumBlock()];
+	pNormalY = new real* [blockManager.getNumBlock()];
+	pNormalZ = new real* [blockManager.getNumBlock()];
+	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -484,14 +496,77 @@ int Solver::Init(int argc, char** argv){
 			org[i] = bpos[i] - gcsize[i]*dx[i];
 		}
 
-		cutlib::GridAccessor* grid   = new cutlib::Cell(org, dx);
-		cutlib::CutPosArray*  cutPos = new cutlib::CutPos32Array(ncell);
-		cutlib::CutBidArray*  cutBid = new cutlib::CutBid5Array(ncell);
+		cutlib::GridAccessor*   grid   = new cutlib::Cell(org, dx);
+		cutlib::CutPosArray*    cutPos = new cutlib::CutPos32Array(ncell);
+		cutlib::CutBidArray*    cutBid = new cutlib::CutBid5Array(ncell);
+		cutlib::CutNormalArray* cutNormal = new cutlib::CutNormalArray(ncell);
 
 //		CutInfoCell(org, dx, pl, cutPos, cutBid);
 PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
-		CalcCutInfo(grid, pl, cutPos, cutBid);
+		CalcCutInfo(grid, pl, cutPos, cutBid, cutNormal);
 PM_Stop(tm_Init_CalcCutInfo01);
+
+		pNormalN[n] = cutNormal->getNumNormal();
+		pNormalX[n] = new real [pNormalN[n]];
+		pNormalY[n] = new real [pNormalN[n]];
+		pNormalZ[n] = new real [pNormalN[n]];
+		cutlib::Normal* pNormal = cutNormal->getNormalDataPointer();
+		for(int m=0; m<pNormalN[n]; m++) {
+			pNormalX[n][m] = pNormal[m][0];
+			pNormalY[n][m] = pNormal[m][1];
+			pNormalZ[n][m] = pNormal[m][2];
+/*
+			double nx = pNormalX[n][m];
+			double ny = pNormalY[n][m];
+			double nz = pNormalZ[n][m];
+			double n2 = nx*nx + ny*ny + nz*nz;
+			std::cout << nx << " " << ny << " " << nz << " " << n2 << std::endl;
+*/
+		}
+		cutlib::NormalIndex* nIdx = cutNormal->getNormalIndexDataPointer();
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+#pragma omp parallel for
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					pNormalIndex0[m] = nIdx[m][0];
+					pNormalIndex1[m] = nIdx[m][1];
+					pNormalIndex2[m] = nIdx[m][2];
+					pNormalIndex3[m] = nIdx[m][3];
+					pNormalIndex4[m] = nIdx[m][4];
+					pNormalIndex5[m] = nIdx[m][5];
+/*
+					std::cout << i << " " << j << " " << k << " ";
+					std::cout << pNormalIndex0[m] << " ";
+					std::cout << pNormalIndex1[m] << " ";
+					std::cout << pNormalIndex2[m] << " ";
+					std::cout << pNormalIndex3[m] << " ";
+					std::cout << pNormalIndex4[m] << " ";
+					std::cout << pNormalIndex5[m] << std::endl;
+
+					std::cout << i << " " << j << " " << k << " ";
+					std::cout << nIdx[m][0] << " ";
+					std::cout << nIdx[m][1] << " ";
+					std::cout << nIdx[m][2] << " ";
+					std::cout << nIdx[m][3] << " ";
+					std::cout << nIdx[m][4] << " ";
+					std::cout << nIdx[m][5] << std::endl;
+					std::cout << nIdx[0 + 6*m] << " ";
+					std::cout << nIdx[1 + 6*m] << " ";
+					std::cout << nIdx[2 + 6*m] << " ";
+					std::cout << nIdx[3 + 6*m] << " ";
+					std::cout << nIdx[4 + 6*m] << " ";
+					std::cout << nIdx[5 + 6*m] << std::endl;
+*/
+				}
+			}
+		}
 
 		real* pCut0 = plsCut0->GetBlockData(block);
 		real* pCut1 = plsCut1->GetBlockData(block);
@@ -554,6 +629,7 @@ PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 		delete grid;
 		delete cutPos;
 		delete cutBid;
+		delete cutNormal;
 PM_Stop(tm_Init_CalcCutInfo02);
 
 PM_Start(tm_Init_CalcCutInfo03, 0, 0, false);
@@ -615,6 +691,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	}
 	PrintLog(2, "Completed");
 /* ---------------------------------------------------------- */
+
 
 	{
 /* ---------------------------------------------------------- */
@@ -1003,6 +1080,123 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	PrintLog(2, "Completed");
 /* ---------------------------------------------------------- */
 
+
+/* ---------------------------------------------------------- */
+/* Compute geometrical properties                             */
+/* ---------------------------------------------------------- */
+	PrintLog(1, "Computing geometrical properties of flow");
+/* ---------------------------------------------------------- */
+	double VGlobal = 0.0;
+	double SGlobal = 0.0;
+	PM_Start(tm_Init_GeometricalProperties, 0, 0, true);
+	{
+			double VLocal = 0.0;
+			double SLocal = 0.0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			::Vec3i size      = block->getSize();
+			::Vec3r origin    = block->getOrigin();
+			::Vec3r blockSize = block->getBlockSize();
+			::Vec3r cellSize  = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+
+			double bpos[3] = {origin.x, origin.y, origin.z};
+			unsigned int bbsize[3] = {size.x, size.y, size.z};
+			unsigned int gcsize[3] = {vc, vc, vc};
+			double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+			size_t ncell[3];
+			double org[3];
+			for(int i=0; i<3; i++) {
+				ncell[i] = bbsize[i] + 2*gcsize[i];
+				org[i] = bpos[i] - gcsize[i]*dx[i];
+			}
+
+			real* pCut0 = plsCut0->GetBlockData(block);
+			real* pCut1 = plsCut1->GetBlockData(block);
+			real* pCut2 = plsCut2->GetBlockData(block);
+			real* pCut3 = plsCut3->GetBlockData(block);
+			real* pCut4 = plsCut4->GetBlockData(block);
+			real* pCut5 = plsCut5->GetBlockData(block);
+			int* pCutId0 = plsCutId0->GetBlockData(block);
+			int* pCutId1 = plsCutId1->GetBlockData(block);
+			int* pCutId2 = plsCutId2->GetBlockData(block);
+			int* pCutId3 = plsCutId3->GetBlockData(block);
+			int* pCutId4 = plsCutId4->GetBlockData(block);
+			int* pCutId5 = plsCutId5->GetBlockData(block);
+
+			int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+			int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+			int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+			int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+			int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+			int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+			int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
+#pragma omp parallel for reduction(+:VLocal,SLocal)
+			for(int k=vc; k<vc+size.z; k++) {
+				for(int j=vc; j<vc+size.y; j++) {
+					for(int i=vc; i<vc+size.x; i++) {
+						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+
+						if( pPhaseId[m] == 1 ) {
+							VLocal += dx[0]*dx[1]*dx[2];
+						} else {
+							continue;
+						}
+
+						if( pCutId0[m] != 0 ) {
+							int nIdx = pNormalIndex0[m];
+							double nx = pNormalX[n][nIdx];
+							SLocal += fabs(nx)*dx[1]*dx[2];
+						}
+						if( pCutId1[m] != 0 ) {
+							int nIdx = pNormalIndex1[m];
+							double nx = pNormalX[n][nIdx];
+							SLocal += fabs(nx)*dx[1]*dx[2];
+						}
+						if( pCutId2[m] != 0 ) {
+							int nIdx = pNormalIndex2[m];
+							double ny = pNormalY[n][nIdx];
+							SLocal += fabs(ny)*dx[2]*dx[0];
+						}
+						if( pCutId3[m] != 0 ) {
+							int nIdx = pNormalIndex3[m];
+							double ny = pNormalY[n][nIdx];
+							SLocal += fabs(ny)*dx[2]*dx[0];
+						}
+						if( pCutId4[m] != 0 ) {
+							int nIdx = pNormalIndex4[m];
+							double nz = pNormalZ[n][nIdx];
+							SLocal += fabs(nz)*dx[0]*dx[1];
+						}
+						if( pCutId5[m] != 0 ) {
+							int nIdx = pNormalIndex5[m];
+							double nz = pNormalZ[n][nIdx];
+							SLocal += fabs(nz)*dx[0]*dx[1];
+						}
+					}
+				}
+			}
+		}
+		MPI_Allreduce(&VLocal, &VGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
+		MPI_Allreduce(&SLocal, &SGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
+	}
+/* ---------------------------------------------------------- */
+	PrintLog(2, "%-20s : %f", "Volume",       VGlobal);
+	PrintLog(2, "%-20s : %f", "Surface area", SGlobal);
+/* ---------------------------------------------------------- */
+	PM_Stop(tm_Init_GeometricalProperties, 0, 0, true);
+/* ---------------------------------------------------------- */
+	MPI_Barrier(MPI_COMM_WORLD);
+	PrintLog(2, "Completed");
+/* ---------------------------------------------------------- */
+
 	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
 		return EX_FAILURE;
 		return EX_SUCCESS;
@@ -1381,6 +1575,8 @@ PM_Stop(tm_Init_CalcCutInfo06);
 					partition);
 	}
 /////////////////////////////////////////////
+
+
 
 	for(int i=0; i<32; i++) {
 		this->times[i] = 0.0;

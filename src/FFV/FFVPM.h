@@ -15,6 +15,7 @@ enum timing_key {
 	tm_Init_CalcCutInfo05,
 	tm_Init_CalcCutInfo06,
 	tm_Init_Filling,
+	tm_Init_GeometricalProperties,
 	tm_Init_InitVars,
 	tm_Update,
 	tm_UpdateT,
