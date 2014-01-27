@@ -274,7 +274,7 @@ void FFVConfig::Load(std::string filename) {
 	OutputDataDerivedVariablesForce
 													= Read<bool>					("/Output/Data/DerivedVariables/Force");
 	OutputDataDerivedVariablesHeatFlux
-													= Read<bool>					("/Output/Data/DerivedVariables/HeatFlux");
+													= Read<bool>					("/Output/Data/DerivedVariables/HeatFlux", false);
 
 	OutputDataBasicVariablesFormatVTK
 													= false;
