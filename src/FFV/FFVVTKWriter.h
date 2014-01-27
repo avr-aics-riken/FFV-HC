@@ -1144,7 +1144,7 @@ public:
       Scalar3D<T>* st = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_T));
       T* sDataT = st->getData();
 
-			printVTIC_Z(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+			printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
     }
 
     delete[] dataP;
