@@ -1263,6 +1263,245 @@ subroutine bcut_calc_d_t( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
+								nnum, &
+								nx_, ny_, nz_, &
+								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                rhof, rhos, &
+                cpf, cps, &
+                kf, ks, &
+                bc_n, &
+                bc_type, &
+                bc_value, &
+                org, &
+                dx, dt, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: td0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: t0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+	integer									 :: nnum
+	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  real                    :: rhof, rhos
+  real                    :: cpf, cps
+  real                    :: kf, ks
+  integer                      :: bc_n
+  integer, dimension(0:bc_n-1):: bc_type
+  real, dimension(0:bc_n-1)   :: bc_value
+  real                    :: dx, dt
+  real, dimension(3)      :: org
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: k0, k1, k2, k3, k4, k5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: bp, b0, b1, b2, b3, b4, b5
+  real                    :: tp, t0, t1, t2, t3, t4, t5
+  real                    :: nx, ny, nz
+  real                    :: x, y, z, r2, rl, xi, yi, zi, theta, phi
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(k0, k1, k2, k3, k4, k5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(bp, b0, b1, b2, b3, b4, b5) &
+!$omp           private(tp, t0, t1, t2, t3, t4, t5) &
+!$omp           private(nx, ny, nz) &
+!$omp           private(x, y, z, r2, rl, xi, yi, zi, theta, phi)
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    x = org(1) + (real(i) - 0.5)*dx
+    y = org(2) + (real(j) - 0.5)*dx
+    z = org(3) + (real(k) - 0.5)*dx
+
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    m0 = 0.0
+    m1 = 0.0
+    m2 = 0.0
+    m3 = 0.0
+    m4 = 0.0
+    m5 = 0.0
+    if( cidp0 /= 0 ) then
+      m0 = 1.0
+    endif
+    if( cidp1 /= 0 ) then
+      m1 = 1.0
+    endif
+    if( cidp2 /= 0 ) then
+      m2 = 1.0
+    endif
+    if( cidp3 /= 0 ) then
+      m3 = 1.0
+    endif
+    if( cidp4 /= 0 ) then
+      m4 = 1.0
+    endif
+    if( cidp5 /= 0 ) then
+      m5 = 1.0
+    endif
+
+    k0 = kf
+    k1 = kf
+    k2 = kf
+    k3 = kf
+    k4 = kf
+    k5 = kf
+    tp = t0_(i, j, k)
+    t0 = t0_(i-1, j, k) 
+    t1 = t0_(i+1, j, k) 
+    t2 = t0_(i, j-1, k) 
+    t3 = t0_(i, j+1, k) 
+    t4 = t0_(i, j, k-1) 
+    t5 = t0_(i, j, k+1) 
+    b0 = 0.0
+    b1 = 0.0
+    b2 = 0.0
+    b3 = 0.0
+    b4 = 0.0
+    b5 = 0.0
+    if( bc_type(cidp0) == 0 ) then
+      k0 = kf/d0*2.0/(d0 + d1)
+      k1 = kf/d1*2.0/(d0 + d1)
+      t0 = bc_value(cidp0)
+    else if( bc_type(cidp0) == 1 ) then
+			nx = nx_( nidx0(i, j, k) )
+
+      k0 = 0.0
+      k1 = kf/(d0 + 0.5)
+      t0 = 0.0
+      b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+    endif
+    if( bc_type(cidp1) == 0 ) then
+      k0 = kf/d0*2.0/(d0 + d1)
+      k1 = kf/d1*2.0/(d0 + d1)
+      t1 = bc_value(cidp1)
+    else if( bc_type(cidp1) == 1 ) then
+			nx = nx_( nidx1(i, j, k) )
+
+      k0 = kf/(d1 + 0.5)
+      k1 = 0.0
+      t1 = 0.0
+      b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+    endif
+    if( bc_type(cidp2) == 0 ) then
+      k2 = kf/d2*2.0/(d2 + d3)
+      k3 = kf/d3*2.0/(d2 + d3)
+      t2 = bc_value(cidp2)
+    else if( bc_type(cidp2) == 1 ) then
+			ny = ny_( nidx2(i, j, k) )
+
+      k2 = 0.0
+      k3 = kf/(d2 + 0.5)
+      t2 = 0.0
+      b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+    endif
+    if( bc_type(cidp3) == 0 ) then
+      k2 = kf/d2*2.0/(d2 + d3)
+      k3 = kf/d3*2.0/(d2 + d3)
+      t3 = bc_value(cidp3)
+    else if( bc_type(cidp3) == 1 ) then
+			ny = ny_( nidx3(i, j, k) )
+
+      k2 = kf/(d3 + 0.5)
+      k3 = 0.0
+      t3 = 0.0
+      b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+    endif
+    if( bc_type(cidp4) == 0 ) then
+      k4 = kf/d4*2.0/(d4 + d5)
+      k5 = kf/d5*2.0/(d4 + d5)
+      t4 = bc_value(cidp4)
+    else if( bc_type(cidp4) == 1 ) then
+			nz = nz_( nidx4(i, j, k) )
+
+      k4 = 0.0
+      k5 = kf/(d4 + 0.5)
+      t4 = 0.0
+      b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+    endif
+    if( bc_type(cidp5) == 0 ) then
+      k4 = kf/d4*2.0/(d4 + d5)
+      k5 = kf/d5*2.0/(d4 + d5)
+      t5 = bc_value(cidp5)
+    else if( bc_type(cidp5) == 1 ) then
+			nz = nz_( nidx5(i, j, k) )
+
+      k4 = kf/(d5 + 0.5)
+      k5 = 0.0
+      t5 = 0.0
+      b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+    endif
+
+    l0 = k0/(rhof*cpf)/(dx*dx)*dt
+    l1 = k1/(rhof*cpf)/(dx*dx)*dt
+    l2 = k2/(rhof*cpf)/(dx*dx)*dt
+    l3 = k3/(rhof*cpf)/(dx*dx)*dt
+    l4 = k4/(rhof*cpf)/(dx*dx)*dt
+    l5 = k5/(rhof*cpf)/(dx*dx)*dt
+
+    td0_(i, j, k) = ( k1*(t1 - tp) &
+                    - k0*(tp - t0) &
+                    + k3*(t3 - tp) &
+                    - k2*(tp - t2) &
+                    + k5*(t5 - tp) &
+                    - k4*(tp - t4) &
+                    )/(rhof*cpf)/(dx*dx)
+
+    if( pidp /= 1 ) then
+      td0_(i, j, k) = 0.0
+    endif
+
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_calc_d_t
+
+subroutine bcut_calc_d_t_cylinder( &
+                td0_, &
+                t0_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
                 rhof, rhos, &
                 cpf, cps, &
                 kf, ks, &
@@ -1531,7 +1770,7 @@ subroutine bcut_calc_d_t( &
 !$omp end parallel
 #else
 #endif
-end subroutine bcut_calc_d_t
+end subroutine bcut_calc_d_t_cylinder
 
 subroutine bcut_calc_ab_u( &
                 Ap, Aw, Ae, As, An, Ab, At, b, &
@@ -2844,6 +3083,274 @@ subroutine bcut_calc_abd_t( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
+								nnum, &
+								nx_, ny_, nz_, &
+								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                rhof, rhos, &
+                cpf, cps, &
+                kf, ks, &
+                bc_n, &
+                bc_type, &
+                bc_value, &
+                org, &
+                dx, dt, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: Ap, Aw, Ae, As, An, Ab, At, b
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: t0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: tc0_, tcp_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: td0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+	integer									 :: nnum
+	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  real                    :: rhof, rhos
+  real                    :: cpf, cps
+  real                    :: kf, ks
+  integer                      :: bc_n
+  integer, dimension(0:bc_n-1):: bc_type
+  real, dimension(0:bc_n-1)   :: bc_value
+  real                    :: dx, dt
+  real, dimension(3)      :: org
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: k0, k1, k2, k3, k4, k5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: bp, b0, b1, b2, b3, b4, b5
+  real                    :: tp, t0, t1, t2, t3, t4, t5
+  real                    :: nx, ny, nz
+  real                    :: x, y, z, r2, rl, xi, yi, zi, theta, phi
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(k0, k1, k2, k3, k4, k5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(bp, b0, b1, b2, b3, b4, b5) &
+!$omp           private(tp, t0, t1, t2, t3, t4, t5) &
+!$omp           private(nx, ny, nz) &
+!$omp           private(x, y, z, r2, rl, xi, yi, zi, theta, phi)
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    m0 = 0.0
+    m1 = 0.0
+    m2 = 0.0
+    m3 = 0.0
+    m4 = 0.0
+    m5 = 0.0
+    if( cidp0 /= 0 ) then
+      m0 = 1.0
+    endif
+    if( cidp1 /= 0 ) then
+      m1 = 1.0
+    endif
+    if( cidp2 /= 0 ) then
+      m2 = 1.0
+    endif
+    if( cidp3 /= 0 ) then
+      m3 = 1.0
+    endif
+    if( cidp4 /= 0 ) then
+      m4 = 1.0
+    endif
+    if( cidp5 /= 0 ) then
+      m5 = 1.0
+    endif
+
+    k0 = kf
+    k1 = kf
+    k2 = kf
+    k3 = kf
+    k4 = kf
+    k5 = kf
+    tp = t0_(i, j, k)
+    t0 = t0_(i-1, j, k) 
+    t1 = t0_(i+1, j, k) 
+    t2 = t0_(i, j-1, k) 
+    t3 = t0_(i, j+1, k) 
+    t4 = t0_(i, j, k-1) 
+    t5 = t0_(i, j, k+1) 
+    b0 = 0.0
+    b1 = 0.0
+    b2 = 0.0
+    b3 = 0.0
+    b4 = 0.0
+    b5 = 0.0
+    if( bc_type(cidp0) == 0 ) then
+      k0 = kf/d0*2.0/(d0 + d1)
+      k1 = kf/d1*2.0/(d0 + d1)
+      t0 = bc_value(cidp0)
+    else if( bc_type(cidp0) == 1 ) then
+			nx = nx_( nidx0(i, j, k) )
+
+      k0 = 0.0
+      k1 = kf/(d0 + 0.5)
+      t0 = 0.0
+      b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+    endif
+    if( bc_type(cidp1) == 0 ) then
+      k0 = kf/d0*2.0/(d0 + d1)
+      k1 = kf/d1*2.0/(d0 + d1)
+      t1 = bc_value(cidp1)
+    else if( bc_type(cidp1) == 1 ) then
+			nx = nx_( nidx1(i, j, k) )
+
+      k0 = kf/(d1 + 0.5)
+      k1 = 0.0
+      t1 = 0.0
+      b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+    endif
+    if( bc_type(cidp2) == 0 ) then
+      k2 = kf/d2*2.0/(d2 + d3)
+      k3 = kf/d3*2.0/(d2 + d3)
+      t2 = bc_value(cidp2)
+    else if( bc_type(cidp2) == 1 ) then
+			ny = ny_( nidx2(i, j, k) )
+
+      k2 = 0.0
+      k3 = kf/(d2 + 0.5)
+      t2 = 0.0
+      b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+    endif
+    if( bc_type(cidp3) == 0 ) then
+      k2 = kf/d2*2.0/(d2 + d3)
+      k3 = kf/d3*2.0/(d2 + d3)
+      t3 = bc_value(cidp3)
+    else if( bc_type(cidp3) == 1 ) then
+			ny = ny_( nidx3(i, j, k) )
+
+      k2 = kf/(d3 + 0.5)
+      k3 = 0.0
+      t3 = 0.0
+      b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+    endif
+    if( bc_type(cidp4) == 0 ) then
+      k4 = kf/d4*2.0/(d4 + d5)
+      k5 = kf/d5*2.0/(d4 + d5)
+      t4 = bc_value(cidp4)
+    else if( bc_type(cidp4) == 1 ) then
+			nz = nz_( nidx4(i, j, k) )
+
+      k4 = 0.0
+      k5 = kf/(d4 + 0.5)
+      t4 = 0.0
+      b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+    endif
+    if( bc_type(cidp5) == 0 ) then
+      k4 = kf/d4*2.0/(d4 + d5)
+      k5 = kf/d5*2.0/(d4 + d5)
+      t5 = bc_value(cidp5)
+    else if( bc_type(cidp5) == 1 ) then
+			nz = nz_( nidx5(i, j, k) )
+
+      k4 = kf/(d5 + 0.5)
+      k5 = 0.0
+      t5 = 0.0
+      b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+    endif
+
+    l0 = k0/(rhof*cpf)/(dx*dx)*dt
+    l1 = k1/(rhof*cpf)/(dx*dx)*dt
+    l2 = k2/(rhof*cpf)/(dx*dx)*dt
+    l3 = k3/(rhof*cpf)/(dx*dx)*dt
+    l4 = k4/(rhof*cpf)/(dx*dx)*dt
+    l5 = k5/(rhof*cpf)/(dx*dx)*dt
+
+    td0_(i, j, k) = ( k1*(t1 - tp) &
+                    - k0*(tp - t0) &
+                    + k3*(t3 - tp) &
+                    - k2*(tp - t2) &
+                    + k5*(t5 - tp) &
+                    - k4*(tp - t4) &
+                    )/(rhof*cpf)/(dx*dx)
+
+    bp = (b0 + b1 + b2 + b3 + b4 + b5)*kf/(rhof*cpf)/(dx*dx)
+
+    Ap(i, j, k) = 1.0d0 + 0.5d0*(l0 + l1) &
+                        + 0.5d0*(l2 + l3) &
+                        + 0.5d0*(l4 + l5)
+    Aw(i, j, k) = -0.5d0*l0*(1.0d0 - m0)
+    Ae(i, j, k) = -0.5d0*l1*(1.0d0 - m1)
+    As(i, j, k) = -0.5d0*l2*(1.0d0 - m2)
+    An(i, j, k) = -0.5d0*l3*(1.0d0 - m3)
+    Ab(i, j, k) = -0.5d0*l4*(1.0d0 - m4)
+    At(i, j, k) = -0.5d0*l5*(1.0d0 - m5)
+     b(i, j, k) = t0_(i, j, k) &
+                  + 0.5d0*l0*t0*m0 &
+                  + 0.5d0*l1*t1*m1 &
+                  + 0.5d0*l2*t2*m2 &
+                  + 0.5d0*l3*t3*m3 &
+                  + 0.5d0*l4*t4*m4 &
+                  + 0.5d0*l5*t5*m5 &
+                  - (1.5d0*tc0_(i, j, k) - 0.5d0*tcp_(i, j, k))*dt &
+                  + 0.5d0*td0_(i, j, k)*dt &
+                  + bp*dt
+
+    if( pidp /= 1 ) then
+      Ap(i, j, k) = 1.0
+      Aw(i, j, k) = 0.0
+      Ae(i, j, k) = 0.0
+      As(i, j, k) = 0.0
+      An(i, j, k) = 0.0
+      Ab(i, j, k) = 0.0
+      At(i, j, k) = 0.0
+      b (i, j, k) = 0.0
+    endif
+
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_calc_abd_t
+
+subroutine bcut_calc_abd_t_cylinder( &
+                Ap, Aw, Ae, As, An, Ab, At, b, &
+                t0_, &
+                tc0_, tcp_, &
+                td0_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
                 rhof, rhos, &
                 cpf, cps, &
                 kf, ks, &
@@ -3005,6 +3512,7 @@ subroutine bcut_calc_abd_t( &
       nx = xi/rl
       ny = yi/rl
       nz = zi/rl
+
       k0 = kf/(d1 + 0.5)
       k1 = 0.0
       t1 = 0.0
@@ -3024,6 +3532,7 @@ subroutine bcut_calc_abd_t( &
       nx = xi/rl
       ny = yi/rl
       nz = zi/rl
+
       k2 = 0.0
       k3 = kf/(d2 + 0.5)
       t2 = 0.0
@@ -3043,6 +3552,7 @@ subroutine bcut_calc_abd_t( &
       nx = xi/rl
       ny = yi/rl
       nz = zi/rl
+
       k2 = kf/(d3 + 0.5)
       k3 = 0.0
       t3 = 0.0
@@ -3062,6 +3572,7 @@ subroutine bcut_calc_abd_t( &
       nx = xi/rl
       ny = yi/rl
       nz = zi/rl
+
       k4 = 0.0
       k5 = kf/(d4 + 0.5)
       t4 = 0.0
@@ -3081,6 +3592,7 @@ subroutine bcut_calc_abd_t( &
       nx = xi/rl
       ny = yi/rl
       nz = zi/rl
+
       k4 = kf/(d5 + 0.5)
       k5 = 0.0
       t5 = 0.0
@@ -3143,7 +3655,7 @@ subroutine bcut_calc_abd_t( &
 !$omp end parallel
 #else
 #endif
-end subroutine bcut_calc_abd_t
+end subroutine bcut_calc_abd_t_cylinder
 
 subroutine bcut_update_t( &
                 t0_, &
@@ -3605,7 +4117,7 @@ subroutine bcut_calc_f_v( &
   fsv(3) = fsz
 end subroutine bcut_calc_f_v
 
-subroutine bcut_calc_q( &
+subroutine bcut_calc_q_cylinder( &
                 qx, &
                 qy, &
                 qz, &
@@ -4006,6 +4518,339 @@ subroutine bcut_calc_q( &
         nx = xi/rl
         ny = yi/rl
         nz = zi/rl
+
+        k4 = kf/(d5 + 0.5)
+        k5 = 0.0
+        t5 = 0.0
+        b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+        t5 = tp + nz*bc_value(cidp5)*d5*dx
+        qz0 = 1.0/t5
+
+        qz(i, j, k) = qz0
+        qzt = qzt + qz0*abs(nz)*dx*dx
+        sa = sa + abs(nz)*dx*dx
+      endif
+    endif
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+  q(1) = qxt
+  q(2) = qyt
+  q(3) = qzt
+end subroutine bcut_calc_q_cylinder
+
+subroutine bcut_calc_q( &
+                qx, &
+                qy, &
+                qz, &
+                q, &
+                sa, &
+                cid_target, &
+                t0_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
+								nnum, &
+								nx_, ny_, nz_, &
+								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                rhof, rhos, &
+                cpf, cps, &
+                kf, ks, &
+                bc_n, &
+                bc_type, &
+                bc_value, &
+                org, &
+                dx, dt, &
+                sz, g)
+  implicit none
+  integer                  :: i, j, k
+  integer                  :: ix, jx, kx
+  integer                  :: g
+  integer, dimension(3)    :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: qx, qy, qz
+  real, dimension(1:3)    :: q
+  real                    :: sa
+  integer                  :: cid_target
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: t0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+	integer									 :: nnum
+	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  real                    :: rhof, rhos
+  real                    :: cpf, cps
+  real                    :: kf, ks
+  integer                      :: bc_n
+  integer, dimension(0:bc_n-1):: bc_type
+  real, dimension(0:bc_n-1)   :: bc_value
+  real                    :: dx, dt
+  real, dimension(3)      :: org
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: k0, k1, k2, k3, k4, k5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: bp, b0, b1, b2, b3, b4, b5
+  real                    :: tp, t0, t1, t2, t3, t4, t5
+  real                    :: nx, ny, nz
+  real                    :: x, y, z, r2, rl, xi, yi, zi, theta, phi
+  real                    :: qx0, qy0, qz0
+  real                    :: qxt, qyt, qzt
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+  qxt = 0.0
+  qyt = 0.0
+  qzt = 0.0
+  sa = 0.0
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) 
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(k0, k1, k2, k3, k4, k5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(bp, b0, b1, b2, b3, b4, b5) &
+!$omp           private(tp, t0, t1, t2, t3, t4, t5) &
+!$omp           private(nx, ny, nz) &
+!$omp           private(qx0, qy0, qz0) &
+!$omp           private(x, y, z, r2, rl, xi, yi, zi, theta, phi)
+!$omp do schedule(static, 1), &
+!$omp     reduction(+:qxt, qyt, qzt, sa)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    if( pidp /= 1 ) then
+      cycle
+    endif
+
+    m0 = 0.0d0
+    m1 = 0.0d0
+    m2 = 0.0d0
+    m3 = 0.0d0
+    m4 = 0.0d0
+    m5 = 0.0d0
+    if( cidp0 == cid_target ) then
+      m0 = 1.0d0
+    endif
+    if( cidp1 == cid_target ) then
+      m1 = 1.0d0
+    endif
+    if( cidp2 == cid_target ) then
+      m2 = 1.0d0
+    endif
+    if( cidp3 == cid_target ) then
+      m3 = 1.0d0
+    endif
+    if( cidp4 == cid_target ) then
+      m4 = 1.0d0
+    endif
+    if( cidp5 == cid_target ) then
+      m5 = 1.0d0
+    endif
+
+    k0 = kf
+    k1 = kf
+    k2 = kf
+    k3 = kf
+    k4 = kf
+    k5 = kf
+    tp = t0_(i, j, k)
+    t0 = t0_(i-1, j, k) 
+    t1 = t0_(i+1, j, k) 
+    t2 = t0_(i, j-1, k) 
+    t3 = t0_(i, j+1, k) 
+    t4 = t0_(i, j, k-1) 
+    t5 = t0_(i, j, k+1) 
+    b0 = 0.0
+    b1 = 0.0
+    b2 = 0.0
+    b3 = 0.0
+    b4 = 0.0
+    b5 = 0.0
+
+    if( cidp0 == cid_target ) then
+      if( bc_type(cidp0) == 0 ) then
+				nx = nx_( nidx0(i, j, k) )
+
+        k0 = kf/d0*2.0/(d0 + d1)
+        k1 = kf/d1*2.0/(d0 + d1)
+        t0 = bc_value(cidp0)
+        qx0 = -(tp - t0)/(d0*dx)
+
+        qx(i, j, k) = qx0
+        qxt = qxt + qx0*sign(1.0, nx)*dx*dx
+        sa = sa + abs(nx)*dx*dx
+      else if( bc_type(cidp0) == 1 ) then
+ 				nx = nx_( nidx0(i, j, k) )
+
+        k0 = 0.0
+        k1 = kf/(d0 + 0.5)
+        t0 = 0.0
+        b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+        t0 = tp - nx*bc_value(cidp0)*d0*dx
+        qx0 = 1.0/t0
+
+        qx(i, j, k) = qx0
+        qxt = qxt + qx0*abs(nx)*dx*dx
+        sa = sa + abs(nx)*dx*dx
+      endif
+    endif
+
+    if( cidp1 == cid_target ) then
+      if( bc_type(cidp1) == 0 ) then
+				nx = nx_( nidx1(i, j, k) )
+
+        k0 = kf/d0*2.0/(d0 + d1)
+        k1 = kf/d1*2.0/(d0 + d1)
+        t1 = bc_value(cidp1)
+        qx0 = -(t1 - tp)/(d1*dx)
+
+        qx(i, j, k) = qx0
+        qxt = qxt + qx0*sign(1.0, nx)*dx*dx
+        sa = sa + abs(nx)*dx*dx
+      else if( bc_type(cidp1) == 1 ) then
+				nx = nx_( nidx1(i, j, k) )
+
+        k0 = kf/(d1 + 0.5)
+        k1 = 0.0
+        t1 = 0.0
+        b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+        t1 = tp + nx*bc_value(cidp0)*d1*dx
+        qx0 = 1.0/t1
+
+        qx(i, j, k) = qx0
+        qxt = qxt + qx0*abs(nx)*dx*dx
+        sa = sa + abs(nx)*dx*dx
+      endif
+    endif
+
+    if( cidp2 == cid_target ) then
+      if( bc_type(cidp2) == 0 ) then
+				ny = ny_( nidx2(i, j, k) )
+
+        k2 = kf/d2*2.0/(d2 + d3)
+        k3 = kf/d3*2.0/(d2 + d3)
+        t2 = bc_value(cidp2)
+        qy0 = -(tp - t2)/(d2*dx)
+
+        qy(i, j, k) = qy0
+        qyt = qyt + qy0*sign(1.0, ny)*dx*dx
+        sa = sa + abs(ny)*dx*dx
+      else if( bc_type(cidp2) == 1 ) then
+				ny = ny_( nidx2(i, j, k) )
+
+        k2 = 0.0
+        k3 = kf/(d2 + 0.5)
+        t2 = 0.0
+        b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+        t2 = tp - ny*bc_value(cidp2)*d2*dx
+        qy0 = 1.0/t2
+
+        qy(i, j, k) = qy0
+        qyt = qyt + qy0*abs(ny)*dx*dx
+        sa = sa + abs(ny)*dx*dx
+      endif
+    endif
+
+    if( cidp3 == cid_target ) then
+      if( bc_type(cidp3) == 0 ) then
+				ny = ny_( nidx3(i, j, k) )
+
+        k2 = kf/d2*2.0/(d2 + d3)
+        k3 = kf/d3*2.0/(d2 + d3)
+        t3 = bc_value(cidp3)
+        qy0 = -(t3 - tp)/(d3*dx)
+
+        qy(i, j, k) = qy0
+        qyt = qyt + qy0*sign(1.0, ny)*dx*dx
+        sa = sa + abs(ny)*dx*dx
+      else if( bc_type(cidp3) == 1 ) then
+				ny = ny_( nidx3(i, j, k) )
+
+        k2 = kf/(d3 + 0.5)
+        k3 = 0.0
+        t3 = 0.0
+        b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+        t3 = tp + ny*bc_value(cidp3)*d3*dx
+
+        qy(i, j, k) = qy0
+        qyt = qyt + qy0*abs(ny)*dx*dx
+        sa = sa + abs(ny)*dx*dx
+      endif
+    endif
+
+    if( cidp4 == cid_target ) then
+      if( bc_type(cidp4) == 0 ) then
+				nz = nz_( nidx4(i, j, k) )
+
+        k4 = kf/d4*2.0/(d4 + d5)
+        k5 = kf/d5*2.0/(d4 + d5)
+        t4 = bc_value(cidp4)
+        qz0 = -(tp - t4)/(d4*dx)
+
+        qz(i, j, k) = qz0
+        qzt = qzt + qz0*sign(1.0, nz)*dx*dx
+        sa = sa + abs(nz)*dx*dx
+      else if( bc_type(cidp4) == 1 ) then
+				nz = nz_( nidx4(i, j, k) )
+
+        k4 = 0.0
+        k5 = kf/(d4 + 0.5)
+        t4 = 0.0
+        b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+        t4 = tp - nz*bc_value(cidp4)*d4*dx
+        qz0 = 1.0/t4
+
+        qz(i, j, k) = qz0
+        qzt = qzt + qz0*abs(nz)*dx*dx
+        sa = sa + abs(nz)*dx*dx
+      endif
+    endif
+
+    if( cidp5 == cid_target ) then
+      if( bc_type(cidp5) == 0 ) then
+				nz = nz_( nidx5(i, j, k) )
+
+        k4 = kf/d4*2.0/(d4 + d5)
+        k5 = kf/d5*2.0/(d4 + d5)
+        t5 = bc_value(cidp5)
+        qz0 = -(t5 - tp)/(d5*dx)
+
+        qz(i, j, k) = qz0
+        qzt = qzt + qz0*sign(1.0, nz)*dx*dx
+        sa = sa + abs(nz)*dx*dx
+      else if( bc_type(cidp5) == 1 ) then
+				nz = nz_( nidx5(i, j, k) )
 
         k4 = kf/(d5 + 0.5)
         k5 = 0.0

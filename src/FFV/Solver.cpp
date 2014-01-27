@@ -515,13 +515,6 @@ PM_Stop(tm_Init_CalcCutInfo01);
 			pNormalX[n][m] = pNormal[m][0];
 			pNormalY[n][m] = pNormal[m][1];
 			pNormalZ[n][m] = pNormal[m][2];
-/*
-			double nx = pNormalX[n][m];
-			double ny = pNormalY[n][m];
-			double nz = pNormalZ[n][m];
-			double n2 = nx*nx + ny*ny + nz*nz;
-			std::cout << nx << " " << ny << " " << nz << " " << n2 << std::endl;
-*/
 		}
 		cutlib::NormalIndex* nIdx = cutNormal->getNormalIndexDataPointer();
 		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
@@ -541,29 +534,6 @@ PM_Stop(tm_Init_CalcCutInfo01);
 					pNormalIndex3[m] = nIdx[m][3];
 					pNormalIndex4[m] = nIdx[m][4];
 					pNormalIndex5[m] = nIdx[m][5];
-/*
-					std::cout << i << " " << j << " " << k << " ";
-					std::cout << pNormalIndex0[m] << " ";
-					std::cout << pNormalIndex1[m] << " ";
-					std::cout << pNormalIndex2[m] << " ";
-					std::cout << pNormalIndex3[m] << " ";
-					std::cout << pNormalIndex4[m] << " ";
-					std::cout << pNormalIndex5[m] << std::endl;
-
-					std::cout << i << " " << j << " " << k << " ";
-					std::cout << nIdx[m][0] << " ";
-					std::cout << nIdx[m][1] << " ";
-					std::cout << nIdx[m][2] << " ";
-					std::cout << nIdx[m][3] << " ";
-					std::cout << nIdx[m][4] << " ";
-					std::cout << nIdx[m][5] << std::endl;
-					std::cout << nIdx[0 + 6*m] << " ";
-					std::cout << nIdx[1 + 6*m] << " ";
-					std::cout << nIdx[2 + 6*m] << " ";
-					std::cout << nIdx[3 + 6*m] << " ";
-					std::cout << nIdx[4 + 6*m] << " ";
-					std::cout << nIdx[5 + 6*m] << std::endl;
-*/
 				}
 			}
 		}
@@ -1933,9 +1903,9 @@ void Solver::PrintHeatFlux(int step) {
 		int bc_n[1] = {32};
 		int bc_type[32];
 		real bc_value[32];
-		for(int n=0; n<bc_n[0]; n++) {
-			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
-			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
+		for(int m=0; m<bc_n[0]; m++) {
+			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
+			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
 //			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
 		}
 
@@ -1943,9 +1913,39 @@ void Solver::PrintHeatFlux(int step) {
 		real* qy = plsQy->GetBlockData(block);
 		real* qz = plsQz->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
 		real q_block[3] = {0.0, 0.0, 0.0};
 		real sa_block[1] = {0.0};
 		int cid_target = g_pFFVConfig->OutputLogHeatFluxTargetID;
+
+/*
+		bcut_calc_q_cylinder_(
+				qx,
+				qy,
+				qz,
+				q_block,
+				sa_block,
+				&cid_target,
+				t0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				&rhof, &rhos,
+				&cpf, &cps,
+				&kf, &ks,
+				bc_n,
+				bc_type,
+				bc_value,
+				org,
+				&dx, &dt,
+				sz, g);
+*/
 
 		bcut_calc_q_(
 				qx,
@@ -1958,6 +1958,11 @@ void Solver::PrintHeatFlux(int step) {
 				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&rhof, &rhos,
 				&cpf, &cps,
 				&kf, &ks,
@@ -2976,6 +2981,22 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
+		int bc_n[1] = {32};
+		int bc_type[32];
+		real bc_value[32];
+		for(int m=0; m<bc_n[0]; m++) {
+			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
+			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
+//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+		}
+
 		real Tc = 1.0;
 
 		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
@@ -3026,14 +3047,23 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					sz, g);
 		}
 
-		int bc_n[1] = {32};
-		int bc_type[32];
-		real bc_value[32];
-		for(int n=0; n<bc_n[0]; n++) {
-			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
-			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
-//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
-		}
+/*
+		bcut_calc_d_t_cylinder_(
+				td0,
+				t0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				&rhof, &rhos,
+				&cpf, &cps,
+				&kf, &ks,
+				bc_n,
+				bc_type,
+				bc_value,
+				org,
+				&dx, &dt,
+				sz, g);
+*/
 
 		bcut_calc_d_t_(
 				td0,
@@ -3041,6 +3071,11 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&rhof, &rhos,
 				&cpf, &cps,
 				&kf, &ks,
@@ -4250,12 +4285,19 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
 		int bc_n[1] = {32};
 		int bc_type[32];
 		real bc_value[32];
-		for(int n=0; n<bc_n[0]; n++) {
-			bc_type[n]  = g_pFFVConfig->BCInternalBoundaryType[n];
-			bc_value[n] = g_pFFVConfig->BCInternalBoundaryValue[n];
+		for(int m=0; m<bc_n[0]; m++) {
+			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
+			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
 //			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
 		}
 
@@ -4325,6 +4367,26 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				sz, g);
 */
 
+/*
+		bcut_calc_abd_t_cylinder_(
+				Ap, Aw, Ae, As, An, Ab, At, b,
+				t0,
+				tc0, tcp,
+				td0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				&rhof, &rhos,
+				&cpf, &cps,
+				&kf, &ks,
+				bc_n,
+				bc_type,
+				bc_value,
+				org,
+				&dx, &dt,
+				sz, g);
+*/
+
 		bcut_calc_abd_t_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				t0,
@@ -4333,6 +4395,11 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&rhof, &rhos,
 				&cpf, &cps,
 				&kf, &ks,
