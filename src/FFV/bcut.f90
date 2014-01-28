@@ -1257,6 +1257,357 @@ subroutine bcut_calc_d_u( &
 #endif
 end subroutine bcut_calc_d_u
 
+subroutine bcut_calc_d_u_e( &
+                ud0_, &
+                u0_, &
+								nue_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
+                rho, &
+                mu, &
+                dx, dt, &
+                Uc, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ud0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: u0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nue_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  real                    :: rho
+  real                    :: mu
+  real                    :: dx, dt
+  real                    :: Uc
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: nup, nu0, nu1, nu2, nu3, nu4, nu5
+  real                    :: ap, a0, a1, a2, a3, a4, a5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: up, uw, ue, us, un, ub, ut
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(nup, nu0, nu1, nu2, nu3, nu4, nu5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(up, uw, ue, us, un, ub, ut) 
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+!dir$ simd
+  do i=1, ix
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    if( pidp /= 1 ) then
+      ud0_(i, j, k) = 0.0d0
+			cycle
+    endif
+
+		nup = nue_(i, j, k)
+    nu0 = nue_(i-1, j, k)
+    nu1 = nue_(i+1, j, k)
+    nu2 = nue_(i, j-1, k)
+    nu3 = nue_(i, j+1, k)
+    nu4 = nue_(i, j, k-1)
+    nu5 = nue_(i, j, k+1)
+
+		a0 = nup*nu0/(nup + nu0)*2.0
+		a1 = nup*nu1/(nup + nu1)*2.0
+		a2 = nup*nu2/(nup + nu2)*2.0
+		a3 = nup*nu3/(nup + nu3)*2.0
+		a4 = nup*nu4/(nup + nu4)*2.0
+		a5 = nup*nu5/(nup + nu5)*2.0
+
+    m0 = 0.0d0
+    m1 = 0.0d0
+    m2 = 0.0d0
+    m3 = 0.0d0
+    m4 = 0.0d0
+    m5 = 0.0d0
+    if( cidp0 /= 0 ) then
+      m0 = 1.0d0
+    endif
+    if( cidp1 /= 0 ) then
+      m1 = 1.0d0
+    endif
+    if( cidp2 /= 0 ) then
+      m2 = 1.0d0
+    endif
+    if( cidp3 /= 0 ) then
+      m3 = 1.0d0
+    endif
+    if( cidp4 /= 0 ) then
+      m4 = 1.0d0
+    endif
+    if( cidp5 /= 0 ) then
+      m5 = 1.0d0
+    endif
+
+    l0 = a0/(dx*dx)
+    l1 = a1/(dx*dx)
+    l2 = a2/(dx*dx)
+    l3 = a3/(dx*dx)
+    l4 = a4/(dx*dx)
+    l5 = a5/(dx*dx)
+
+    up = u0_(i, j, k)
+    uw = u0_(i-1, j, k)*(1.0 - m0) + Uc*m0
+    ue = u0_(i+1, j, k)*(1.0 - m1) + Uc*m1
+    us = u0_(i, j-1, k)*(1.0 - m2) + Uc*m2
+    un = u0_(i, j+1, k)*(1.0 - m3) + Uc*m3
+    ub = u0_(i, j, k-1)*(1.0 - m4) + Uc*m4
+    ut = u0_(i, j, k+1)*(1.0 - m5) + Uc*m5
+
+    ud0_(i, j, k) = ( &
+                        l1*(ue - up) &
+                      - l0*(up - uw) &
+                      + l3*(un - up) &
+                      - l2*(up - us) &
+                      + l5*(ut - up) &
+                      - l4*(up - ub) &
+                    )
+
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_calc_d_u_e
+
+subroutine bcut_calc_nue( &
+								nue_, &
+								csm_c2, &
+                ux_, &
+								uy_, &
+								uz_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
+                rho, &
+                mu, &
+                dx, dt, &
+                Uc, Vc, Wc, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nue_
+	real										:: csm_c2
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux_, uy_, uz_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  real                    :: rho
+  real                    :: mu
+  real                    :: dx, dt
+  real                    :: Uc, Vc, Wc
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: mu0, mu1, mu2, mu3, mu4, mu5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: up, uw, ue, us, un, ub, ut
+  real                    :: vp, vw, ve, vs, vn, vb, vt
+  real                    :: wp, ww, we, ws, wn, wb, wt
+	real										:: dudx, dudy, dudz
+	real										:: dvdx, dvdy, dvdz
+	real										:: dwdx, dwdy, dwdz
+	real										:: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
+	real										:: s2, sl
+	real										:: wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz
+	real										:: csm_e, csm_q, csm_fcs, csm_fom, csm_c
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(mu0, mu1, mu2, mu3, mu4, mu5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(up, uw, ue, us, un, ub, ut) &
+!$omp           private(vp, vw, ve, vs, vn, vb, vt) &
+!$omp           private(wp, ww, we, ws, wn, wb, wt) &
+!$omp						private(dudx, dudy, dudz) &
+!$omp						private(dvdx, dvdy, dvdz) &
+!$omp						private(dwdx, dwdy, dwdz) &
+!$omp						private(sxx, sxy, sxz, syx, syy, syz, szx, szy, szz) &
+!$omp						private(s2, sl) &
+!$omp						private(wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz) &
+!$omp						private(csm_e, csm_q, csm_fcs, csm_fom, csm_c) 
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+!dir$ simd
+  do i=1, ix
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    m0 = 0.0d0
+    m1 = 0.0d0
+    m2 = 0.0d0
+    m3 = 0.0d0
+    m4 = 0.0d0
+    m5 = 0.0d0
+    if( cidp0 /= 0 ) then
+      m0 = 1.0d0
+    endif
+    if( cidp1 /= 0 ) then
+      m1 = 1.0d0
+    endif
+    if( cidp2 /= 0 ) then
+      m2 = 1.0d0
+    endif
+    if( cidp3 /= 0 ) then
+      m3 = 1.0d0
+    endif
+    if( cidp4 /= 0 ) then
+      m4 = 1.0d0
+    endif
+    if( cidp5 /= 0 ) then
+      m5 = 1.0d0
+    endif
+
+    up = ux_(i, j, k)
+    uw = ux_(i-1, j, k)*(1.0 - m0) + Uc*m0
+    ue = ux_(i+1, j, k)*(1.0 - m1) + Uc*m1
+    us = ux_(i, j-1, k)*(1.0 - m2) + Uc*m2
+    un = ux_(i, j+1, k)*(1.0 - m3) + Uc*m3
+    ub = ux_(i, j, k-1)*(1.0 - m4) + Uc*m4
+    ut = ux_(i, j, k+1)*(1.0 - m5) + Uc*m5
+
+    vp = uy_(i, j, k)
+    vw = uy_(i-1, j, k)*(1.0 - m0) + Vc*m0
+    ve = uy_(i+1, j, k)*(1.0 - m1) + Vc*m1
+    vs = uy_(i, j-1, k)*(1.0 - m2) + Vc*m2
+    vn = uy_(i, j+1, k)*(1.0 - m3) + Vc*m3
+    vb = uy_(i, j, k-1)*(1.0 - m4) + Vc*m4
+    vt = uy_(i, j, k+1)*(1.0 - m5) + Vc*m5
+
+    wp = uz_(i, j, k)
+    ww = uz_(i-1, j, k)*(1.0 - m0) + Wc*m0
+    we = uz_(i+1, j, k)*(1.0 - m1) + Wc*m1
+    ws = uz_(i, j-1, k)*(1.0 - m2) + Wc*m2
+    wn = uz_(i, j+1, k)*(1.0 - m3) + Wc*m3
+    wb = uz_(i, j, k-1)*(1.0 - m4) + Wc*m4
+    wt = uz_(i, j, k+1)*(1.0 - m5) + Wc*m5
+
+		dudx = 2.0/(d1 + d0)*((ue - up)/(d1*dx) + (up - uw)/(d0*dx))
+		dudy = 2.0/(d3 + d2)*((un - up)/(d3*dx) + (up - us)/(d2*dx))
+		dudz = 2.0/(d5 + d4)*((ut - up)/(d5*dx) + (up - ub)/(d4*dx))
+
+		dvdx = 2.0/(d1 + d0)*((ve - vp)/(d1*dx) + (vp - vw)/(d0*dx))
+		dvdy = 2.0/(d3 + d2)*((vn - vp)/(d3*dx) + (vp - vs)/(d2*dx))
+		dvdz = 2.0/(d5 + d4)*((vt - vp)/(d5*dx) + (vp - vb)/(d4*dx))
+
+		dwdx = 2.0/(d1 + d0)*((we - wp)/(d1*dx) + (wp - ww)/(d0*dx))
+		dwdy = 2.0/(d3 + d2)*((wn - wp)/(d3*dx) + (wp - ws)/(d2*dx))
+		dwdz = 2.0/(d5 + d4)*((wt - wp)/(d5*dx) + (wp - wb)/(d4*dx))
+
+		sxx = 0.5*(dudx + dudx)
+		sxy = 0.5*(dvdx + dudy)
+		sxz = 0.5*(dwdx + dudz)
+		syx = 0.5*(dudy + dvdx)
+		syy = 0.5*(dvdy + dvdy)
+		syz = 0.5*(dwdy + dvdz)
+		szx = 0.5*(dudz + dwdx)
+		szy = 0.5*(dvdz + dwdy)
+		szz = 0.5*(dwdz + dwdz)
+		s2 = 2.0*(sxx*sxx + syy*syy + szz*szz) + 4.0*(sxy*sxy + syz*syz + szx*szx)
+		sl = sqrt(s2)
+
+!		wxx = 0.5*(dudx - dudx)
+!		wxy = 0.5*(dvdx - dudy)
+!		wxz = 0.5*(dwdx - dudz)
+!		wyx = 0.5*(dudy - dvdx)
+!		wyy = 0.5*(dvdy - dvdy)
+!		wyz = 0.5*(dwdy - dvdz)
+!		wzx = 0.5*(dudz - dwdx)
+!		wzy = 0.5*(dvdz - dwdy)
+!		wzz = 0.5*(dwdz - dwdz)
+
+		csm_e =  0.5*(dudx*dudx + dudy*dudy + dudz*dudz &
+								+ dvdx*dvdx + dvdy*dvdy + dvdz*dvdz &
+								+ dwdx*dwdx + dwdy*dwdy + dwdz*dwdz)
+		csm_q = -0.5*(dudx*dudx + dudy*dvdx + dudz*dwdx &
+								+ dvdx*dudy + dvdy*dvdy + dvdz*dwdy &
+								+ dwdx*dudz + dwdy*dvdz + dwdz*dwdz)
+		csm_fcs = csm_q/csm_e
+		csm_fom = 1.0 - csm_fcs
+		csm_c = csm_c2*csm_fom*(abs(csm_fcs))**1.5
+
+		nue_(i, j, k) = csm_c*dx*dx*sl
+    if( pidp /= 1 ) then
+			nue_(i, j, k) = 0.0
+    endif
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_calc_nue
+
 subroutine bcut_calc_d_t( &
                 td0_, &
                 t0_, &
