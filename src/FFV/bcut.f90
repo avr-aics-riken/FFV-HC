@@ -1358,21 +1358,27 @@ subroutine bcut_calc_d_u_e( &
     m5 = 0.0d0
     if( cidp0 /= 0 ) then
       m0 = 1.0d0
+			a0 = nup*(d0 - 0.5)/d0
     endif
     if( cidp1 /= 0 ) then
       m1 = 1.0d0
+			a1 = nup*(d1 - 0.5)/d1
     endif
     if( cidp2 /= 0 ) then
       m2 = 1.0d0
+			a2 = nup*(d2 - 0.5)/d2
     endif
     if( cidp3 /= 0 ) then
       m3 = 1.0d0
+			a3 = nup*(d3 - 0.5)/d3
     endif
     if( cidp4 /= 0 ) then
       m4 = 1.0d0
+			a4 = nup*(d4 - 0.5)/d4
     endif
     if( cidp5 /= 0 ) then
       m5 = 1.0d0
+			a5 = nup*(d5 - 0.5)/d5
     endif
 
     l0 = a0/(dx*dx)
