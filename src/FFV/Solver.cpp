@@ -2194,7 +2194,7 @@ void Solver::PrintForce(int step) {
 void Solver::PrintBasicVariablesVTK(int step) {
 	WriteBasicVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 	if( step == 0 ) {
-		plsPhaseId->WriteDataInVTKFormat("solid", 0, diffLevel, rootGrid, tree, partition);
+		plsPhaseId->WriteDataInVTKFormat("phase", 0, diffLevel, rootGrid, tree, partition);
 	}
 }
 
