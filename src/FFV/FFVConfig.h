@@ -169,6 +169,8 @@ public:
 	double				GravityX;
 	double				GravityY;
 	double				GravityZ;
+	double				BetaG;
+	double				Tref;
 
 //ShapeApproximation
 	std::string		ShapeApproximationMethod;

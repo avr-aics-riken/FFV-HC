@@ -338,6 +338,8 @@ void FFVConfig::Load(std::string filename) {
 	GravityX								= Read<double>					("/PhysicalParameter/GravityX", 0.0);
 	GravityY								= Read<double>					("/PhysicalParameter/GravityY", 0.0);
 	GravityZ								= Read<double>					("/PhysicalParameter/GravityZ", 0.0);
+	BetaG										= Read<double>					("/PhysicalParameter/BetaG", 0.0);
+	Tref										= Read<double>					("/PhysicalParameter/Tr", 0.0);
 
 //ShapeApproximation
 	ShapeApproximationMethod

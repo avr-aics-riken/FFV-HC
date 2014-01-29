@@ -3889,11 +3889,11 @@ PM_Start(tm_UpdateP01, 0, 0, true);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
-		real gx = 0.0;
-		real gy = 0.0;
-		real gz = 0.0;
-		real betag = 1.0;
-		real tr = 0.0;
+		real gx = g_pFFVConfig->GravityX;
+		real gy = g_pFFVConfig->GravityY;
+		real gz = g_pFFVConfig->GravityZ;
+		real betag = g_pFFVConfig->BetaG;
+		real tr = g_pFFVConfig->Tref;
 
 		bcut_add_g_(
 				ux, uy, uz,
