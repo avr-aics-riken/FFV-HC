@@ -1058,10 +1058,12 @@ PM_Stop(tm_Init_CalcCutInfo06);
 /* ---------------------------------------------------------- */
 	double VGlobal = 0.0;
 	double SGlobal = 0.0;
+	double SGlobal2 = 0.0;
 	PM_Start(tm_Init_GeometricalProperties, 0, 0, true);
 	{
 			double VLocal = 0.0;
 			double SLocal = 0.0;
+			double SLocal2 = 0.0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -1108,7 +1110,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 			int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
 			int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
 
-#pragma omp parallel for reduction(+:VLocal,SLocal)
+#pragma omp parallel for reduction(+:VLocal,SLocal,SLocal2)
 			for(int k=vc; k<vc+size.z; k++) {
 				for(int j=vc; j<vc+size.y; j++) {
 					for(int i=vc; i<vc+size.x; i++) {
@@ -1124,31 +1126,37 @@ PM_Stop(tm_Init_CalcCutInfo06);
 							int nIdx = pNormalIndex0[m];
 							double nx = pNormalX[n][nIdx];
 							SLocal += fabs(nx)*dx[1]*dx[2];
+							SLocal2 += dx[1]*dx[2];
 						}
 						if( pCutId1[m] != 0 ) {
 							int nIdx = pNormalIndex1[m];
 							double nx = pNormalX[n][nIdx];
 							SLocal += fabs(nx)*dx[1]*dx[2];
+							SLocal2 += dx[1]*dx[2];
 						}
 						if( pCutId2[m] != 0 ) {
 							int nIdx = pNormalIndex2[m];
 							double ny = pNormalY[n][nIdx];
 							SLocal += fabs(ny)*dx[2]*dx[0];
+							SLocal2 += dx[2]*dx[0];
 						}
 						if( pCutId3[m] != 0 ) {
 							int nIdx = pNormalIndex3[m];
 							double ny = pNormalY[n][nIdx];
 							SLocal += fabs(ny)*dx[2]*dx[0];
+							SLocal2 += dx[2]*dx[0];
 						}
 						if( pCutId4[m] != 0 ) {
 							int nIdx = pNormalIndex4[m];
 							double nz = pNormalZ[n][nIdx];
 							SLocal += fabs(nz)*dx[0]*dx[1];
+							SLocal2 += dx[0]*dx[1];
 						}
 						if( pCutId5[m] != 0 ) {
 							int nIdx = pNormalIndex5[m];
 							double nz = pNormalZ[n][nIdx];
 							SLocal += fabs(nz)*dx[0]*dx[1];
+							SLocal2 += dx[0]*dx[1];
 						}
 					}
 				}
@@ -1156,10 +1164,12 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		}
 		MPI_Allreduce(&VLocal, &VGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 		MPI_Allreduce(&SLocal, &SGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
+		MPI_Allreduce(&SLocal2, &SGlobal2, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 	}
 /* ---------------------------------------------------------- */
 	PrintLog(2, "%-20s : %f", "Volume",       VGlobal);
 	PrintLog(2, "%-20s : %f", "Surface area", SGlobal);
+	PrintLog(2, "%-20s : %f", "Surface area (voxel)", SGlobal2);
 /* ---------------------------------------------------------- */
 	PM_Stop(tm_Init_GeometricalProperties, 0, 0, true);
 /* ---------------------------------------------------------- */
