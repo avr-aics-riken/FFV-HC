@@ -205,7 +205,7 @@ int Solver::Init(int argc, char** argv){
 												pl,
 												g_pFFVConfig->PolygonGroupList,
 												g_pFFVConfig->BoundingBoxList,
-												(double)(g_pFFVConfig->LeafBlockNumberOfMarginalCells/g_pFFVConfig->LeafBlockNumberOfCells));
+												(double)((double)g_pFFVConfig->LeafBlockNumberOfMarginalCells/(double)g_pFFVConfig->LeafBlockNumberOfCells));
 		} else if(!strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere_old") || !strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere2")) {
 			divider = new SphereDivider2(
 												rootGrid,
