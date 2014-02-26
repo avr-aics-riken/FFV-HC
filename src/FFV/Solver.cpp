@@ -47,6 +47,8 @@ int Solver::Init(int argc, char** argv){
 	MPI::Comm& comm = MPI::COMM_WORLD;
 	this->myrank = comm.Get_rank();
 
+srand( this->myrank + 1 );
+
 	if( argc != 2 ) {
 		PrintLog(0, "usage: %s configfile", argv[0]);
 		comm.Abort(EX_USAGE);
