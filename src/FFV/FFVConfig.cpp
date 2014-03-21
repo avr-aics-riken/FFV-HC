@@ -469,6 +469,17 @@ void FFVConfig::Load(std::string filename) {
 	OuterBCUY.push_back(obcUY);
 	OuterBCUZ.push_back(obcUZ);
 	OuterBCT.push_back(obcT);
+
+	for(int n=0; n<32; n++) {
+		std::ostringstream bcid;
+		bcid.width(2);
+		bcid.setf(std::ios::fixed);
+		bcid.fill('0');
+		bcid << n;
+		BCInternalBoundaryType[n]  = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/Type", -1);
+		BCInternalBoundaryValue[n] = Read<double>("/BCTable/LocalBoundary/ID" + bcid.str() + "/Value", 0.0);
+//		std::cout << n << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
+	}
 }
 
 void FFVConfig::GetOuterBoundary(std::string FaceId, OBC& obcP, OBC& obcUX, OBC& obcUY, OBC& obcUZ, OBC& obcT) {
@@ -617,15 +628,6 @@ void FFVConfig::GetOuterBoundary(std::string FaceId, OBC& obcP, OBC& obcUX, OBC&
 	obcT.hc									= hcT;
 	obcT.wc									= wcT;
 
-	for(int n=0; n<32; n++) {
-		std::ostringstream bcid;
-		bcid.width(2);
-		bcid.setf(std::ios::fixed);
-		bcid.fill('0');
-		bcid << n;
-		BCInternalBoundaryType[n]  = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/Type", -1);
-		BCInternalBoundaryValue[n] = Read<double>("/BCTable/LocalBoundary/ID" + bcid.str() + "/Value", 0.0);
-	}
 }
 
 void FFVConfig::Check() {

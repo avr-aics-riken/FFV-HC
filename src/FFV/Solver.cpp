@@ -1918,7 +1918,7 @@ void Solver::PrintHeatFlux(int step) {
 		for(int m=0; m<bc_n[0]; m++) {
 			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
 			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+//			std::cout << m << " " << bc_type[n] << " " << bc_value[n] << std::endl;
 		}
 
 		real* qx = plsQx->GetBlockData(block);
@@ -4402,7 +4402,8 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		for(int m=0; m<bc_n[0]; m++) {
 			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
 			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+//			std::cout << m << " " << bc_type[m] << " " << bc_value[m] << std::endl;
+//			std::cout << m << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
 		}
 
 		real Tc = 1.0;
