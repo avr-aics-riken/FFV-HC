@@ -2532,6 +2532,17 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 					&dx, &dt,
 					&Uc,
 					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "Blend" ) {
 			real alpha = 0.95;
 			bcut_calc_c_f_blend_(
@@ -2710,6 +2721,17 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 					&dx, &dt,
 					&Uc,
 					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "Blend" ) {
 			real alpha = 0.95;
 			bcut_calc_c_f_blend_(
@@ -2878,6 +2900,17 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK" ) {
 			bcut_calc_c_f_quick_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
 					uzc0,
 					uz0,
 					vw, ve, vs, vn, vb, vt,
@@ -3067,6 +3100,17 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					&Tc,
 					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK" ) {
+			bcut_calc_c_f_quick_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
 			bcut_calc_c_f_quick_(
 					tc0,
 					t0,
@@ -3273,6 +3317,17 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK" ) {
 			bcut_calc_c_f_quick_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
 					uxc0,
 					ux0,
 					vw, ve, vs, vn, vb, vt,
@@ -3523,6 +3578,17 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 					&dx, &dt,
 					&Uc,
 					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "Blend" ) {
 			real alpha = 0.95;
 			bcut_calc_c_f_blend_(
@@ -3755,6 +3821,17 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK" ) {
 			bcut_calc_c_f_quick_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
+			bcut_calc_c_u_quick_(
 					uzc0,
 					uz0,
 					vw, ve, vs, vn, vb, vt,
@@ -4430,6 +4507,17 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					&Tc,
 					sz, g);
 		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK" ) {
+			bcut_calc_c_f_quick_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "QUICK2" ) {
 			bcut_calc_c_f_quick_(
 					tc0,
 					t0,
