@@ -250,10 +250,10 @@ extern "C" {
 				real* org,
 				int *sz, int *g);
 
-	void bcut_set_referencepressure_(
+	void bcut_set_reference_value_(
 				real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
 				real* xr, real* yr, real* zr,
-				real* pr,
+				real* vr,
 				real* dx, 
 				real* org,
 				int *sz, int *g);

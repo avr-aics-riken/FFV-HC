@@ -114,18 +114,22 @@ srand( this->myrank + 1 );
 	g_pPM->setProperties(tm_UpdateT02,  "UpdateT02", pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateT03,  "UpdateT03", pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateT04,  "UpdateT04", pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_UpdateT05,  "UpdateT05", pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUX01, "UpdateUX01",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUX02, "UpdateUX02",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUX03, "UpdateUX03",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUX04, "UpdateUX04",pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_UpdateUX05, "UpdateUX05",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUY01, "UpdateUY01",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUY02, "UpdateUY02",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUY03, "UpdateUY03",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUY04, "UpdateUY04",pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_UpdateUY05, "UpdateUY05",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUZ01, "UpdateUZ01",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUZ02, "UpdateUZ02",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUZ03, "UpdateUZ03",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateUZ04, "UpdateUZ04",pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_UpdateUZ05, "UpdateUZ05",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateP01,  "UpdateP01", pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateP02,  "UpdateP02", pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_UpdateP03,  "UpdateP03", pm_lib::PerfMonitor::CALC, true);
@@ -4215,7 +4219,7 @@ PM_Start(tm_UpdateP04, 0, 0, true);
 
 			int* pPhaseId = plsPhaseId->GetBlockData(block);
 
-			bcut_set_referencepressure_(
+			bcut_set_reference_value_(
 					Ap, Aw, Ae, As, An, Ab, At, b,
 					&xr, &yr, &zr,
 					&pr,
@@ -4622,17 +4626,91 @@ PM_Stop(tm_UpdateT01);
 /////////////////////////////////////////////
 
 /////////////////////////////////////////////
-// Impose B.C. (A)
+// Set ref. T
 /////////////////////////////////////////////
 PM_Start(tm_UpdateT02, 0, 0, true);
-	plsT0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
+	if( g_pFFVConfig->IterationReferenceTemperatureActive ) {
+		real xr = g_pFFVConfig->IterationReferenceTemperaturePoint.x;
+		real yr = g_pFFVConfig->IterationReferenceTemperaturePoint.y;
+		real zr = g_pFFVConfig->IterationReferenceTemperaturePoint.z;
+		real tr = g_pFFVConfig->IterationReferenceTemperatureValue;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			::Vec3i size = block->getSize();
+			::Vec3r origin = block->getOrigin();
+			::Vec3r blockSize = block->getBlockSize();
+			::Vec3r cellSize = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+			real dx = cellSize.x;
+			real org[3] = {origin.x, origin.y, origin.z};
+		
+			real* Ap = plsAp->GetBlockData(block);
+			real* Aw = plsAw->GetBlockData(block);
+			real* Ae = plsAe->GetBlockData(block);
+			real* As = plsAs->GetBlockData(block);
+			real* An = plsAn->GetBlockData(block);
+			real* Ab = plsAb->GetBlockData(block);
+			real* At = plsAt->GetBlockData(block);
+			real* b  = plsb ->GetBlockData(block);
+
+			real* vw = plsVw->GetBlockData(block);
+			real* ve = plsVe->GetBlockData(block);
+			real* vs = plsVs->GetBlockData(block);
+			real* vn = plsVn->GetBlockData(block);
+			real* vb = plsVb->GetBlockData(block);
+			real* vt = plsVt->GetBlockData(block);
+
+			real* t0 = plsT0->GetBlockData(block);
+
+			real* ux = plsUX0->GetBlockData(block);
+			real* uy = plsUY0->GetBlockData(block);
+			real* uz = plsUZ0->GetBlockData(block);
+
+			real* pCut0 = plsCut0->GetBlockData(block);
+			real* pCut1 = plsCut1->GetBlockData(block);
+			real* pCut2 = plsCut2->GetBlockData(block);
+			real* pCut3 = plsCut3->GetBlockData(block);
+			real* pCut4 = plsCut4->GetBlockData(block);
+			real* pCut5 = plsCut5->GetBlockData(block);
+			int* pCutId0 = plsCutId0->GetBlockData(block);
+			int* pCutId1 = plsCutId1->GetBlockData(block);
+			int* pCutId2 = plsCutId2->GetBlockData(block);
+			int* pCutId3 = plsCutId3->GetBlockData(block);
+			int* pCutId4 = plsCutId4->GetBlockData(block);
+			int* pCutId5 = plsCutId5->GetBlockData(block);
+
+			int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+			bcut_set_reference_value_(
+					Ap, Aw, Ae, As, An, Ab, At, b,
+					&xr, &yr, &zr,
+					&tr,
+					&dx,
+					org,
+					sz, g);
+		}
+	}
 PM_Stop(tm_UpdateT02);
+/////////////////////////////////////////////
+
+/////////////////////////////////////////////
+// Impose B.C. (A)
+/////////////////////////////////////////////
+PM_Start(tm_UpdateT03, 0, 0, true);
+	plsT0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
+PM_Stop(tm_UpdateT03);
 /////////////////////////////////////////////
 
 /////////////////////////////////////////////
 // Solve Ax = b
 /////////////////////////////////////////////
-PM_Start(tm_UpdateT03, 0, 0, true);
+PM_Start(tm_UpdateT04, 0, 0, true);
 	if( g_pFFVConfig->TuningMasking == true ) {
 		pils->BiCGSTAB_Mask(
 							blockManager,
@@ -4689,15 +4767,15 @@ PM_Start(tm_UpdateT03, 0, 0, true);
 							countT,
 							residualT);
 	}
-PM_Stop(tm_UpdateT03);
+PM_Stop(tm_UpdateT04);
 /////////////////////////////////////////////
 
 /////////////////////////////////////////////
 // Impose B.C. (x)
 /////////////////////////////////////////////
-PM_Start(tm_UpdateT04, 0, 0, true);
+PM_Start(tm_UpdateT05, 0, 0, true);
 	plsT0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateT04);
+PM_Stop(tm_UpdateT05);
 /////////////////////////////////////////////
 }
 

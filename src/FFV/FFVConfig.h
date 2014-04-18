@@ -102,6 +102,10 @@ public:
 	Vec3d					IterationReferencePressurePoint;
 	double				IterationReferencePressureValue;
 
+	bool					IterationReferenceTemperatureActive;
+	Vec3d					IterationReferenceTemperaturePoint;
+	double				IterationReferenceTemperatureValue;
+
 //MediumTable
 	std::vector<PPF> MediumTableFluid;
 	std::vector<PPS> MediumTableSolid;

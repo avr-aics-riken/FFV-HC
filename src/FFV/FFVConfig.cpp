@@ -170,6 +170,16 @@ void FFVConfig::Load(std::string filename) {
 													= Read<double>				("/Iteration/ReferencePressure/Value");
 	}
 
+	IterationReferenceTemperatureActive
+													= Read<bool>					("/Iteration/ReferenceTemperature/Active", false);
+	if( IterationReferenceTemperatureActive == true ) {
+		IterationReferenceTemperaturePoint
+													= Read<Vec3d>					("/Iteration/ReferenceTemperature/Point");
+		IterationReferenceTemperatureValue
+													= Read<double>				("/Iteration/ReferenceTemperature/Value");
+	}
+
+
 //MediumTable
 	std::string FillingMediumState
 													= Read<std::string>		("/MediumTable/" + FillingMedium + "/State");

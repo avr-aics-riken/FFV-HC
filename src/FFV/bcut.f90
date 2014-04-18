@@ -2699,12 +2699,12 @@ subroutine bcut_calc_ab_u( &
     dpz4 = (p0_(i, j, k) - p0_(i, j, k-1))/dx
     dpz5 = (p0_(i, j, k+1) - p0_(i, j, k))/dx
 
-    rdpx0 = r0*dpx0 - gx
-    rdpx1 = r1*dpx1 - gx
-    rdpy2 = r2*dpy2 - gy
-    rdpy3 = r3*dpy3 - gy
-    rdpz4 = r4*dpz4 - gz
-    rdpz5 = r5*dpz5 - gz
+    rdpx0 = r0*dpx0 - gx*0.0
+    rdpx1 = r1*dpx1 - gx*0.0
+    rdpy2 = r2*dpy2 - gy*0.0
+    rdpy3 = r3*dpy3 - gy*0.0
+    rdpz4 = r4*dpz4 - gz*0.0
+    rdpz5 = r5*dpz5 - gz*0.0
 
     m0 = 0.0d0
     m1 = 0.0d0
@@ -2958,12 +2958,12 @@ subroutine bcut_update_u( &
     dpz4 = (p0_(i, j, k) - p0_(i, j, k-1))/dx
     dpz5 = (p0_(i, j, k+1) - p0_(i, j, k))/dx
 
-    rdpx0 = r0*dpx0 - gx
-    rdpx1 = r1*dpx1 - gx
-    rdpy2 = r2*dpy2 - gy
-    rdpy3 = r3*dpy3 - gy
-    rdpz4 = r4*dpz4 - gz
-    rdpz5 = r5*dpz5 - gz
+    rdpx0 = r0*dpx0 - gx*0.0
+    rdpx1 = r1*dpx1 - gx*0.0
+    rdpy2 = r2*dpy2 - gy*0.0
+    rdpy3 = r3*dpy3 - gy*0.0
+    rdpz4 = r4*dpz4 - gz*0.0
+    rdpz5 = r5*dpz5 - gz*0.0
 
     m0 = 0.0d0
     m1 = 0.0d0
@@ -5797,7 +5797,7 @@ subroutine bcut_set_fluidseed( &
 #endif
 end subroutine bcut_set_fluidseed
 
-subroutine bcut_set_referencepressure( &
+subroutine bcut_set_reference_value( &
                 Ap, Aw, Ae, As, An, Ab, At, b, &
                 xr, yr, zr, &
                 pr, &
@@ -5848,6 +5848,30 @@ subroutine bcut_set_referencepressure( &
       Ab(i, j, k) = 0.0d0
       At(i, j, k) = 0.0d0
       b (i, j, k) = pr
+
+      Ap(i+1, j, k) = Ap(i+1, j, k) - Aw(i+1, j, k)
+			b (i+1, j, k) = b (i+1, j, k) - Aw(i+1, j, k)*pr*2.0
+      Aw(i+1, j, k) = 0.0d0
+
+      Ap(i-1, j, k) = Ap(i-1, j, k) - Ae(i+1, j, k)
+			b (i-1, j, k) = b (i-1, j, k) - Ae(i-1, j, k)*pr*2.0
+      Ae(i-1, j, k) = 0.0d0
+
+      Ap(i, j+1, k) = Ap(i, j+1, k) - As(i, j+1, k)
+			b (i, j+1, k) = b (i, j+1, k) - As(i, j+1, k)*pr*2.0
+      As(i, j+1, k) = 0.0d0
+
+      Ap(i, j-1, k) = Ap(i, j-1, k) - An(i, j-1, k)
+			b (i, j-1, k) = b (i, j-1, k) - An(i, j-1, k)*pr*2.0
+      An(i, j-1, k) = 0.0d0
+
+      Ap(i, j, k+1) = Ap(i, j, k+1) - Ab(i, j, k+1)
+			b (i, j, k+1) = b (i, j, k+1) - Ab(i, j, k+1)*pr*2.0
+      Ab(i, j, k+1) = 0.0d0
+
+      Ap(i, j, k-1) = Ap(i, j, k-1) - At(i, j, k-1)
+			b (i, j, k-1) = b (i, j, k-1) - At(i, j, k-1)*pr*2.0
+      At(i, j, k-1) = 0.0d0
     endif
   end do
   end do
@@ -5857,7 +5881,7 @@ subroutine bcut_set_referencepressure( &
 !$omp end parallel
 #else
 #endif
-end subroutine bcut_set_referencepressure
+end subroutine bcut_set_reference_value
 
 subroutine bcut_set_a( &
                 ux, uy, uz, &
