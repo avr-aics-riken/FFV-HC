@@ -60,12 +60,12 @@ void LocalScalar3D<real>::CalcStats(BlockManager& blockManager) {
 		totalcells_l += size.x*size.y*size.z;
 	}
 
-	allreduce_(&sum_g, &sum_l);
-	allreduce_max_(&max_g, &max_l);
-	allreduce_min_(&min_g, &min_l);
-	allreduce_max_(&absmax_g, &absmax_l);
-	allreduce_min_(&absmin_g, &absmin_l);
-	allreduce_(&totalcells_g, &totalcells_l);
+	comm_sum_(&sum_g, &sum_l);
+	comm_max_(&max_g, &max_l);
+	comm_min_(&min_g, &min_l);
+	comm_max_(&absmax_g, &absmax_l);
+	comm_min_(&absmin_g, &absmin_l);
+	comm_sum_(&totalcells_g, &totalcells_l);
 }
 
 template <>

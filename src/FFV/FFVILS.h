@@ -9,6 +9,7 @@
 
 #include "real.h"
 #include "blas.h"
+#include "bils.h"
 #include "comm.h"
 
 class FFVILS {
@@ -291,7 +292,7 @@ private:
 		}
 
 		double rr_global = 0.0;
-		allreduce_(&rr_global, &rr_local);
+		comm_sum_(&rr_global, &rr_local);
 
 		rr = rr_global;
 	}
@@ -323,7 +324,7 @@ private:
 		}
 
 		double xy_global = 0.0;
-		allreduce_(&xy_global, &xy_local);
+		comm_sum_(&xy_global, &xy_local);
 
 		xy = xy_global;
 	}
@@ -1200,7 +1201,7 @@ public:
 
 		double xy_global = 0.0;
 
-		allreduce_(&xy_global, &xy_local);
+		comm_sum_(&xy_global, &xy_local);
 
 		xy = xy_global;
 

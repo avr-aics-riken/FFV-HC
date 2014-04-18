@@ -1,4 +1,4 @@
-subroutine allreduce(total, a)
+subroutine comm_sum(total, a)
   implicit none
   include 'mpif.h'
   real                    :: total, a
@@ -9,9 +9,9 @@ subroutine allreduce(total, a)
 #else
   call mpi_allreduce(a, total, 1, mpi_real, mpi_sum, mpi_comm_world, ierror)
 #endif
-end subroutine allreduce
+end subroutine comm_sum
 
-subroutine allreduce_max(total, a)
+subroutine comm_max(total, a)
   implicit none
   include 'mpif.h'
   real                    :: total, a
@@ -22,9 +22,9 @@ subroutine allreduce_max(total, a)
 #else
   call mpi_allreduce(a, total, 1, mpi_real, mpi_max, mpi_comm_world, ierror)
 #endif
-end subroutine allreduce_max
+end subroutine comm_max
 
-subroutine allreduce_min(total, a)
+subroutine comm_min(total, a)
   implicit none
   include 'mpif.h'
   real                    :: total, a
@@ -35,9 +35,9 @@ subroutine allreduce_min(total, a)
 #else
   call mpi_allreduce(a, total, 1, mpi_real, mpi_min, mpi_comm_world, ierror)
 #endif
-end subroutine allreduce_min
+end subroutine comm_min
 
-subroutine dot_all(xy, x, y, sz, g)
+subroutine comm_dot(xy, x, y, sz, g)
   implicit none
   include 'mpif.h'
   integer                  :: i, j, k
@@ -70,7 +70,7 @@ subroutine dot_all(xy, x, y, sz, g)
 #else
   call mpi_allreduce(xy_, xy, 1, mpi_real, mpi_sum, mpi_comm_world, ierror)
 #endif
-end subroutine dot_all
+end subroutine comm_dot
 
 subroutine comm_band_cells(x, &
                           sz, g, &

@@ -26,6 +26,8 @@ CUTLIB_DIR  := $(FFV_HOME)/Cutlib
 BCM_DIR     := $(FFV_HOME)/BCMTools
 BCM_FILEIO  := $(BCM_DIR)/FileIO
 BCM_UTILS   := $(BCM_DIR)/Utils
+BCM_FILEIO  := /Users/jonishi/Devel/BCMTools_20130709/FileIO
+BCM_UTILS   := /Users/jonishi/Devel/BCMTools_20130709/Utils
 
 CC          := gcc
 CXX         := g++

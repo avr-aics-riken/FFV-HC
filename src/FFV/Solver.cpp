@@ -24,6 +24,7 @@
 
 #include "bcut.h"
 #include "bstl.h"
+#include "bils.h"
 #include "FFVPM.h"
 
 #define GLOBAL_VALUE_DEFINE
@@ -2000,22 +2001,22 @@ void Solver::PrintHeatFlux(int step) {
 
 	real sum = q_local_x;
 	real sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	q_global[0] = sum;
 
 	sum = q_local_y;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	q_global[1] = sum;
 
 	sum = q_local_z;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	q_global[2] = sum;
 
 	sum = sa_local;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	sa_global = sum;
 
 	if( myrank != 0 ) {
@@ -2149,32 +2150,32 @@ void Solver::PrintForce(int step) {
 
 	real sum = fsp_local_x;
 	real sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsp_global[0] = sum;
 
 	sum = fsp_local_y;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsp_global[1] = sum;
 
 	sum = fsp_local_z;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsp_global[2] = sum;
 
 	sum = fsv_local_x;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsv_global[0] = sum;
 
 	sum = fsv_local_y;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsv_global[1] = sum;
 
 	sum = fsv_local_z;
 	sum_tmp = sum;
-	allreduce_(&sum, &sum_tmp);
+	comm_sum_(&sum, &sum_tmp);
 	fsv_global[2] = sum;
 
 	if( myrank != 0 ) {
