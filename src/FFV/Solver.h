@@ -192,7 +192,9 @@ private:
 	void PrintTime(int step);
 	void PrintILS(int step);
 	void PrintStats(int step);
+	void PrintForceCID(int step, int cid_target);
 	void PrintForce(int step);
+	void PrintHeatFluxCID(int step, int cid_target);
 	void PrintHeatFlux(int step);
 	void PrintLog(int level, const char* format, ...);
 	void PrintCS(int step);

@@ -1879,6 +1879,13 @@ void Solver::PrintHeatFlux(int step) {
 		return;
 	}
 
+	int MaxCID = 32;
+	for(int n=1; n<MaxCID; n++) {
+		PrintHeatFluxCID(step, n);
+	}
+}
+
+void Solver::PrintHeatFluxCID(int step, int cid_target) {
 	real q_local_x = 0.0;
 	real q_local_y = 0.0;
 	real q_local_z = 0.0;
@@ -1923,7 +1930,6 @@ void Solver::PrintHeatFlux(int step) {
 		for(int m=0; m<bc_n[0]; m++) {
 			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
 			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-//			std::cout << m << " " << bc_type[n] << " " << bc_value[n] << std::endl;
 		}
 
 		real* qx = plsQx->GetBlockData(block);
@@ -1939,30 +1945,6 @@ void Solver::PrintHeatFlux(int step) {
 
 		real q_block[3] = {0.0, 0.0, 0.0};
 		real sa_block[1] = {0.0};
-		int cid_target = g_pFFVConfig->OutputLogHeatFluxTargetID;
-
-/*
-		bcut_calc_q_cylinder_(
-				qx,
-				qy,
-				qz,
-				q_block,
-				sa_block,
-				&cid_target,
-				t0,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof, &rhos,
-				&cpf, &cps,
-				&kf, &ks,
-				bc_n,
-				bc_type,
-				bc_value,
-				org,
-				&dx, &dt,
-				sz, g);
-*/
 
 		bcut_calc_q_(
 				qx,
@@ -2023,7 +2005,16 @@ void Solver::PrintHeatFlux(int step) {
 		return;
 	}
 
-	std::string filename = "data-heatflux.txt";
+	std::ostringstream ossFileName;
+	ossFileName << "data-heatflux";
+	ossFileName << "-";
+	ossFileName.width(3);
+	ossFileName.setf(std::ios::fixed);
+	ossFileName.fill('0');
+	ossFileName << cid_target;
+	ossFileName << ".txt";
+
+	std::string filename = ossFileName.str();
 
 	std::ofstream ofs;
 	if( step==0 ) {
@@ -2053,6 +2044,13 @@ void Solver::PrintForce(int step) {
 		return;
 	}
 
+	int MaxCID = 32;
+	for(int n=1; n<MaxCID; n++) {
+		PrintForceCID(step, n);
+	}
+}
+
+void Solver::PrintForceCID(int step, int cid_target) {
 	real fsp_local[3] = {0.0, 0.0, 0.0};
 	real fsv_local[3] = {0.0, 0.0, 0.0};
 	real fsp_local_x = 0.0;
@@ -2113,6 +2111,7 @@ void Solver::PrintForce(int step) {
 				fspy,
 				fspz,
 				fsp_block,
+				&cid_target,
 				p0,
 				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
@@ -2125,6 +2124,7 @@ void Solver::PrintForce(int step) {
 				fsvy,
 				fsvz,
 				fsv_block,
+				&cid_target,
 				ux0,
 				uy0,
 				uz0,
@@ -2182,7 +2182,16 @@ void Solver::PrintForce(int step) {
 		return;
 	}
 
-	std::string filename = "data-force.txt";
+	std::ostringstream ossFileName;
+	ossFileName << "data-force";
+	ossFileName << "-";
+	ossFileName.width(3);
+	ossFileName.setf(std::ios::fixed);
+	ossFileName.fill('0');
+	ossFileName << cid_target;
+	ossFileName << ".txt";
+
+	std::string filename = ossFileName.str();
 
 	std::ofstream ofs;
 	if( step==0 ) {
@@ -3151,24 +3160,6 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					&Tc,
 					sz, g);
 		}
-
-/*
-		bcut_calc_d_t_cylinder_(
-				td0,
-				t0,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof, &rhos,
-				&cpf, &cps,
-				&kf, &ks,
-				bc_n,
-				bc_type,
-				bc_value,
-				org,
-				&dx, &dt,
-				sz, g);
-*/
 
 		bcut_calc_d_t_(
 				td0,
@@ -4558,43 +4549,6 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 					&Tc,
 					sz, g);
 		}
-
-/*
-		bcut_calc_ab_t_(
-				Ap, Aw, Ae, As, An, Ab, At, b,
-				t0,
-				tc0, tcp,
-				td0,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof, &rhos,
-				&cpf, &cps,
-				&kf, &ks,
-				&dx, &dt,
-				&Tc,
-				sz, g);
-*/
-
-/*
-		bcut_calc_abd_t_cylinder_(
-				Ap, Aw, Ae, As, An, Ab, At, b,
-				t0,
-				tc0, tcp,
-				td0,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof, &rhos,
-				&cpf, &cps,
-				&kf, &ks,
-				bc_n,
-				bc_type,
-				bc_value,
-				org,
-				&dx, &dt,
-				sz, g);
-*/
 
 		bcut_calc_abd_t_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
