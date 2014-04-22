@@ -4930,7 +4930,7 @@ subroutine bcut_calc_q( &
         t0 = bc_value(cidp0)
         qx0 = -(tp - t0)/(d0*dx)
 
-        qx(i, j, k) = qx0*nx
+        qx(i, j, k) = qx0
         qxt = qxt + qx0*sign(1.0, nx)*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp0) == 1 ) then
@@ -4943,7 +4943,7 @@ subroutine bcut_calc_q( &
         t0 = tp - nx*bc_value(cidp0)*d0*dx
         qx0 = 1.0/t0
 
-        qx(i, j, k) = qx0*nx
+        qx(i, j, k) = qx0
         qxt = qxt + qx0*abs(nx)*dx*dx
         sa = sa + abs(nx)*dx*dx
       endif
@@ -4958,7 +4958,7 @@ subroutine bcut_calc_q( &
         t1 = bc_value(cidp1)
         qx0 = -(t1 - tp)/(d1*dx)
 
-        qx(i, j, k) = qx0*nx
+        qx(i, j, k) = qx0
         qxt = qxt + qx0*sign(1.0, nx)*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp1) == 1 ) then
@@ -4971,7 +4971,7 @@ subroutine bcut_calc_q( &
         t1 = tp + nx*bc_value(cidp0)*d1*dx
         qx0 = 1.0/t1
 
-        qx(i, j, k) = qx0*nx
+        qx(i, j, k) = qx0
         qxt = qxt + qx0*abs(nx)*dx*dx
         sa = sa + abs(nx)*dx*dx
       endif
@@ -4986,7 +4986,7 @@ subroutine bcut_calc_q( &
         t2 = bc_value(cidp2)
         qy0 = -(tp - t2)/(d2*dx)
 
-        qy(i, j, k) = qy0*ny
+        qy(i, j, k) = qy0
         qyt = qyt + qy0*sign(1.0, ny)*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp2) == 1 ) then
@@ -4999,7 +4999,7 @@ subroutine bcut_calc_q( &
         t2 = tp - ny*bc_value(cidp2)*d2*dx
         qy0 = 1.0/t2
 
-        qy(i, j, k) = qy0*ny
+        qy(i, j, k) = qy0
         qyt = qyt + qy0*abs(ny)*dx*dx
         sa = sa + abs(ny)*dx*dx
       endif
@@ -5014,7 +5014,7 @@ subroutine bcut_calc_q( &
         t3 = bc_value(cidp3)
         qy0 = -(t3 - tp)/(d3*dx)
 
-        qy(i, j, k) = qy0*ny
+        qy(i, j, k) = qy0
         qyt = qyt + qy0*sign(1.0, ny)*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp3) == 1 ) then
@@ -5025,9 +5025,9 @@ subroutine bcut_calc_q( &
         t3 = 0.0
         b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
         t3 = tp + ny*bc_value(cidp3)*d3*dx
-        qy0 = 1.0/t3
+				qy0 = 1.0/t3
 
-        qy(i, j, k) = qy0*ny
+        qy(i, j, k) = qy0
         qyt = qyt + qy0*abs(ny)*dx*dx
         sa = sa + abs(ny)*dx*dx
       endif
@@ -5042,7 +5042,7 @@ subroutine bcut_calc_q( &
         t4 = bc_value(cidp4)
         qz0 = -(tp - t4)/(d4*dx)
 
-        qz(i, j, k) = qz0*nz
+        qz(i, j, k) = qz0
         qzt = qzt + qz0*sign(1.0, nz)*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp4) == 1 ) then
@@ -5055,7 +5055,7 @@ subroutine bcut_calc_q( &
         t4 = tp - nz*bc_value(cidp4)*d4*dx
         qz0 = 1.0/t4
 
-        qz(i, j, k) = qz0*nz
+        qz(i, j, k) = qz0
         qzt = qzt + qz0*abs(nz)*dx*dx
         sa = sa + abs(nz)*dx*dx
       endif
@@ -5070,7 +5070,7 @@ subroutine bcut_calc_q( &
         t5 = bc_value(cidp5)
         qz0 = -(t5 - tp)/(d5*dx)
 
-        qz(i, j, k) = qz0*nz
+        qz(i, j, k) = qz0
         qzt = qzt + qz0*sign(1.0, nz)*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp5) == 1 ) then
@@ -5083,7 +5083,7 @@ subroutine bcut_calc_q( &
         t5 = tp + nz*bc_value(cidp5)*d5*dx
         qz0 = 1.0/t5
 
-        qz(i, j, k) = qz0*nz
+        qz(i, j, k) = qz0
         qzt = qzt + qz0*abs(nz)*dx*dx
         sa = sa + abs(nz)*dx*dx
       endif
