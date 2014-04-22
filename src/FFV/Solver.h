@@ -284,6 +284,25 @@ private:
 						Partition* partition) {
 		VtkWriter writer;
 
+		if( g_pFFVConfig->OutputDataDerivedVariablesHeatFlux ) {
+			writer.writePU<real>(
+							this->plsT0->GetID(),
+							this->plsQx->GetID(),
+							this->plsQy->GetID(),
+							this->plsQz->GetID(),
+							this->vc,
+							g_pFFVConfig->OutputDataFormatOptionVTKPath,
+							g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+							string("q"),
+							step,
+							difflevel,
+							rootGrid,
+							tree,
+							partition,
+							g_pFFVConfig->RootBlockOrigin,
+							g_pFFVConfig->RootBlockLength);
+		}
+
 		if( g_pFFVConfig->OutputDataDerivedVariablesQcriterion ) {
 			writer.writeScalar<real>(
 							this->plsLapP->GetID(),

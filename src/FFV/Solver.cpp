@@ -1886,11 +1886,18 @@ void Solver::PrintHeatFlux(int step) {
 }
 
 void Solver::PrintHeatFluxCID(int step, int cid_target) {
+	int bc_n[1] = {32};
+	int bc_type[32];
+	real bc_value[32];
+	for(int m=0; m<bc_n[0]; m++) {
+		bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
+		bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
+	}
+
 	real q_local_x = 0.0;
 	real q_local_y = 0.0;
 	real q_local_z = 0.0;
 	real sa_local = 0.0;
-
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+:q_local_x, q_local_y, q_local_z, sa_local)
@@ -1923,14 +1930,6 @@ void Solver::PrintHeatFluxCID(int step, int cid_target) {
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
-
-		int bc_n[1] = {32};
-		int bc_type[32];
-		real bc_value[32];
-		for(int m=0; m<bc_n[0]; m++) {
-			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
-			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-		}
 
 		real* qx = plsQx->GetBlockData(block);
 		real* qy = plsQy->GetBlockData(block);
