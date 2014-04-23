@@ -3807,7 +3807,7 @@ subroutine bcut_calc_abd_t( &
       k0 = 0.0
       k1 = kf/(d0 + 0.5)
       t0 = 0.0
-      b0 = - abs(nx)*bc_value(cidp0)*dx/(d0 + 0.5)
+      b0 = + abs(nx)*bc_value(cidp0)*dx/(d0 + 0.5)
     else if( bc_type(cidp0) == 9 ) then
     endif
 
@@ -3835,7 +3835,7 @@ subroutine bcut_calc_abd_t( &
       k2 = 0.0
       k3 = kf/(d2 + 0.5)
       t2 = 0.0
-      b2 = - abs(ny)*bc_value(cidp2)*dx/(d2 + 0.5)
+      b2 = + abs(ny)*bc_value(cidp2)*dx/(d2 + 0.5)
     else if( bc_type(cidp2) == 9 ) then
     endif
 
@@ -3863,7 +3863,7 @@ subroutine bcut_calc_abd_t( &
       k4 = 0.0
       k5 = kf/(d4 + 0.5)
       t4 = 0.0
-      b4 = - abs(nz)*bc_value(cidp4)*dx/(d4 + 0.5)
+      b4 = + abs(nz)*bc_value(cidp4)*dx/(d4 + 0.5)
     else if( bc_type(cidp4) == 9 ) then
     endif
 
