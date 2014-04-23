@@ -3807,7 +3807,7 @@ subroutine bcut_calc_abd_t( &
       k0 = 0.0
       k1 = kf/(d0 + 0.5)
       t0 = 0.0
-      b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
+      b0 = - abs(nx)*bc_value(cidp0)*dx/(d0 + 0.5)
     else if( bc_type(cidp0) == 9 ) then
     endif
 
@@ -3821,7 +3821,7 @@ subroutine bcut_calc_abd_t( &
       k0 = kf/(d1 + 0.5)
       k1 = 0.0
       t1 = 0.0
-      b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
+      b1 = + abs(nx)*bc_value(cidp1)*dx/(d1 + 0.5)
     else if( bc_type(cidp1) == 9 ) then
     endif
 
@@ -3835,7 +3835,7 @@ subroutine bcut_calc_abd_t( &
       k2 = 0.0
       k3 = kf/(d2 + 0.5)
       t2 = 0.0
-      b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
+      b2 = - abs(ny)*bc_value(cidp2)*dx/(d2 + 0.5)
     else if( bc_type(cidp2) == 9 ) then
     endif
 
@@ -3849,7 +3849,7 @@ subroutine bcut_calc_abd_t( &
       k2 = kf/(d3 + 0.5)
       k3 = 0.0
       t3 = 0.0
-      b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
+      b3 = + abs(ny)*bc_value(cidp3)*dx/(d3 + 0.5)
     else if( bc_type(cidp3) == 9 ) then
     endif
 
@@ -3863,7 +3863,7 @@ subroutine bcut_calc_abd_t( &
       k4 = 0.0
       k5 = kf/(d4 + 0.5)
       t4 = 0.0
-      b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
+      b4 = - abs(nz)*bc_value(cidp4)*dx/(d4 + 0.5)
     else if( bc_type(cidp4) == 9 ) then
     endif
 
@@ -3877,7 +3877,7 @@ subroutine bcut_calc_abd_t( &
       k4 = kf/(d5 + 0.5)
       k5 = 0.0
       t5 = 0.0
-      b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
+      b5 = + abs(nz)*bc_value(cidp5)*dx/(d5 + 0.5)
     else if( bc_type(cidp5) == 9 ) then
     endif
 
