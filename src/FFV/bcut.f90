@@ -4931,7 +4931,7 @@ subroutine bcut_calc_q( &
         qx0 = -(tp - t0)/(d0*dx)
 
         qx(i, j, k) = qx0
-        qxt = qxt + qx0*sign(1.0, nx)*dx*dx
+        qxt = qxt + qx0*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp0) == 1 ) then
  				nx = nx_( nidx0(i, j, k) )
@@ -4959,7 +4959,7 @@ subroutine bcut_calc_q( &
         qx0 = -(t1 - tp)/(d1*dx)
 
         qx(i, j, k) = qx0
-        qxt = qxt + qx0*sign(1.0, nx)*dx*dx
+        qxt = qxt - qx0*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp1) == 1 ) then
 				nx = nx_( nidx1(i, j, k) )
@@ -4987,7 +4987,7 @@ subroutine bcut_calc_q( &
         qy0 = -(tp - t2)/(d2*dx)
 
         qy(i, j, k) = qy0
-        qyt = qyt + qy0*sign(1.0, ny)*dx*dx
+        qyt = qyt + qy0*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp2) == 1 ) then
 				ny = ny_( nidx2(i, j, k) )
@@ -5015,7 +5015,7 @@ subroutine bcut_calc_q( &
         qy0 = -(t3 - tp)/(d3*dx)
 
         qy(i, j, k) = qy0
-        qyt = qyt + qy0*sign(1.0, ny)*dx*dx
+        qyt = qyt - qy0*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp3) == 1 ) then
 				ny = ny_( nidx3(i, j, k) )
@@ -5043,7 +5043,7 @@ subroutine bcut_calc_q( &
         qz0 = -(tp - t4)/(d4*dx)
 
         qz(i, j, k) = qz0
-        qzt = qzt + qz0*sign(1.0, nz)*dx*dx
+        qzt = qzt + qz0*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp4) == 1 ) then
 				nz = nz_( nidx4(i, j, k) )
@@ -5071,7 +5071,7 @@ subroutine bcut_calc_q( &
         qz0 = -(t5 - tp)/(d5*dx)
 
         qz(i, j, k) = qz0
-        qzt = qzt + qz0*sign(1.0, nz)*dx*dx
+        qzt = qzt - qz0*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp5) == 1 ) then
 				nz = nz_( nidx5(i, j, k) )
