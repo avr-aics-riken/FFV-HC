@@ -13,8 +13,8 @@
 
 -include ../make_setting
 
-BCM_FILEIO      := $(BCM_DIR)/FileIO
-BCM_UTILS       := $(BCM_DIR)/Utils
+#BCM_FILEIO      := $(BCM_DIR)/FileIO
+#BCM_UTILS       := $(BCM_DIR)/Utils
 
 FFV_INC_PATH    := -I$(PMLIB)/include
 FFV_INC_PATH    += -I$(TPLIB)/include
@@ -34,7 +34,7 @@ FFV_LIB_PATH    += -L$(BCM_DIR)/lib
 FFV_LIB_PATH    += -L$(MPI_DIR)/lib
 FFV_LIB_PATH    += -L$(CGM_FUNCS)
 
-FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
+FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lTPmpi -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
 PROGRAM = ffv
 
@@ -88,4 +88,5 @@ depend:
 	$(CXX) -MM $(CSRC) $(CXXFLAGS) $(FFV_INC_PATH) > depend.inc
 
 -include depend.inc
+
 

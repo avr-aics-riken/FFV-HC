@@ -29,9 +29,9 @@ TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib
 CUTLIB      := $(FFV_HOME)/Cutlib
 PMLIB       := $(FFV_HOME)/PMlib
-BCM_DIR     := $(FFV_HOME)/BCMTools
-BCM_FILEIO  := $(BCM_DIR)/FileIO
-BCM_UTILS   := $(BCM_DIR)/Utils
+BCM_DIR     := $(HOME)/Devel/BCMTools
+BCM_FILEIO  := $(HOME)/Devel/BCMTools_20130709/FileIO
+BCM_UTILS   := $(HOME)/Devel/BCMTools_20130709/Utils
 CGM_FUNCS   := ../CGMfuncs
 
 ifeq ($(FFVC),gnu)
