@@ -1,0 +1,105 @@
+#############################################################################
+#
+# FFV-BCM
+# FrontFlow/violet based on Building-cube Method
+#
+# Copyright (c) 2013 Institute of Industrial Science, The University of Tokyo. 
+# All rights reserved.
+#
+# Copyright (c) 2013 Advanced Institute for Computational Science, RIKEN. 
+# All rights reserved.
+#
+#############################################################################
+
+MPI_DIR     := /usr/local
+MPI_DIR     := /usr/lib/openmpi
+MPI_DIR     := /opt/openmpi
+
+FFVC        := pgi
+FFVC        := gnu
+FFVC        := fx
+FFVC        := intel
+
+REAL        := double
+
+FFV_HOME    := ../../lib
+FFV_HOME    := $(HOME)/FFV
+
+TPLIB       := $(FFV_HOME)/TextParser
+POLYLIB     := $(FFV_HOME)/Polylib
+CUTLIB      := $(FFV_HOME)/Cutlib
+PMLIB       := $(FFV_HOME)/PMlib
+BCM_DIR     := $(FFV_HOME)/BCMTools
+BCM_FILEIO  := $(BCM_DIR)/FileIO
+BCM_UTILS   := $(BCM_DIR)/Utils
+CGM_FUNCS   := ../CGMfuncs
+
+ifeq ($(FFVC),gnu)
+  CXX         := g++
+  F90         := gfortran
+  AR          := ar
+  RANLIB      := ranlib
+  OPTFLAGS    := -fopenmp -O3 
+  CXXFLAGS    := $(OPTFLAGS)
+  F90FLAGS    := $(OPTFLAGS) -cpp -ffree-form
+  LDFLAGS     := -fopenmp
+  LIBS        := -lgfortran 
+  XG          :=
+  ifeq ($(REAL), double)
+    CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
+    F90FLAGS  += -D_REAL_IS_DOUBLE_ -fdefault-real-8
+  endif
+endif
+
+ifeq ($(FFVC),fx)
+  CXX         := mpiFCCpx
+  F90         := mpifrtpx
+  AR          := ar
+  RANLIB      := ranlib
+  OPT_FLAGS   := -Kfast,ocl,preex,simd=2,uxsimd,array_private,openmp,parallel,optmsg=1
+  OPT_FLAGS_F := -Kfast,ocl,preex,simd=2,uxsimd,array_private,openmp,parallel,auto,optmsg=1 
+  CXXFLAGS    := $(OPTFLAGS)   -Nsrc
+  F90FLAGS    := $(OPTFLAGS_F) -x- -Qt -Cpp
+  LDFLAGS     := --linkfortran $(CXXFLAGS) 
+  LIBS        := 
+  XG          := -Xg
+  ifeq ($(REAL), double)
+    CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
+    F90FLAGS  += -D_REAL_IS_DOUBLE_ -CcdRR8
+  endif
+endif
+
+ifeq ($(FFVC),intel)
+  CXX         := icpc
+  F90         := ifort
+  AR          := xiar
+  RANLIB      := ranlib
+  OPTFLAGS    := -fast -openmp
+  CXXFLAGS    := $(OPTFLAGS) 
+  F90FLAGS    := $(OPTFLAGS) -fpp
+  LDFLAGS     := -openmp
+  LIBS        := -lifport -lifcore 
+  XG          :=
+  ifeq ($(REAL), double)
+    CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
+    F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
+  endif
+endif
+
+ifeq ($(FFVC),pgi)
+  CXX         := pgcpp
+  F90         := pgfortran
+  AR          := ar
+  RANLIB      := ranlib
+  OPTFLAGS    := -mp -fastsse -Mipa=inline 
+  CXXFLAGS    := $(OPTFLAGS) 
+  F90FLAGS    := $(OPTFLAGS) -Mpreprocess
+  LDFLAGS     := -mp -fastsse 
+  LIBS        := -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lpgmp -lnspgc -lpgc -lrt 
+  XG          :=
+  ifeq ($(REAL), double)
+    CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
+    F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
+  endif
+endif
+
