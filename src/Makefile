@@ -14,11 +14,14 @@
 .PHONY: depend clean
 
 all:
+	(cd CGMfuncs; make)
 	(cd FFV; make)
 
 clean:
+	(cd CGMfuncs; make clean)
 	(cd FFV; make clean)
 
 depend:
+	(cd CGMfuncs; make depend)
 	(cd FFV; make depend)
 

@@ -11,54 +11,30 @@
 #
 #############################################################################
 
-# Default environment
-FFVC=gnu
+-include ../make_setting
 
-### compiler detection
+BCM_FILEIO      := $(BCM_DIR)/FileIO
+BCM_UTILS       := $(BCM_DIR)/Utils
 
-ifeq ($(FFVC),gnu)
-include ../make_setting.gnu
-endif
+FFV_INC_PATH    := -I$(PMLIB)/include
+FFV_INC_PATH    += -I$(TPLIB)/include
+FFV_INC_PATH    += -I$(POLYLIB)/include
+FFV_INC_PATH    += -I$(CUTLIB)/include
+FFV_INC_PATH    += -I$(BCM_DIR)/include
+FFV_INC_PATH    += -I$(MPI_DIR)/include
+FFV_INC_PATH    += -I$(CGM_FUNCS)
+FFV_INC_PATH    += -I$(BCM_FILEIO)/include
+FFV_INC_PATH    += -I$(BCM_UTILS)/include
 
-ifeq ($(FFVC),fx)
-include ../make_setting.fx
-endif
+FFV_LIB_PATH    := -L$(PMLIB)/lib
+FFV_LIB_PATH    += -L$(TPLIB)/lib
+FFV_LIB_PATH    += -L$(POLYLIB)/lib
+FFV_LIB_PATH    += -L$(CUTLIB)/lib
+FFV_LIB_PATH    += -L$(BCM_DIR)/lib
+FFV_LIB_PATH    += -L$(MPI_DIR)/lib
+FFV_LIB_PATH    += -L$(CGM_FUNCS)
 
-ifeq ($(FFVC),ibm)
-include ../make_setting.ibm
-endif
-
-ifeq ($(FFVC),intel)
-include ../make_setting.intel
-endif
-
-#####
-
-#UTIL    = ../util
-
-UDEF_INC_PATH=-I$(POLYLIB_DIR)/include \
-              -I$(CUTLIB_DIR)/include \
-              -I$(PMLIB_DIR)/include \
-              -I$(TP_DIR)/include \
-              -I$(MPI_DIR)/include \
- 							-I$(BCM_DIR)/include \
-							-I$(BCM_FILEIO)/include \
-							-I$(BCM_UTILS)/include 
-             
-UDEF_LIB_PATH=-L$(POLYLIB_DIR)/lib \
-              -L$(CUTLIB_DIR)/lib \
-              -L$(PMLIB_DIR)/lib \
-              -L$(TP_DIR)/lib \
-							-L$(BCM_DIR)/lib \
-              -L$(MPI_DIR)/lib
-              
-UDEF_LIBS := -lbcm -lMPIPOLY -lcutlib -lPM -lMPITP -lTP -lxml2 -lmpi 
-UDEF_LIBS := -lbcm -lMPIPolylib -lcutlib -lpmlib -lTextParser_mpi -lxml2 -lmpi 
-UDEF_LIBS := -lbcm -lcutlib -lMPIPOLY -lPM -lMPITP -lmpi 
-UDEF_LIBS := -lbcm -lcutlib -lMPIPolylib -lPM -lMPITP -lmpi 
-UDEF_LIBS := -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lmpi 
-
-#####
+FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
 PROGRAM = ffv
 
@@ -68,7 +44,6 @@ CXXFLAGS				+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CFLAGS					+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CXXFLAGS				+= -DFFV_VERSION=\"$(FFV_VERSION)\"
 CFLAGS					+= -DFFV_VERSION=\"$(FFV_VERSION)\"
-
 #FFV_REVISION := $(shell sh -c 'git describe --always --dirty')
 #FFV_REVISION := $(shell svnversion -n .)
 #CXXFLAGS += -DFFV_REVISION=\"$(FFV_REVISION)\"
@@ -81,28 +56,27 @@ CFLAGS   += -DBUILD_DATE=\"$(BUILD_DATE)\"
 vpath %.cpp $(BCM_FILEIO)/src
 vpath %.cpp $(BCM_UTILS)/src
 
-CSRC := $(wildcard *.cpp)
-CHDR := $(wildcard *.h  )
-FSRC := $(wildcard *.f90)
-OBJS = $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
-BCM_UTILS_OBJS = ConfigFile.o ConfigBase.o BCMOctree.o BCMPolylib.o
-BCM_UTILS_OBJS = BCMOctree.o BCMPolylib.o
-BCM_FILEIO_OBJS = BitVoxel.o ErrorUtil.o BCMFileSaver.o LeafBlockSaver.o FileSystemUtil.o
+CSRC            := $(wildcard *.cpp)
+CHDR            := $(wildcard *.h  )
+FSRC            := $(wildcard *.f90)
+OBJS            := $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
+BCM_UTILS_OBJS  := ConfigFile.o ConfigBase.o BCMOctree.o BCMPolylib.o
+BCM_UTILS_OBJS  := BCMOctree.o BCMPolylib.o
+BCM_FILEIO_OBJS := BitVoxel.o ErrorUtil.o BCMFileSaver.o LeafBlockSaver.o FileSystemUtil.o
 
 PROGRAM: $(OBJS) $(BCM_UTILS_OBJS) $(BCM_FILEIO_OBJS)
 	$(CXX) \
 	$(LDFLAGS) \
 	-o $(PROGRAM) $(OBJS) $(BCM_UTILS_OBJS) $(BCM_FILEIO_OBJS) \
-	$(UDEF_LIB_PATH) $(UDEF_LIBS) \
-	$(LIBS) 
+	$(FFV_LIB_PATH) $(FFV_LIBS) $(LIBS) 
 	mv $(PROGRAM) ../../bin/
 
 .cpp.o:
-	$(CXX) $(CXXFLAGS) $(UDEF_INC_PATH) $(UDEF_OPT) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(FFV_INC_PATH) -o $@ -c $<
 
 .SUFFIXES: .f90
 .f90.o:
-	$(F90) $(F90FLAGS) $(UDEF_INC_PATH) $(UDEF_OPT) -o $@ -c $<
+	$(F90) $(F90FLAGS) $(FFV_INC_PATH) -o $@ -c $<
 
 clean:
 	rm -rf *.o ../../bin/$(PROGRAM) depend.inc
@@ -111,7 +85,7 @@ cleandata:
 	rm -rf BIN STL VTK PLOT3D BCM_OUT CS data-*
 
 depend:
-	$(CXX) -MM $(CSRC) $(CXXFLAGS) $(UDEF_INC_PATH) $(UDEF_OPT) > depend.inc
+	$(CXX) -MM $(CSRC) $(CXXFLAGS) $(FFV_INC_PATH) > depend.inc
 
 -include depend.inc
 
