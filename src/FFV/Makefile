@@ -21,10 +21,10 @@ FFV_INC_PATH    += -I$(TPLIB)/include
 FFV_INC_PATH    += -I$(POLYLIB)/include
 FFV_INC_PATH    += -I$(CUTLIB)/include
 FFV_INC_PATH    += -I$(BCM_DIR)/include
-FFV_INC_PATH    += -I$(MPI_DIR)/include
-FFV_INC_PATH    += -I$(CGM_FUNCS)
 FFV_INC_PATH    += -I$(BCM_FILEIO)/include
 FFV_INC_PATH    += -I$(BCM_UTILS)/include
+FFV_INC_PATH    += -I$(MPI_DIR)/include
+FFV_INC_PATH    += -I$(CGM_FUNCS)
 
 FFV_LIB_PATH    := -L$(PMLIB)/lib
 FFV_LIB_PATH    += -L$(TPLIB)/lib
@@ -34,7 +34,7 @@ FFV_LIB_PATH    += -L$(BCM_DIR)/lib
 FFV_LIB_PATH    += -L$(MPI_DIR)/lib
 FFV_LIB_PATH    += -L$(CGM_FUNCS)
 
-FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lTPmpi -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
+FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
 PROGRAM = ffv
 
@@ -60,7 +60,6 @@ CSRC            := $(wildcard *.cpp)
 CHDR            := $(wildcard *.h  )
 FSRC            := $(wildcard *.f90)
 OBJS            := $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
-BCM_UTILS_OBJS  := ConfigFile.o ConfigBase.o BCMOctree.o BCMPolylib.o
 BCM_UTILS_OBJS  := BCMOctree.o BCMPolylib.o
 BCM_FILEIO_OBJS := BitVoxel.o ErrorUtil.o BCMFileSaver.o LeafBlockSaver.o FileSystemUtil.o
 

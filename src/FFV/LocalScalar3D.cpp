@@ -13,8 +13,8 @@ void LocalScalar3D<real>::CalcStats(BlockManager& blockManager) {
 	sum_l = 0.0;
 	max_l = pData0[m0];
 	min_l = pData0[m0];
-	absmax_l = abs(pData0[m0]);
-	absmin_l = abs(pData0[m0]);
+	absmax_l = fabs(pData0[m0]);
+	absmin_l = fabs(pData0[m0]);
 	totalcells_l = 0.0;
 
 	for (int id = 0; id < blockManager.getNumBlock(); ++id) {

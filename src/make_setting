@@ -29,6 +29,7 @@ TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib
 CUTLIB      := $(FFV_HOME)/Cutlib
 PMLIB       := $(FFV_HOME)/PMlib
+#HDMLIB      := $(FFV_HOME)/HDMlib
 BCM_DIR     := $(HOME)/Devel/BCMTools
 BCM_FILEIO  := $(HOME)/Devel/BCMTools_20130709/FileIO
 BCM_UTILS   := $(HOME)/Devel/BCMTools_20130709/Utils
