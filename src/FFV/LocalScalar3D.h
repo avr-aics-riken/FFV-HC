@@ -310,7 +310,7 @@ public:
 #endif
 		for (int n=0; n<blockManager.getNumBlock(); ++n) {
 			BlockBase* block = blockManager.getBlock(n);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			T*      blockData = this->GetBlockData(block);
 			int ix = size.x + 2*vc;
 			int jx = size.y + 2*vc;
@@ -337,7 +337,7 @@ public:
 #endif
 		for (int n=0; n<blockManager.getNumBlock(); ++n) {
 			BlockBase* block = blockManager.getBlock(n);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			T*      blockData = this->GetBlockData(block);
 			int ix = size.x;
 			int jx = size.y;

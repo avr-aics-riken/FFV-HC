@@ -7,7 +7,7 @@ void BlockScalar3D<real>::ImposeBlockBoundaryCondition_X_M_POISEUILLE_U() {
 	double cx = g_pFFVConfig->OuterBCUX[X_M].xc;
 	double cy = g_pFFVConfig->OuterBCUX[X_M].yc;
 	double cz = g_pFFVConfig->OuterBCUX[X_M].zc;
-	::Vec3r c = Vec3r(cx, cy, cz);
+	Vec3r c = Vec3r(cx, cy, cz);
 
 	real center[3] = {c.x, c.y, c.z};
 	bc_x3_poiseuille_u_(this->blockData, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), center, this->origin, this->blockSize, this->cellSize);
@@ -18,7 +18,7 @@ void BlockScalar3D<real>::ImposeBlockBoundaryCondition_Aw_POISEUILLE_U(real* Ap,
 	double cx = g_pFFVConfig->OuterBCUX[X_M].xc;
 	double cy = g_pFFVConfig->OuterBCUX[X_M].yc;
 	double cz = g_pFFVConfig->OuterBCUX[X_M].zc;
-	::Vec3r c = Vec3r(cx, cy, cz);
+	Vec3r c = Vec3r(cx, cy, cz);
 
 	real center[3] = {c.x, c.y, c.z};
 	bc_aw_poiseuille_u_(Ap, Aw, b, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), center, this->origin, this->blockSize, this->cellSize);
@@ -29,7 +29,7 @@ void BlockScalar3D<real>::ImposeBlockBoundaryCondition_X_M_POISEUILLE_P() {
 	double cx = g_pFFVConfig->OuterBCP[X_M].xc;
 	double cy = g_pFFVConfig->OuterBCP[X_M].yc;
 	double cz = g_pFFVConfig->OuterBCP[X_M].zc;
-	::Vec3r c = Vec3r(cx, cy, cz);
+	Vec3r c = Vec3r(cx, cy, cz);
 
 	real center[3] = {c.x, c.y, c.z};
 	bc_x3_poiseuille_p_(this->blockData, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), center, this->origin, this->blockSize, this->cellSize);
@@ -40,7 +40,7 @@ void BlockScalar3D<real>::ImposeBlockBoundaryCondition_Aw_POISEUILLE_P(real* Ap,
 	double cx = g_pFFVConfig->OuterBCP[X_M].xc;
 	double cy = g_pFFVConfig->OuterBCP[X_M].yc;
 	double cz = g_pFFVConfig->OuterBCP[X_M].zc;
-	::Vec3r c = Vec3r(cx, cy, cz);
+	Vec3r c = Vec3r(cx, cy, cz);
 
 	real center[3] = {c.x, c.y, c.z};
 	bc_aw_poiseuille_p_(Ap, Aw, b, &(this->blockBoundaryValue[X_M]), this->size, (int*)&(this->vc), center, this->origin, this->blockSize, this->cellSize);

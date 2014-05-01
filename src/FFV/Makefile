@@ -13,16 +13,12 @@
 
 -include ../make_setting
 
-#BCM_FILEIO      := $(BCM_DIR)/FileIO
-#BCM_UTILS       := $(BCM_DIR)/Utils
-
 FFV_INC_PATH    := -I$(PMLIB)/include
 FFV_INC_PATH    += -I$(TPLIB)/include
 FFV_INC_PATH    += -I$(POLYLIB)/include
-FFV_INC_PATH    += -I$(CUTLIB)/include
+FFV_INC_PATH    += -I$(CUTLIB)/include -DCUTINFO_NORMAL_DOUBLE
 FFV_INC_PATH    += -I$(BCM_DIR)/include
-FFV_INC_PATH    += -I$(BCM_FILEIO)/include
-FFV_INC_PATH    += -I$(BCM_UTILS)/include
+FFV_INC_PATH    += -I$(HDMLIB)/include
 FFV_INC_PATH    += -I$(MPI_DIR)/include
 FFV_INC_PATH    += -I$(CGM_FUNCS)
 
@@ -31,10 +27,12 @@ FFV_LIB_PATH    += -L$(TPLIB)/lib
 FFV_LIB_PATH    += -L$(POLYLIB)/lib
 FFV_LIB_PATH    += -L$(CUTLIB)/lib
 FFV_LIB_PATH    += -L$(BCM_DIR)/lib
+FFV_LIB_PATH    += -L$(HDMLIB)/lib
 FFV_LIB_PATH    += -L$(MPI_DIR)/lib
 FFV_LIB_PATH    += -L$(CGM_FUNCS)
 
-FFV_LIBS        := -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
+FFV_LIBS        := -lHDM -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
+FFV_LIBS        := -lHDM -lBCM -lCUT -lPOLYmpi -lPM -lTPmpi -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
 PROGRAM = ffv
 
@@ -53,15 +51,15 @@ BUILD_DATE   := $(shell sh -c 'date +%s')
 CXXFLAGS += -DBUILD_DATE=\"$(BUILD_DATE)\"
 CFLAGS   += -DBUILD_DATE=\"$(BUILD_DATE)\"
 
-vpath %.cpp $(BCM_FILEIO)/src
-vpath %.cpp $(BCM_UTILS)/src
+#vpath %.cpp $(BCM_FILEIO)/src
+#vpath %.cpp $(BCM_UTILS)/src
 
 CSRC            := $(wildcard *.cpp)
 CHDR            := $(wildcard *.h  )
 FSRC            := $(wildcard *.f90)
 OBJS            := $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
-BCM_UTILS_OBJS  := BCMOctree.o BCMPolylib.o
-BCM_FILEIO_OBJS := BitVoxel.o ErrorUtil.o BCMFileSaver.o LeafBlockSaver.o FileSystemUtil.o
+#BCM_UTILS_OBJS  := BCMOctree.o BCMPolylib.o
+#BCM_FILEIO_OBJS := BitVoxel.o ErrorUtil.o BCMFileSaver.o LeafBlockSaver.o FileSystemUtil.o
 
 PROGRAM: $(OBJS) $(BCM_UTILS_OBJS) $(BCM_FILEIO_OBJS)
 	$(CXX) \

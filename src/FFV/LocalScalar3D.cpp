@@ -83,7 +83,7 @@ void LocalScalar3D<real>::Dump(BlockManager& blockManager, const int step, const
 	for (int id = 0; id < blockManager.getNumBlock(); ++id) {
 		BlockBase* block = blockManager.getBlock(id);
 
-		::Vec3i size = block->getSize();
+		Vec3i size = block->getSize();
 		Vec3r origin = block->getOrigin();
 		Vec3r blockSize = block->getBlockSize();
 		Vec3r cellSize = block->getCellSize();
@@ -139,7 +139,7 @@ void LocalScalar3D<real>::Load(BlockManager& blockManager, const int step, const
 	for (int id = 0; id < blockManager.getNumBlock(); ++id) {
 		BlockBase* block = blockManager.getBlock(id);
 
-		::Vec3i size = block->getSize();
+		Vec3i size = block->getSize();
 		Vec3r origin = block->getOrigin();
 		Vec3r blockSize = block->getBlockSize();
 		Vec3r cellSize = block->getCellSize();
@@ -240,7 +240,7 @@ void LocalScalar3D<real>::Dump2(BlockManager& blockManager, const int step, cons
 	ossFileName << ".bin";
 
 	BlockBase* block = blockManager.getBlock(0);
-	::Vec3i size = block->getSize();
+	Vec3i size = block->getSize();
 	int cx = size.x + 2*vc;
 	int cy = size.y + 2*vc;
 	int cz = size.z + 2*vc;
@@ -315,7 +315,7 @@ void LocalScalar3D<real>::Load2(BlockManager& blockManager, const int step, cons
 	int cz = nz + 2*nv;
 
 	BlockBase* block = blockManager.getBlock(0);
-	::Vec3i size = block->getSize();
+	Vec3i size = block->getSize();
 
 	if( nx == size.x && ny == size.y && nz == size.z && nv == vc && ne == 1 && nb == blockManager.getNumBlock() ) {
 		for (int id = 0; id < blockManager.getNumBlock(); ++id) {
@@ -366,7 +366,7 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 	for (int id = 0; id < blockManager.getNumBlock(); ++id) {
 		BlockBase* block = blockManager.getBlock(id);
 
-		::Vec3i size = block->getSize();
+		Vec3i size = block->getSize();
 		Vec3r origin = block->getOrigin();
 		Vec3r blockSize = block->getBlockSize();
 		Vec3r cellSize = block->getCellSize();
@@ -452,7 +452,7 @@ void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, cons
 		int cz = nz + 2*nv;
 
 		BlockBase* block = blockManager.getBlock(id);
-		::Vec3i size = block->getSize();
+		Vec3i size = block->getSize();
 		real* pData = GetBlockData(block);
 		real *pDataS = new real [cx*cy*cz];
 		if( nx == size.x && ny == size.y && nz == size.z && nv == vc && ne == 1 && nb == blockManager.getNumBlock() ) {

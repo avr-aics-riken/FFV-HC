@@ -797,14 +797,14 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
     float* dataP  = new float[(size.x) * (size.y) * (size.z)];
 
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -950,7 +950,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
     float* dataP  = new float[(size.x) * (size.y) * (size.z)];
@@ -960,7 +960,7 @@ public:
 
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -1116,7 +1116,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
     float* dataP  = new float[(size.x) * (size.y) * (size.z)];
@@ -1127,7 +1127,7 @@ public:
 
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -1286,7 +1286,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
     float* dataP  = new float[(size.x) * (size.y) * (size.z)];
@@ -1297,7 +1297,7 @@ public:
 
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();

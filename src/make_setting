@@ -12,14 +12,14 @@
 #############################################################################
 
 MPI_DIR     := /usr/local
-MPI_DIR     := /usr/lib/openmpi
 MPI_DIR     := /opt/openmpi
 MPI_DIR     := 
+MPI_DIR     := /usr/lib/openmpi
 
 FFVC        := pgi
-FFVC        := gnu
 FFVC        := intel
 FFVC        := fx
+FFVC        := gnu
 
 REAL        := double
 
@@ -30,9 +30,8 @@ TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib
 CUTLIB      := $(FFV_HOME)/Cutlib
 PMLIB       := $(FFV_HOME)/PMlib
-BCM_DIR     := $(HOME)/Devel/BCMTools
-BCM_FILEIO  := $(HOME)/Devel/BCMTools_20130709/FileIO
-BCM_UTILS   := $(HOME)/Devel/BCMTools_20130709/Utils
+BCM_DIR     := $(FFV_HOME)/BCMTools
+HDMLIB      := $(FFV_HOME)/HDMlib
 CGM_FUNCS   := ../CGMfuncs
 
 ifeq ($(FFVC),gnu)

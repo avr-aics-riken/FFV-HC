@@ -428,7 +428,7 @@ private:
 		int id_cellId = blockManager.setDataClass< Scalar3D<unsigned char> >(vc);
 		for (int id = 0; id < blockManager.getNumBlock(); ++id){
 			BlockBase* block = blockManager.getBlock(id);
-			::Vec3i sz = block->getSize();
+			Vec3i sz = block->getSize();
 			Scalar3D<unsigned char>* mesh = dynamic_cast< Scalar3D<unsigned char>* >(block->getDataClass(id_cellId));
 			unsigned char* data = mesh->getData();
 			Index3DS idx = mesh->getIndex();

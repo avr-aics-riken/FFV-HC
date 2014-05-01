@@ -68,7 +68,7 @@ public:
 		ossFileNameTime << "./XYZ/";
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
 		ostringstream ossFileName;
@@ -88,7 +88,7 @@ public:
 		bplt3d_open_file_((char*)ossFileName.str().c_str(), &filenamelength, &unit);
 
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size0 = block0->getSize();
+		Vec3i size0 = block0->getSize();
 		int ix = size0.x;
 		int jx = size0.y;
 		int kx = size0.z;
@@ -102,7 +102,7 @@ public:
 		int* blank = new int [ix*jx*kx];
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -154,7 +154,7 @@ public:
 		ossFileNameTime << "./XYZ/";
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
 		ostringstream ossFileName;
@@ -173,7 +173,7 @@ public:
 		ofs.open(ossFileName.str().c_str(), std::ios::out);
 
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size0 = block0->getSize();
+		Vec3i size0 = block0->getSize();
 		int ix = size0.x;
 		int jx = size0.y;
 		int kx = size0.z;
@@ -192,7 +192,7 @@ public:
 		int* blank = new int [ix*jx*kx];
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -252,7 +252,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
 		ostringstream ossFileName;
@@ -281,7 +281,7 @@ public:
 		bplt3d_open_file_((char*)ossFileName.str().c_str(), &filenamelength, &unit);
 
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size0 = block0->getSize();
+		Vec3i size0 = block0->getSize();
 		int ix = size0.x;
 		int jx = size0.y;
 		int kx = size0.z;
@@ -296,7 +296,7 @@ public:
     float* dataUZ = new float[ix*jx*kx];
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -359,7 +359,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
 		ostringstream ossFileName;
@@ -387,7 +387,7 @@ public:
 		ofs.open(ossFileName.str().c_str(), std::ios::out);
 
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size0 = block0->getSize();
+		Vec3i size0 = block0->getSize();
 		int ix = size0.x;
 		int jx = size0.y;
 		int kx = size0.z;
@@ -408,7 +408,7 @@ public:
     float* dataUZ = new float[ix*jx*kx];
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();
@@ -477,7 +477,7 @@ public:
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 
-    const ::Vec3i& size = blockManager.getSize();
+    const Vec3i& size = blockManager.getSize();
     int myrank = comm.Get_rank();
 
 		ostringstream ossFileName;
@@ -505,7 +505,7 @@ public:
 		ofs.open(ossFileName.str().c_str(), std::ios::out);
 
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size0 = block0->getSize();
+		Vec3i size0 = block0->getSize();
 		int ix = size0.x;
 		int jx = size0.y;
 		int kx = size0.z;
@@ -525,7 +525,7 @@ public:
     float* dataUZ = new float[ix*jx*kx];
     for (int id = 0; id < blockManager.getNumBlock(); ++id) {
       BlockBase* block = blockManager.getBlock(id);
-			::Vec3i size = block->getSize();
+			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
 			Vec3r cellSize = block->getCellSize();

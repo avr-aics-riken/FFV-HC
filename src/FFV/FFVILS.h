@@ -1177,7 +1177,7 @@ public:
 
 		int NB = blockManager.getNumBlock();
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size = block0->getSize();
+		Vec3i size = block0->getSize();
 		int NX = size.x;
 		int NY = size.y;
 		int NZ = size.z;
@@ -1252,7 +1252,7 @@ public:
 
 		int NB = blockManager.getNumBlock();
 		BlockBase* block0 = blockManager.getBlock(0);
-		::Vec3i size = block0->getSize();
+		Vec3i size = block0->getSize();
 		int NX = size.x;
 		int NY = size.y;
 		int NZ = size.z;
