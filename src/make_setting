@@ -14,11 +14,12 @@
 MPI_DIR     := /usr/local
 MPI_DIR     := /usr/lib/openmpi
 MPI_DIR     := /opt/openmpi
+MPI_DIR     := 
 
 FFVC        := pgi
 FFVC        := gnu
-FFVC        := fx
 FFVC        := intel
+FFVC        := fx
 
 REAL        := double
 
@@ -29,7 +30,6 @@ TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib
 CUTLIB      := $(FFV_HOME)/Cutlib
 PMLIB       := $(FFV_HOME)/PMlib
-#HDMLIB      := $(FFV_HOME)/HDMlib
 BCM_DIR     := $(HOME)/Devel/BCMTools
 BCM_FILEIO  := $(HOME)/Devel/BCMTools_20130709/FileIO
 BCM_UTILS   := $(HOME)/Devel/BCMTools_20130709/Utils
@@ -45,7 +45,6 @@ ifeq ($(FFVC),gnu)
   F90FLAGS    := $(OPTFLAGS) -cpp -ffree-form
   LDFLAGS     := -fopenmp
   LIBS        := -lgfortran 
-  XG          :=
   ifeq ($(REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -fdefault-real-8
@@ -59,11 +58,10 @@ ifeq ($(FFVC),fx)
   RANLIB      := ranlib
   OPT_FLAGS   := -Kfast,ocl,preex,simd=2,uxsimd,array_private,openmp,parallel,optmsg=1
   OPT_FLAGS_F := -Kfast,ocl,preex,simd=2,uxsimd,array_private,openmp,parallel,auto,optmsg=1 
-  CXXFLAGS    := $(OPTFLAGS)   -Nsrc
-  F90FLAGS    := $(OPTFLAGS_F) -x- -Qt -Cpp
+  CXXFLAGS    := $(OPT_FLAGS)   -Xg -V -Nsrc -x0
+  F90FLAGS    := $(OPT_FLAGS_F) -Xg -Cpp -Qt -x-
   LDFLAGS     := --linkfortran $(CXXFLAGS) 
   LIBS        := 
-  XG          := -Xg
   ifeq ($(REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -CcdRR8
@@ -80,7 +78,6 @@ ifeq ($(FFVC),intel)
   F90FLAGS    := $(OPTFLAGS) -fpp
   LDFLAGS     := -openmp
   LIBS        := -lifport -lifcore 
-  XG          :=
   ifeq ($(REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
@@ -97,7 +94,6 @@ ifeq ($(FFVC),pgi)
   F90FLAGS    := $(OPTFLAGS) -Mpreprocess
   LDFLAGS     := -mp -fastsse 
   LIBS        := -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lpgmp -lnspgc -lpgc -lrt 
-  XG          :=
   ifeq ($(REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
