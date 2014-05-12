@@ -12,19 +12,19 @@
 #############################################################################
 
 MPI_DIR     := /usr/local
-MPI_DIR     := /opt/openmpi
 MPI_DIR     := 
 MPI_DIR     := /usr/lib/openmpi
+MPI_DIR     := /opt/openmpi
 
 FFVC        := pgi
-FFVC        := intel
 FFVC        := fx
 FFVC        := gnu
+FFVC        := intel
 
 REAL        := double
 
 FFV_HOME    := ../../lib
-FFV_HOME    := $(HOME)/FFV
+FFV_HOME    := $(HOME)/FFV-exp
 
 TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib

@@ -514,9 +514,6 @@ PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
 PM_Stop(tm_Init_CalcCutInfo01);
 
 		pNormalN[n] = cutNormal->getNumNormal();
-
-		std::cout << "CalcCutInfo: " << ret << " " << pNormalN[n] << std::endl;
-
 		pNormalX[n] = new real [pNormalN[n]];
 		pNormalY[n] = new real [pNormalN[n]];
 		pNormalZ[n] = new real [pNormalN[n]];
