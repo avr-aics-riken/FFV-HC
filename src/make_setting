@@ -16,12 +16,16 @@ MPI_DIR     :=
 MPI_DIR     := /usr/lib/openmpi
 MPI_DIR     := /opt/openmpi
 
-FFVC        := pgi
-FFVC        := fx
-FFVC        := gnu
-FFVC        := intel
+FFV_COMP    := pgi
+FFV_COMP    := fx
+FFV_COMP    := gnu
+FFV_COMP    := intel
 
-REAL        := double
+FFV_REAL    := float
+FFV_REAL    := double
+
+FFV_THREAD  := IJK
+FFV_THREAD  := BLOCK
 
 FFV_HOME    := ../../lib
 FFV_HOME    := $(HOME)/FFV-exp
@@ -34,7 +38,7 @@ BCM_DIR     := $(FFV_HOME)/BCMTools
 HDMLIB      := $(FFV_HOME)/HDMlib
 CGM_FUNCS   := ../CGMfuncs
 
-ifeq ($(FFVC),gnu)
+ifeq ($(FFV_COMP),gnu)
   CXX         := g++
   F90         := gfortran
   AR          := ar
@@ -44,13 +48,13 @@ ifeq ($(FFVC),gnu)
   F90FLAGS    := $(OPTFLAGS) -cpp -ffree-form
   LDFLAGS     := -fopenmp
   LIBS        := -lgfortran 
-  ifeq ($(REAL), double)
+  ifeq ($(FFV_REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -fdefault-real-8
   endif
 endif
 
-ifeq ($(FFVC),fx)
+ifeq ($(FFV_COMP),fx)
   CXX         := mpiFCCpx
   F90         := mpifrtpx
   AR          := ar
@@ -61,13 +65,13 @@ ifeq ($(FFVC),fx)
   F90FLAGS    := $(OPT_FLAGS_F) -Xg -Cpp -Qt -x-
   LDFLAGS     := --linkfortran $(CXXFLAGS) 
   LIBS        := 
-  ifeq ($(REAL), double)
+  ifeq ($(FFV_REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -CcdRR8
   endif
 endif
 
-ifeq ($(FFVC),intel)
+ifeq ($(FFV_COMP),intel)
   CXX         := icpc
   F90         := ifort
   AR          := xiar
@@ -77,13 +81,13 @@ ifeq ($(FFVC),intel)
   F90FLAGS    := $(OPTFLAGS) -fpp
   LDFLAGS     := -openmp
   LIBS        := -lifport -lifcore 
-  ifeq ($(REAL), double)
+  ifeq ($(FFV_REAL), double)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
   endif
 endif
 
-ifeq ($(FFVC),pgi)
+ifeq ($(FFV_COMP),pgi)
   CXX         := pgcpp
   F90         := pgfortran
   AR          := ar
@@ -97,5 +101,10 @@ ifeq ($(FFVC),pgi)
     CXXFLAGS  += -D_REAL_IS_DOUBLE_ 
     F90FLAGS  += -D_REAL_IS_DOUBLE_ -r8
   endif
+endif
+
+ifeq ($(FFV_THREAD),IJK)
+  CXXFLAGS  += -D_BLOCK_IS_LARGE_ 
+  F90FLAGS  += -D_BLOCK_IS_LARGE_ 
 endif
 

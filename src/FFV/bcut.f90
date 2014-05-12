@@ -2823,7 +2823,7 @@ subroutine bcut_add_g( &
   jx = sz(2)
   kx = sz(3)
 #ifdef _BLOCK_IS_LARGE_
-!$omp parallel private(i, j, k) &
+!$omp parallel private(i, j, k) 
 !$omp do
 #else
 #endif
@@ -4835,7 +4835,7 @@ subroutine bcut_calc_q( &
   qzt = 0.0
   sa = 0.0
 #ifdef _BLOCK_IS_LARGE_
-!$omp parallel private(i, j, k) 
+!$omp parallel private(i, j, k) &
 !$omp           private(cidp) &
 !$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
 !$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
