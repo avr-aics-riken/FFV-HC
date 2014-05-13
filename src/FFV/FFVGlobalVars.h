@@ -1,4 +1,6 @@
 #include "FFVConfig.h"
+#include "FFVPerfMonitor.h"
+
 #include <PerfMonitor.h>
 
 #ifdef GLOBAL_VALUE_DEFINE
@@ -9,14 +11,15 @@
 #define GLOBAL_VALUE(v)
 #endif
 
-GLOBAL_VARIABLE FFVConfig* g_pFFVConfig;
+GLOBAL_VARIABLE FFVConfig*       g_pFFVConfig;
+GLOBAL_VARIABLE FFVPerfMonitor*  g_pFFVPerfMonitor;
+
+GLOBAL_VARIABLE int g_rank;
+GLOBAL_VARIABLE int g_nThreads;
+GLOBAL_VARIABLE int g_nProcesses;
+
 GLOBAL_VARIABLE pm_lib::PerfMonitor* g_pPM;
 
 #undef GLOBAL_VARIABLE
 #undef GLOBAL_VALUE
-
-void PrintLog(int myrank, int level, const char* format, ...);
-double RandomUniform();
-double RandomNormal(double mu, double sigma);
-
 

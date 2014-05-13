@@ -38,14 +38,14 @@ PROGRAM = ffv
 
 FFV_SOLVERNAME	:= "FrontFlow/violet-HC (alpha)"
 FFV_VERSION			:= "0.9.8"
+#FFV_REVISION := $(shell sh -c 'git describe --always --dirty')
+#FFV_REVISION := $(shell svnversion -n .)
 CXXFLAGS				+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CFLAGS					+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CXXFLAGS				+= -DFFV_VERSION=\"$(FFV_VERSION)\"
 CFLAGS					+= -DFFV_VERSION=\"$(FFV_VERSION)\"
-#FFV_REVISION := $(shell sh -c 'git describe --always --dirty')
-#FFV_REVISION := $(shell svnversion -n .)
-#CXXFLAGS += -DFFV_REVISION=\"$(FFV_REVISION)\"
-#CFLAGS   += -DFFV_REVISION=\"$(FFV_REVISION)\"
+#CXXFLAGS        += -DFFV_REVISION=\"$(FFV_REVISION)\"
+#CFLAGS          += -DFFV_REVISION=\"$(FFV_REVISION)\"
 
 BUILD_DATE   := $(shell sh -c 'date +%s')
 CXXFLAGS += -DBUILD_DATE=\"$(BUILD_DATE)\"

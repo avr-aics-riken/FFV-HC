@@ -9,8 +9,8 @@
 #include "Scalar3DUpdater2.h"
 #include "Scalar3DUpdater3.h"
 #include "real.h"
-#include "FFVGlobalVars.h"
 #include "FFVVTKWriter.h"
+#include "FFVCommon.h"
 
 template <typename T>
 class LocalScalar3D {
@@ -282,26 +282,30 @@ private:
 
 public:
 	void WriteDataInVTKFormat(
+						const char* path,
+						const char* prefix,
 						const char* dataname,
 						int step,
 						int difflevel,
 						RootGrid* rootGrid,
 						BCMOctree* tree,
-						Partition* partition) {
+						Partition* partition,
+						Vec3d rootBlockOrigin,
+						double rootBlockLength) {
 		VtkWriter writer;
 		writer.writeScalar<T>(
 						this->id,
 						this->vc,
-						g_pFFVConfig->OutputDataFormatOptionVTKPath,
-						g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+						string(path),
+						string(prefix),
 						string(dataname),
 						step,
 						difflevel,
 						rootGrid,
 						tree,
 						partition,
-						g_pFFVConfig->RootBlockOrigin,
-						g_pFFVConfig->RootBlockLength);
+						rootBlockOrigin,
+						rootBlockLength);
 	}
 
 	void Fill(BlockManager& blockManager, T value, T deviation=0.0) {
@@ -356,46 +360,21 @@ public:
 	void CalcStats(BlockManager& BlockManager) {
 	}
 
-	void Dump(BlockManager& blockManager, const int step, const char* label) {
+	void Dump2(BlockManager& blockManager, const int step, const char* path, const char* prefix, const char* label) {
 	}
 
-	void Load(BlockManager& blockManager, const int step, const char* label) {
+	void Load2(BlockManager& blockManager, const int step, const char* path, const char* prefix, const char* label) {
 	}
-
-	void Dump2(BlockManager& blockManager, const int step, const char* label) {
-	}
-
-	void Load2(BlockManager& blockManager, const int step, const char* label) {
-	}
-
-	void Dump3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank) {
-	}
-
-	void Load3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank) {
-	}
-
 };
 
 template <>
 void LocalScalar3D<real>::CalcStats(BlockManager& blockManager);
 
 template <>
-void LocalScalar3D<real>::Dump(BlockManager& blockManager, const int step, const char* label);
+void LocalScalar3D<real>::Dump2(BlockManager& blockManager, const int step, const char* path, const char* prefix, const char* label);
 
 template <>
-void LocalScalar3D<real>::Load(BlockManager& blockManager, const int step, const char* label);
-
-template <>
-void LocalScalar3D<real>::Dump2(BlockManager& blockManager, const int step, const char* label);
-
-template <>
-void LocalScalar3D<real>::Load2(BlockManager& blockManager, const int step, const char* label);
-
-template <>
-void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank);
-
-template <>
-void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank);
+void LocalScalar3D<real>::Load2(BlockManager& blockManager, const int step, const char* path, const char* prefix, const char* label);
 
 #endif
 

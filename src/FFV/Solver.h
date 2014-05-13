@@ -11,6 +11,7 @@
 #include "FFVPlot3DWriter.h"
 #include "FFVGridWriter.h"
 #include "BCMFileSaver.h"
+#include "FFVGlobalVars.h"
 
 #include "real.h"
 

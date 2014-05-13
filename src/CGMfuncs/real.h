@@ -9,5 +9,9 @@
 #define real float
 #endif
 
+extern "C" {
+	int sizeof_real_();
+}
+
 #endif
 

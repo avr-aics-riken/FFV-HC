@@ -802,8 +802,10 @@ public:
 
     float* dataP  = new float[(size.x) * (size.y) * (size.z)];
 
-    for (int id = 0; id < blockManager.getNumBlock(); ++id) {
-      BlockBase* block = blockManager.getBlock(id);
+		int iRank = myrank;
+		for (int id = partition->getStart(iRank); id < partition->getEnd(iRank); id++) {
+			int id0 = id - partition->getStart(iRank);
+      BlockBase* block = blockManager.getBlock(id0);
 			Vec3i size = block->getSize();
 			Vec3r origin = block->getOrigin();
 			Vec3r blockSize = block->getBlockSize();
@@ -813,7 +815,16 @@ public:
       Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
       T* sDataP = sp->getData();
 
-			printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+			printVTIC(
+						sDataP,
+						path.c_str(), prefix.c_str(), name.c_str(),
+						step,
+						myrank,
+						id,
+						size[0], size[1], size[2],
+						vc,
+						origin[0], origin[1], origin[2],
+						cellSize[0]);
     }
 
     delete[] dataP;
@@ -874,7 +885,7 @@ public:
 					ossFileName2.width(5);
 					ossFileName2.setf(ios::fixed);
 					ossFileName2.fill('0');
-					ossFileName2 << id - partition->getStart(iRank);
+					ossFileName2 << id;
 					ossFileName2 << "-";
 					ossFileName2.width(10);
 					ossFileName2.setf(ios::fixed);

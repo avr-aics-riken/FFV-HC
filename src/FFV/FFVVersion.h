@@ -2,7 +2,7 @@
 #define FFV_VERSION_H
 
 #ifndef FFV_SOLVERNAME 
-#define FFV_SOLVERNAME "FFV"
+#define FFV_SOLVERNAME "Unknown"
 #endif
 
 #ifndef FFV_VERSION

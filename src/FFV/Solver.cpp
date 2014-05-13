@@ -27,9 +27,12 @@
 #include "bils.h"
 #include "FFVPM.h"
 
+/*
 #define GLOBAL_VALUE_DEFINE
 #include "FFVGlobalVars.h"
 #undef GLOBAL_VALUE_DEFINE
+*/
+#include "FFVGlobalVars.h"
 
 Solver::Solver()
 	: blockManager(BlockManager::getInstance()) {
@@ -2219,7 +2222,13 @@ void Solver::PrintForceCID(int step, int cid_target) {
 void Solver::PrintBasicVariablesVTK(int step) {
 	WriteBasicVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 	if( step == 0 ) {
-		plsPhaseId->WriteDataInVTKFormat("phase", 0, diffLevel, rootGrid, tree, partition);
+		plsPhaseId->WriteDataInVTKFormat(
+										g_pFFVConfig->OutputDataFormatOptionVTKPath.c_str(),
+										g_pFFVConfig->OutputDataFormatOptionVTKPrefix.c_str(),
+										"phase",
+										0, diffLevel, rootGrid, tree, partition,
+										g_pFFVConfig->RootBlockOrigin,
+										g_pFFVConfig->RootBlockLength);
 	}
 }
 
@@ -5131,65 +5140,71 @@ void Solver::PrintCut(int id) {
 }
 
 void Solver::Dump(const int step) {
-	plsUX0->Dump2(blockManager, step, "ux");
-	plsUY0->Dump2(blockManager, step, "uy");
-	plsUZ0->Dump2(blockManager, step, "uz");
+	const char *path   = g_pFFVConfig->RestartInputPath.c_str();
+	const char *prefix = g_pFFVConfig->RestartPrefix.c_str();
 
-	plsP0->Dump2(blockManager, step, "p");
+	plsUX0->Dump2(blockManager, step, path, prefix, "ux");
+	plsUY0->Dump2(blockManager, step, path, prefix, "uy");
+	plsUZ0->Dump2(blockManager, step, path, prefix, "uz");
 
-	plsVw->Dump2(blockManager, step, "vw");
-	plsVe->Dump2(blockManager, step, "ve");
-	plsVs->Dump2(blockManager, step, "vs");
-	plsVn->Dump2(blockManager, step, "vn");
-	plsVb->Dump2(blockManager, step, "vb");
-	plsVt->Dump2(blockManager, step, "vt");
+	plsP0->Dump2(blockManager, step, path, prefix, "p");
 
-	plsT0->Dump2(blockManager, step, "t");
+	plsVw->Dump2(blockManager, step, path, prefix, "vw");
+	plsVe->Dump2(blockManager, step, path, prefix, "ve");
+	plsVs->Dump2(blockManager, step, path, prefix, "vs");
+	plsVn->Dump2(blockManager, step, path, prefix, "vn");
+	plsVb->Dump2(blockManager, step, path, prefix, "vb");
+	plsVt->Dump2(blockManager, step, path, prefix, "vt");
 
-	plsUXCP->Dump2(blockManager, step, "uxcp");
-	plsUYCP->Dump2(blockManager, step, "uycp");
-	plsUZCP->Dump2(blockManager, step, "uzcp");
-	plsTCP->Dump2(blockManager, step, "tcp");
+	plsT0->Dump2(blockManager, step, path, prefix, "t");
 
-	plsUXCP->Dump2(blockManager, step, "uxcp");
-	plsUYCP->Dump2(blockManager, step, "uycp");
-	plsUZCP->Dump2(blockManager, step, "uzcp");
-	plsTCP->Dump2(blockManager, step, "tcp");
+	plsUXCP->Dump2(blockManager, step, path, prefix, "uxcp");
+	plsUYCP->Dump2(blockManager, step, path, prefix, "uycp");
+	plsUZCP->Dump2(blockManager, step, path, prefix, "uzcp");
+	plsTCP->Dump2(blockManager, step, path, prefix, "tcp");
+
+	plsUXCP->Dump2(blockManager, step, path, prefix, "uxcp");
+	plsUYCP->Dump2(blockManager, step, path, prefix, "uycp");
+	plsUZCP->Dump2(blockManager, step, path, prefix, "uzcp");
+	plsTCP->Dump2(blockManager, step, path, prefix, "tcp");
 
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
-		plsUXDP->Dump2(blockManager, step, "uxdp");
-		plsUYDP->Dump2(blockManager, step, "uydp");
-		plsUZDP->Dump2(blockManager, step, "uzdp");
-		plsTDP->Dump2(blockManager, step, "tdp");
+		plsUXDP->Dump2(blockManager, step, path, prefix, "uxdp");
+		plsUYDP->Dump2(blockManager, step, path, prefix, "uydp");
+		plsUZDP->Dump2(blockManager, step, path, prefix, "uzdp");
+		plsTDP->Dump2(blockManager, step, path, prefix, "tdp");
 	}
 }
 
 void Solver::Load(const int step) {
-	plsUX0->Load2(blockManager, step, "ux");
-	plsUY0->Load2(blockManager, step, "uy");
-	plsUZ0->Load2(blockManager, step, "uz");
+	const char *path   = g_pFFVConfig->RestartInputPath.c_str();
+	const char *prefix = g_pFFVConfig->RestartPrefix.c_str();
 
-	plsP0->Load2(blockManager, step, "p");
+	plsUX0->Load2(blockManager, step, path, prefix, "ux");
+	plsUY0->Load2(blockManager, step, path, prefix, "uy");
+	plsUZ0->Load2(blockManager, step, path, prefix, "uz");
 
-	plsVw->Load2(blockManager, step, "vw");
-	plsVe->Load2(blockManager, step, "ve");
-	plsVs->Load2(blockManager, step, "vs");
-	plsVn->Load2(blockManager, step, "vn");
-	plsVb->Load2(blockManager, step, "vb");
-	plsVt->Load2(blockManager, step, "vt");
+	plsP0->Load2(blockManager, step, path, prefix, "p");
 
-	plsT0->Load2(blockManager, step, "t");
+	plsVw->Load2(blockManager, step, path, prefix, "vw");
+	plsVe->Load2(blockManager, step, path, prefix, "ve");
+	plsVs->Load2(blockManager, step, path, prefix, "vs");
+	plsVn->Load2(blockManager, step, path, prefix, "vn");
+	plsVb->Load2(blockManager, step, path, prefix, "vb");
+	plsVt->Load2(blockManager, step, path, prefix, "vt");
 
-	plsUXCP->Load2(blockManager, step, "uxcp");
-	plsUYCP->Load2(blockManager, step, "uycp");
-	plsUZCP->Load2(blockManager, step, "uzcp");
-	plsTCP->Load2(blockManager, step, "tcp");
+	plsT0->Load2(blockManager, step, path, prefix, "t");
+
+	plsUXCP->Load2(blockManager, step, path, prefix, "uxcp");
+	plsUYCP->Load2(blockManager, step, path, prefix, "uycp");
+	plsUZCP->Load2(blockManager, step, path, prefix, "uzcp");
+	plsTCP->Load2(blockManager, step, path, prefix, "tcp");
 
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
-		plsUXDP->Load2(blockManager, step, "uxdp");
-		plsUYDP->Load2(blockManager, step, "uydp");
-		plsUZDP->Load2(blockManager, step, "uzdp");
-		plsTDP->Load2(blockManager, step, "tdp");
+		plsUXDP->Load2(blockManager, step, path, prefix, "uxdp");
+		plsUYDP->Load2(blockManager, step, path, prefix, "uydp");
+		plsUZDP->Load2(blockManager, step, path, prefix, "uzdp");
+		plsTDP->Load2(blockManager, step, path, prefix, "tdp");
 	}
 }
 
