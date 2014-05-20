@@ -28,7 +28,7 @@ FFV_THREAD  := IJK
 FFV_THREAD  := BLOCK
 
 FFV_HOME    := ../../lib
-FFV_HOME    := $(HOME)/FFV-exp
+FFV_HOME    := $(HOME)/FFV
 
 TPLIB       := $(FFV_HOME)/TextParser
 POLYLIB     := $(FFV_HOME)/Polylib

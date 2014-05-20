@@ -331,6 +331,10 @@ void FFVGrid::InitVarsForCutInfo() {
 	plsCutId4->Fill(blockManager, 0);
 	plsCutId5->Fill(blockManager, 0);
 
+	pNormalN        = new int   [blockManager.getNumBlock()];
+	pNormalX        = new real* [blockManager.getNumBlock()];
+	pNormalY        = new real* [blockManager.getNumBlock()];
+	pNormalZ        = new real* [blockManager.getNumBlock()];
 	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
@@ -353,18 +357,17 @@ void FFVGrid::CalcCutInfo() {
 #endif
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
 		BlockBase* block = blockManager.getBlock(n);
-		Vec3i size      = block->getSize();
-		Vec3r origin    = block->getOrigin();
-		Vec3r blockSize = block->getBlockSize();
-		Vec3r cellSize  = block->getCellSize();
+		Vec3i size       = block->getSize();
+		Vec3r origin     = block->getOrigin();
+		Vec3r blockSize  = block->getBlockSize();
+		Vec3r cellSize   = block->getCellSize();
 
-		int sz[3] = {size.x, size.y, size.z};
-		int g[1]  = {vc};
-
-		double bpos[3] = {origin.x, origin.y, origin.z};
+		int sz[3]              = {size.x, size.y, size.z};
+		int g[1]               = {vc};
+		double bpos[3]         = {origin.x, origin.y, origin.z};
 		unsigned int bbsize[3] = {size.x, size.y, size.z};
 		unsigned int gcsize[3] = {vc, vc, vc};
-		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		double dx[3]           = {cellSize.x, cellSize.x, cellSize.x};
 		size_t ncell[3];
 		double org[3];
 		for(int i=0; i<3; i++) {
@@ -372,24 +375,24 @@ void FFVGrid::CalcCutInfo() {
 			org[i] = bpos[i] - gcsize[i]*dx[i];
 		}
 
-		cutlib::GridAccessor*   grid      = new cutlib::Cell(org, dx);
+		cutlib::GridAccessor*   cutGrid   = new cutlib::Cell(org, dx);
 		cutlib::CutPosArray*    cutPos    = new cutlib::CutPos32Array(ncell);
 		cutlib::CutBidArray*    cutBid    = new cutlib::CutBid5Array(ncell);
 		cutlib::CutNormalArray* cutNormal = new cutlib::CutNormalArray(ncell);
 
-		cutlib::CalcCutInfo(grid, pl, cutPos, cutBid, cutNormal);
+		cutlib::CalcCutInfo(cutGrid, pl, cutPos, cutBid, cutNormal);
 
 		int nNormal = cutNormal->getNumNormal();
-		real* pNormalX = new real [nNormal];
-		real* pNormalY = new real [nNormal];
-		real* pNormalZ = new real [nNormal];
+		this->pNormalN[n] = nNormal;
+		this->pNormalX[n] = new real [nNormal];
+		this->pNormalY[n] = new real [nNormal];
+		this->pNormalZ[n] = new real [nNormal];
 		cutlib::Normal* pNormal = cutNormal->getNormalDataPointer();
 		for(int m=0; m<nNormal; m++) {
-			pNormalX[m] = pNormal[m][0];
-			pNormalY[m] = pNormal[m][1];
-			pNormalZ[m] = pNormal[m][2];
+			this->pNormalX[n][m] = pNormal[m][0];
+			this->pNormalY[n][m] = pNormal[m][1];
+			this->pNormalZ[n][m] = pNormal[m][2];
 		}
-
 		cutlib::NormalIndex* nIdx = cutNormal->getNormalIndexDataPointer();
 		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
 		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
@@ -424,7 +427,6 @@ void FFVGrid::CalcCutInfo() {
 		int* pCutId3 = plsCutId3->GetBlockData(block);
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
-
 #pragma omp parallel for
 		for(int k=vc; k<vc+size.z; k++) {
 			for(int j=vc; j<vc+size.y; j++) {
@@ -469,14 +471,12 @@ void FFVGrid::CalcCutInfo() {
 				}
 			}
 		}
-		delete grid;
+		delete cutGrid;
 		delete cutPos;
 		delete cutBid;
 		delete cutNormal;
-		delete pNormalX;
-		delete pNormalY;
-		delete pNormalZ;
 
+/*
 		if( g_pFFVConfig->ShapeApproximationMethod == "cut" ) {
 			real eps[1] = {g_pFFVConfig->ShapeApproximationCutoff};
 			bstl_cutoff_(
@@ -485,6 +485,7 @@ void FFVGrid::CalcCutInfo() {
 							eps,
 							sz, g);
 		}
+*/
 
 		if( g_pFFVConfig->ShapeApproximationVoxelization ) {
 			bstl_voxelize_(
@@ -517,6 +518,10 @@ void FFVGrid::CalcCutInfo() {
 
 void FFVGrid::ClasifyCell() {
 	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
 		BlockBase* block = blockManager.getBlock(n);
 		Vec3i size      = block->getSize();

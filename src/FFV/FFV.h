@@ -4,7 +4,7 @@
 #include "FFVConfig.h"
 #include "FFVPerfMonitor.h"
 #include "FFVGrid.h"
-//#include "FFVSolver.h"
+#include "FFVSolver.h"
 
 #include <string>
 
@@ -20,7 +20,7 @@ private:
 	FFVConfig*      pFFVConfig;
 	FFVPerfMonitor* pFFVPerfMonitor;
 	FFVGrid*        pFFVGrid;
-//	FFVSolverBase*  pFFVSolver;
+	FFVSolver*      pFFVSolver;
 
 public:
 	int Init();

@@ -36,8 +36,8 @@ FFV_LIBS        := -lHDM -lBCM -lCUT -lPOLYmpi -lPM -lTPmpi -lcgmfuncs -lmpi -lm
 
 PROGRAM = ffv
 
-FFV_SOLVERNAME	:= "FrontFlow/violet-HC (alpha)"
-FFV_VERSION			:= "0.9.8"
+FFV_SOLVERNAME	:= "FrontFlow/violet-HC"
+FFV_VERSION			:= "1.0.0"
 #FFV_REVISION := $(shell sh -c 'git describe --always --dirty')
 #FFV_REVISION := $(shell svnversion -n .)
 CXXFLAGS				+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"

@@ -40,6 +40,10 @@ private:
 	LocalScalar3D<int>      *plsCutId4;
 	LocalScalar3D<int>      *plsCutId5;
 
+	int                     *pNormalN;
+	real                    **pNormalX;
+	real                    **pNormalY;
+	real                    **pNormalZ;
 	LocalScalar3D<int>      *plsNormalIndex0;
 	LocalScalar3D<int>      *plsNormalIndex1;
 	LocalScalar3D<int>      *plsNormalIndex2;

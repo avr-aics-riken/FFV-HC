@@ -33,9 +33,19 @@ int FFV::Init() {
 	Init_PerfMonitor();
 	double t5 = GetTime();
 
+/*
+	time_t now = time(NULL);
+	const char* exec_date = ctime(&now);
+*/
+
+	time_t now = atol(BUILD_DATE);
+	char* build_date = ctime(&now);
+	build_date[strlen(build_date)-1] = ' ';
+
 	PrintLog(1,                                     FFV_SOLVERNAME);
 	PrintLog(2, "%-20s : %s", "Version"           , FFV_VERSION);
-	PrintLog(2, "%-20s : %s", "Build date"        , BUILD_DATE);
+	PrintLog(2, "%-20s : %s", "Build date"        , build_date);
+//	PrintLog(2, "%-20s : %s", "Execution date"    , exec_date);
 	PrintLog(2, "%-20s : %s", "Configuration file", this->filenameConfig.c_str());
 	PrintLog(2, "%-20s : %d", "MPI processes"     , g_nProcesses);
 	PrintLog(2, "%-20s : %d", "OpenMP threads"    , g_nThreads);
@@ -54,6 +64,21 @@ int FFV::Init() {
 }
 
 int FFV::Loop() {
+	int StepStart = pFFVConfig->TimeControlSessionStartD;
+	int StepEnd   = pFFVConfig->TimeControlSessionEndD;
+
+	if(StepStart == 0) {
+		pFFVSolver->Print(0);
+	} else {
+		pFFVSolver->Load(StepStart);
+	}
+
+	for(int step=StepStart+1; step<=StepEnd; step++) {
+		pFFVSolver->Update(step);
+		pFFVSolver->Print(step);
+		pFFVSolver->Dump(step);
+	}
+
 	return EX_SUCCESS;
 }
 
@@ -67,15 +92,9 @@ int FFV::Post() {
 }
 
 void FFV::Init_ParallelEnv() {
-	g_rank        = 0;
-	g_nProcesses  = 1;
-	g_nThreads    = 1;
-
 	g_rank        = GetMPIRank();
-	g_nProcesses  = GetMPISize();
-#ifdef _OPENMP
-	g_nThreads    = omp_get_max_threads();
-#endif
+	g_nProcesses  = GetNumProcesses();
+	g_nThreads    = GetNumThreads();
 }
 
 void FFV::Init_Config() {
@@ -99,6 +118,8 @@ void FFV::Init_Grid() {
 }
 
 void FFV::Init_Solver() {
+	pFFVSolver = new FFVSolver();
+	pFFVSolver->Init();
 }
 
 void FFV::Post_ParallelEnv() {
