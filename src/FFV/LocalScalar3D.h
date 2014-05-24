@@ -285,6 +285,8 @@ public:
 						const char* dataname,
 						int step,
 						int difflevel,
+						int maxLevel,
+						int minLevel,
 						RootGrid* rootGrid,
 						BCMOctree* tree,
 						Partition* partition) {
@@ -297,6 +299,21 @@ public:
 						string(dataname),
 						step,
 						difflevel,
+						rootGrid,
+						tree,
+						partition,
+						g_pFFVConfig->RootBlockOrigin,
+						g_pFFVConfig->RootBlockLength);
+
+		writer.writeScalar_OverlappingAMR<T>(
+						this->id,
+						this->vc,
+						g_pFFVConfig->OutputDataFormatOptionVTKPath,
+						g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+						string(dataname),
+						step,
+						maxLevel,
+						minLevel,
 						rootGrid,
 						tree,
 						partition,

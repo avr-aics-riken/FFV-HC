@@ -2219,7 +2219,7 @@ void Solver::PrintForceCID(int step, int cid_target) {
 void Solver::PrintBasicVariablesVTK(int step) {
 	WriteBasicVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 	if( step == 0 ) {
-		plsPhaseId->WriteDataInVTKFormat("phase", 0, diffLevel, rootGrid, tree, partition);
+		plsPhaseId->WriteDataInVTKFormat("phase", 0, diffLevel, maxLevel, minLevel, rootGrid, tree, partition);
 	}
 }
 
