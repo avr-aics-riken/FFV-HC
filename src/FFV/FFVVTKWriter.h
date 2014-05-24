@@ -1270,7 +1270,8 @@ public:
 						const std::string prefix,
 						const std::string name,
 						int step,
-						int difflevel,
+						int maxLevel,
+						int minLevel,
 						RootGrid* rootGrid,
 						BCMOctree* tree,
 						Partition* partition,
@@ -1343,7 +1344,8 @@ public:
 			ofs << "<vtkOverlappingAMR origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
 
 			std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
-			int lmax = difflevel+1;
+//			int lmax = difflevel+1;
+			int lmax = maxLevel+1;
 			for(int n=0; n<lmax; n++) {
 				double dx = rootLength/(1 << n);
 				ofs << "\t<Block level=\"";
