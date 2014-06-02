@@ -20,6 +20,7 @@ SOFTWARE REQUIREMENT
 - Polygon management library
 - Cut information library
 - Tools for Building-cube method
+- Hierarchical data management library
 
 
 HOW TO BUILD
@@ -32,67 +33,56 @@ HOW TO BUILD
 0. Move to the FFV source directory
 -----------------------------------
 
-    $cd FFV-HC-(version)/src
+    $cd FFV-HC/src
 
 
-1. Edit make_setting.{fx,gnu,intel}
+1. Edit make_setting
 -----------------------------------
 
-1.1 Select one from make_setting.{fx,gnu,intel}
-    according to your compiler.
+1.1 Specify the path to each library.
 
-      -------------------------------
-      Compiler | File name
-      =========+=====================
-      K/FX10   | make_setting.fx
-      GNU      | make_setting.gnu
-      Intel    | make_setting.intel
-      ---------+---------------------
-
-1.2 Edit the selected file to specify the path to each library.
-
-    * For typical Linux machines
+    * For MPI library.  Ex) Ubuntu Linux
       MPI_DIR     := /usr/lib/opnmpi
+
+    * For FFV softwares.
       FFV_HOME    := $(HOME)/FFV
-      TP_DIR      := $(FFV_HOME)/TextParser
-      PMLIB_DIR   := $(FFV_HOME)/PMlib
-      POLYLIB_DIR := $(FFV_HOME)/Polylib
-      CUTLIB_DIR  := $(FFV_HOME)/Cutlib
+
+      TPLIB       := $(FFV_HOME)/TextParser
+      POLYLIB     := $(FFV_HOME)/Polylib
+      CUTLIB      := $(FFV_HOME)/Cutlib
+      PMLIB       := $(FFV_HOME)/PMlib
       BCM_DIR     := $(FFV_HOME)/BCMTools
-      BCM_FILEIO  := $(BCM_DIR)/FileIO
-      BCM_UTILS   := $(BCM_DIR)/Utils
+      HDMLIB      := $(FFV_HOME)/HDMlib
 
-1.3 Select precision for floating number operations.
-    Default is "double(64bit)".
-    Comment out the following lines if you prefer "float(32bit)".
+1.2 Select the compiler to use.
 
-    * For double-precision
-      CFLAGS     += -D_REAL_IS_DOUBLE_
-      CXXFLAGS   += -D_REAL_IS_DOUBLE_
-      FCFLAGS    += -D_REAL_IS_DOUBLE_ -r8
-      F90FLAGS   += -D_REAL_IS_DOUBLE_ -r8
+    * For GNU compiler
+      FFV_COMP    := gnu
+
+    * For Intel compiler
+      FFV_COMP    := intel
+
+    * For Fujitsu compiler (K/FX10)
+      FFV_COMP    := fx
+
+    * For PGI compiler (!!CATION!! experimental)
+      FFV_COMP    := pgi
+
+1.3 Select the precision for floating number operations.
 
     * For single-precision
-      #CFLAGS     += -D_REAL_IS_DOUBLE_
-      #CXXFLAGS   += -D_REAL_IS_DOUBLE_
-      #FCFLAGS    += -D_REAL_IS_DOUBLE_ -r8
-      #F90FLAGS   += -D_REAL_IS_DOUBLE_ -r8
+      FFV_REAL    := float
 
-1.4 Select the size of BCM blocks.
-    Default is "small", and is optimal for most cases.
-    Define the macro "_BLOCK_IS_LARGE_" only if it is necessary and you understand the meaning.
+    * For double-precision
+      FFV_REAL    := double
 
-    * For small blocks
-      CFLAGS     += -D_BLOCK_IS_SMALL_
-      CXXFLAGS   += -D_BLOCK_IS_SMALL_
-      FCFLAGS    += -D_BLOCK_IS_SMALL_
-      F90FLAGS   += -D_BLOCK_IS_SMALL_
+1.4 Select the loops to be parallelized using OpenMP.
 
-    * For large blocks
-      CFLAGS     += -D_BLOCK_IS_LARGE_
-      CXXFLAGS   += -D_BLOCK_IS_LARGE_
-      FCFLAGS    += -D_BLOCK_IS_LARGE_
-      F90FLAGS   += -D_BLOCK_IS_LARGE_
+    * Block-loops. For grids with a large number of blocks.
+			FFV_THREAD  := BLOCK
+
+    * IJK-loops. For grids with a large number of cells.
+			FFV_THREAD  := IJK
 
 2. Compilation
 --------------
@@ -101,6 +91,6 @@ HOW TO BUILD
 
     $ make
 
-    If compilation succeeds,
-    the executable module, named "ffv", is generated in $(FFV)/bin.
+    If the compilation succeeds,
+    the executable module, named "ffv", is generated in FFV/bin.
 
