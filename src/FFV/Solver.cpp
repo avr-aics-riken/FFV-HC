@@ -2223,12 +2223,18 @@ void Solver::PrintBasicVariablesVTK(int step) {
 	WriteBasicVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 	if( step == 0 ) {
 		plsPhaseId->WriteDataInVTKFormat(
-										g_pFFVConfig->OutputDataFormatOptionVTKPath.c_str(),
-										g_pFFVConfig->OutputDataFormatOptionVTKPrefix.c_str(),
-										"phase",
-										0, diffLevel, rootGrid, tree, partition,
-										g_pFFVConfig->RootBlockOrigin,
-										g_pFFVConfig->RootBlockLength);
+									g_pFFVConfig->OutputDataFormatOptionVTKPath.c_str(),
+									g_pFFVConfig->OutputDataFormatOptionVTKPrefix.c_str(),
+									"phase",
+									0,
+									diffLevel,
+									maxLevel,
+									minLevel,
+									rootGrid,
+									tree,
+									partition,
+									g_pFFVConfig->RootBlockOrigin,
+									g_pFFVConfig->RootBlockLength);
 	}
 }
 

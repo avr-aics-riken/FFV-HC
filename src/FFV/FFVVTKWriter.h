@@ -774,6 +774,170 @@ public:
 	}
 
   template <typename T>
+  void writeScalar_OverlappingAMR(
+						int dataClassID_P,
+						int vc,
+						const std::string path,
+						const std::string prefix,
+						const std::string name,
+						int step,
+						int maxLevel,
+						int minLevel,
+						RootGrid* rootGrid,
+						BCMOctree* tree,
+						Partition* partition,
+						Vec3r rootOrigin,
+						double rootLength) {
+		ostringstream ossFileNameTime;
+		ossFileNameTime << path;
+		mkdir(ossFileNameTime.str().c_str(), 0755);
+		ossFileNameTime << "/";
+		ossFileNameTime.width(10);
+		ossFileNameTime.setf(ios::fixed);
+		ossFileNameTime.fill('0');
+		ossFileNameTime << step;
+		mkdir(ossFileNameTime.str().c_str(), 0755);
+
+    const Vec3i& size = blockManager.getSize();
+    int myrank = comm.Get_rank();
+
+    float* dataP  = new float[(size.x) * (size.y) * (size.z)];
+
+    for (int id = 0; id < blockManager.getNumBlock(); ++id) {
+      BlockBase* block = blockManager.getBlock(id);
+			Vec3i size = block->getSize();
+			Vec3r origin = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize = block->getCellSize();
+			int level = block->getLevel();
+
+      Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
+      T* sDataP = sp->getData();
+
+//			printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+    }
+
+    delete[] dataP;
+
+		ostringstream ossFileName;
+		ossFileName << path;
+		ossFileName << "/";
+		ossFileName << prefix;
+		ossFileName << name.c_str();
+		ossFileName << "-";
+		ossFileName.width(10);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << step;
+		ossFileName << ".vth";
+
+		if( myrank == 0 ) {
+			ofstream ofs;
+			ofs.open(ossFileName.str().c_str(), ios::out);
+			ofs << "<VTKFile type=\"vtkOverlappingAMR\" version=\"1.1\">" << endl;
+			ofs << "<vtkOverlappingAMR origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
+
+			std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
+//			int lmax = difflevel+1;
+			int lmax = maxLevel+1;
+			for(int n=0; n<lmax; n++) {
+				double dx = rootLength/(1 << n);
+				ofs << "\t<Block level=\"";
+				ofs << n;
+				ofs << "\" spacing=\"";
+				ofs << dx;
+				ofs << " ";
+				ofs << dx;
+				ofs << " ";
+				ofs << dx;
+				ofs << "\">";
+				ofs << endl;
+				for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
+					for (int id = partition->getStart(iRank); id < partition->getEnd(iRank); id++) {
+						Node* node = leafNodeArray[id];
+						Vec3r origin = tree->getOrigin(node) * rootLength;
+						Vec3r blockSize = node->getBlockSize() * rootLength;
+						Vec3r cellSize;
+						cellSize.x = blockSize.x / size.x;
+						cellSize.y = blockSize.y / size.y;
+						cellSize.z = blockSize.z / size.z;
+						int level = node->getLevel();
+
+						ostringstream ossFileName2;
+						ossFileName2 << "./";
+						ossFileName2.width(10);
+						ossFileName2.setf(ios::fixed);
+						ossFileName2.fill('0');
+						ossFileName2 << step;
+						ossFileName2 << "/";
+						ossFileName2 << prefix;
+						ossFileName2 << name.c_str();
+						ossFileName2 << "-";
+						ossFileName2.width(5);
+						ossFileName2.setf(ios::fixed);
+						ossFileName2.fill('0');
+						ossFileName2 << iRank;
+						ossFileName2 << "-";
+						ossFileName2.width(5);
+						ossFileName2.setf(ios::fixed);
+						ossFileName2.fill('0');
+						ossFileName2 << id - partition->getStart(iRank);
+						ossFileName2 << "-";
+						ossFileName2.width(10);
+						ossFileName2.setf(ios::fixed);
+						ossFileName2.fill('0');
+						ossFileName2 << step;
+						ossFileName2 << ".vti";
+
+						int lx = size.x*(1 << level);
+						int ly = size.y*(1 << level);
+						int lz = size.z*(1 << level);
+
+						Vec3r origin2 = tree->getOrigin(node);
+
+						double nx0 = (origin2.x)*lx;
+						double ny0 = (origin2.y)*ly;
+						double nz0 = (origin2.z)*lz;
+
+						double nx1 = nx0 + size.x - 1;
+						double ny1 = ny0 + size.y - 1;
+						double nz1 = nz0 + size.z - 1;
+
+						if( level == n ) {
+							ofs << "\t\t<DataSet index=\"";
+							ofs << id + blockManager.getStartID();
+							ofs << "\" amr_box=\"";
+							ofs << nx0;
+							ofs << " ";
+							ofs << nx1;
+							ofs << " ";
+							ofs << ny0;
+							ofs << " ";
+							ofs << ny1;
+							ofs << " ";
+							ofs << nz0;
+							ofs << " ";
+							ofs << nz1;
+							ofs << "\" file=\"";
+							ofs << ossFileName2.str().c_str();
+							ofs << "\">";
+							ofs << endl;
+							ofs << "\t\t</DataSet>" << endl;	
+						}
+					}
+				}
+				ofs << "\t</Block>";
+				ofs << endl;
+				ofs << endl;
+			}
+
+			ofs << "</vtkOverlappingAMR>" << endl;
+			ofs << "</VTKFile>" << endl;
+			ofs.close();
+		}
+  }
+
+  template <typename T>
   void writeScalar(
 						int dataClassID_P,
 						int vc,
@@ -1281,7 +1445,8 @@ public:
 						const std::string prefix,
 						const std::string name,
 						int step,
-						int difflevel,
+						int maxLevel,
+						int minLevel,
 						RootGrid* rootGrid,
 						BCMOctree* tree,
 						Partition* partition,
@@ -1354,7 +1519,8 @@ public:
 			ofs << "<vtkOverlappingAMR origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
 
 			std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
-			int lmax = difflevel+1;
+//			int lmax = difflevel+1;
+			int lmax = maxLevel+1;
 			for(int n=0; n<lmax; n++) {
 				double dx = rootLength/(1 << n);
 				ofs << "\t<Block level=\"";
