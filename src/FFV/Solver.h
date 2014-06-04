@@ -258,7 +258,7 @@ private:
 						g_pFFVConfig->RootBlockOrigin,
 						g_pFFVConfig->RootBlockLength);
 
-		writer.writeVtkOverlappingAMR_PUT<real>(
+		writer.writePUT_OverlappingAMR<real>(
 						this->plsP0->GetID(),
 						this->plsUX0->GetID(),
 						this->plsUY0->GetID(),
@@ -287,11 +287,12 @@ private:
 		VtkWriter writer;
 
 		if( g_pFFVConfig->OutputDataDerivedVariablesHeatFlux ) {
-			writer.writePU<real>(
+			writer.writePUT<real>(
 							this->plsT0->GetID(),
 							this->plsQx->GetID(),
 							this->plsQy->GetID(),
 							this->plsQz->GetID(),
+							this->plsT0->GetID(),
 							this->vc,
 							g_pFFVConfig->OutputDataFormatOptionVTKPath,
 							g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
@@ -322,11 +323,12 @@ private:
 		}
 
 		if( g_pFFVConfig->OutputDataDerivedVariablesForce ) {
-			writer.writePU<real>(
+			writer.writePUT<real>(
 							this->plsP0->GetID(),
 							this->plsFspx->GetID(),
 							this->plsFspy->GetID(),
 							this->plsFspz->GetID(),
+							this->plsP0->GetID(),
 							this->vc,
 							g_pFFVConfig->OutputDataFormatOptionVTKPath,
 							g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
@@ -339,11 +341,12 @@ private:
 							g_pFFVConfig->RootBlockOrigin,
 							g_pFFVConfig->RootBlockLength);
 
-			writer.writePU<real>(
+			writer.writePUT<real>(
 							this->plsP0->GetID(),
 							this->plsFsvx->GetID(),
 							this->plsFsvy->GetID(),
 							this->plsFsvz->GetID(),
+							this->plsP0->GetID(),
 							this->vc,
 							g_pFFVConfig->OutputDataFormatOptionVTKPath,
 							g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
