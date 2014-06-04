@@ -272,6 +272,13 @@ extern "C" {
 				int *sz, int *g);
 
 
+	void bcut_set_seed_(
+				int* regionid,
+				real* xs, real* ys, real *zs,
+				int* rid,
+				real* dx,
+				real* org,
+				int *sz, int *g);
 
 	void bcut_set_fluidseed_(
 				int* pid,

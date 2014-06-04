@@ -5113,6 +5113,65 @@ subroutine bcut_calc_q( &
   q(3) = qzt
 end subroutine bcut_calc_q
 
+subroutine bcut_set_seed( &
+                regionid, &
+                xs, ys, zs, &
+								rid, &
+                dx, &
+                org, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: regionid
+  real                    :: xs, ys, zs
+	integer									:: rid
+  real                    :: dx
+  real, dimension(3)      :: org
+  real                    :: x0, y0, z0
+  real                    :: x1, y1, z1
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(x0, y0, z0) &
+!$omp           private(x1, y1, z1) 
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    x0 = org(1) + (real(i-1))*dx
+    y0 = org(2) + (real(j-1))*dx
+    z0 = org(3) + (real(k-1))*dx
+    x1 = org(1) + (real(i))*dx
+    y1 = org(2) + (real(j))*dx
+    z1 = org(3) + (real(k))*dx
+
+    if( (x0 <= xs .and. xs <= x1) .and. &
+        (y0 <= ys .and. ys <= y1) .and. &
+        (z0 <= zs .and. zs <= z1) ) then
+      regionid(i, j, k) = rid
+!      write(*, *) i, j, k
+!      write(*, *) x0, xs, x1
+!      write(*, *) y0, ys, y1
+!      write(*, *) z0, zs, z1
+    endif
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_set_seed
+
 subroutine bcut_set_fluidseed( &
                 pid, &
                 xs, ys, zs, &

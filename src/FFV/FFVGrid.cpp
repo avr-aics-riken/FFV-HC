@@ -2,6 +2,7 @@
 #include "FFVCommon.h"
 #include "FFVGlobalVars.h"
 #include "BlockBoundingBox.h"
+#include "bcut.h"
 
 #include <bstl.h>
 #include <SimpleDivider.h>
@@ -28,17 +29,17 @@ void FFVGrid::Init() {
 	DistributePolygon();
 	InitVarsForCutInfo();
 	CalcCutInfo();
-	ClasifyCell();
+	DetectBoundaryCells();
 	FillRegion();
 
 //	if(g_pFFVConfig->WritePolygon()) {
 		WriteCutRaw("./STL", "data");
 //	}
 
-	plsPhaseId->WriteDataInVTKFormat(
+	plsBoundaryCellFlag->WriteDataInVTKFormat(
 									g_pFFVConfig->OutputDataFormatOptionVTKPath.c_str(),
 									g_pFFVConfig->OutputDataFormatOptionVTKPrefix.c_str(),
-									"phase",
+									"cell",
 									0,
 									levelMax - levelMin,
 									levelMax,
@@ -49,10 +50,10 @@ void FFVGrid::Init() {
 									g_pFFVConfig->RootBlockOrigin,
 									g_pFFVConfig->RootBlockLength);
 
-	plsCellId->WriteDataInVTKFormat(
+	plsRegionId->WriteDataInVTKFormat(
 									g_pFFVConfig->OutputDataFormatOptionVTKPath.c_str(),
 									g_pFFVConfig->OutputDataFormatOptionVTKPrefix.c_str(),
-									"cell",
+									"region",
 									0,
 									levelMax - levelMin,
 									levelMax,
@@ -289,9 +290,10 @@ g_pFFVPerfMonitor->Start(ffv_tm_Init_RepairPolygon, 0, 0, true);
 {
 		cutlib::RepairPolygonData(pl);
 
+/*
 		std::string file;
 		pl->save_parallel(&file, "stl_b");
-
+*/
 }
 g_pFFVPerfMonitor->Stop(ffv_tm_Init_RepairPolygon);
 }
@@ -346,11 +348,14 @@ void FFVGrid::InitVarsForCutInfo() {
 	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 
-	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
-	plsPhaseId->Fill(blockManager, -1);
+	plsBoundaryCellFlag = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsBoundaryCellFlag->Fill(blockManager, -1);
 
-	plsCellId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
-	plsCellId->Fill(blockManager, -1);
+	plsRegionIdTmp = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsRegionIdTmp->Fill(blockManager, -1);
+
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsRegionId->Fill(blockManager, -1);
 }
 
 void FFVGrid::CalcCutInfo() {
@@ -520,11 +525,12 @@ void FFVGrid::CalcCutInfo() {
 	plsCutId5->ImposeBoundaryCondition(blockManager);
 }
 
-void FFVGrid::ClasifyCell() {
+void FFVGrid::DetectBoundaryCells() {
 	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
 
 #ifdef _BLOCK_IS_LARGE_
 #else
+#pragma omp parallel for
 #endif
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
 		BlockBase* block = blockManager.getBlock(n);
@@ -542,30 +548,411 @@ void FFVGrid::ClasifyCell() {
 		int* pCutId3 = plsCutId3->GetBlockData(block);
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
-		int* pCellId = plsCellId->GetBlockData(block);
+		int* pBoundaryCellFlag = plsBoundaryCellFlag->GetBlockData(block);
 
+#ifdef _BLOCK_IS_LARGE_
 #pragma omp parallel for
+#else
+#endif
 		for(int k=vc; k<vc+size.z; k++) {
 			for(int j=vc; j<vc+size.y; j++) {
 				for(int i=vc; i<vc+size.x; i++) {
 					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
-					pCellId[m] = 0;
+					pBoundaryCellFlag[m] = 0;
 					if( (pCutId0[m] != 0) ||
 							(pCutId1[m] != 0) ||
 							(pCutId2[m] != 0) ||
 							(pCutId3[m] != 0) ||
 							(pCutId4[m] != 0) ||
 							(pCutId5[m] != 0) ) {
-						pCellId[m] = 1;
+						pBoundaryCellFlag[m] = 1;
 					}
 				}
 			}
 		}
-
 	}
+	plsBoundaryCellFlag->ImposeBoundaryCondition(blockManager);
 }
 
 void FFVGrid::FillRegion() {
+	double xs = g_pFFVConfig->FillingOrigin.x;
+	double ys = g_pFFVConfig->FillingOrigin.y;
+	double zs = g_pFFVConfig->FillingOrigin.z;
+	int rid = 0;
+
+	FillRegion(xs, ys, zs, 0);
+
+//	FillRegion( 0.4, 0.0, 0.0, 1);
+//	FillRegion(-0.4, 0.0, 0.0, 2);
+
+	FillTheRest(5);
+}
+
+void FFVGrid::FillRegion(double xs, double ys, double zs, int rid) {
+	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
+
+	plsRegionIdTmp->Fill(blockManager, 0);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+		real dx[1]  = {cellSize.x};
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+		int ridtmp = 1;
+		bcut_set_seed_(
+			pRegionIdTmp,
+			&xs, &ys, &zs,
+			&ridtmp,
+			dx,
+			org,
+			sz, g);
+	}
+	plsRegionIdTmp->ImposeBoundaryCondition(blockManager);
+
+	int nIterationCount = 0;
+	long int nCellsChanged = 0;
+	do {
+		nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size      = block->getSize();
+			Vec3r origin    = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize  = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1]  = {vc};
+			int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+			int* pCutId0 = plsCutId0->GetBlockData(block);
+			int* pCutId1 = plsCutId1->GetBlockData(block);
+			int* pCutId2 = plsCutId2->GetBlockData(block);
+			int* pCutId3 = plsCutId3->GetBlockData(block);
+			int* pCutId4 = plsCutId4->GetBlockData(block);
+			int* pCutId5 = plsCutId5->GetBlockData(block);
+			int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for(int k=vc; k<=size.z+vc-1; k++) {
+				for(int j=vc; j<=size.y+vc-1; j++) {
+					for(int i=vc; i<=size.x+vc-1; i++) {
+						int mp = i + nc[0]*( j + nc[1]*k );
+						int mw = i-1 + nc[0]*( j + nc[1]*k );
+						int me = i+1 + nc[0]*( j + nc[1]*k );
+						int ms = i + nc[0]*( j-1 + nc[1]*k );
+						int mn = i + nc[0]*( j+1 + nc[1]*k );
+						int mb = i + nc[0]*( j + nc[1]*(k-1) );
+						int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+						int cidw = pCutId0[mp];
+						int cide = pCutId1[mp];
+						int cids = pCutId2[mp];
+						int cidn = pCutId3[mp];
+						int cidb = pCutId4[mp];
+						int cidt = pCutId5[mp];
+
+						if( pRegionIdTmp[mp] == 1 ) {
+							continue;
+						}
+
+						if( (pRegionIdTmp[mw] == 1 && cidw == 0) ||
+								(pRegionIdTmp[me] == 1 && cide == 0) ||
+								(pRegionIdTmp[ms] == 1 && cids == 0) ||
+								(pRegionIdTmp[mn] == 1 && cidn == 0) ||
+								(pRegionIdTmp[mb] == 1 && cidb == 0) ||
+								(pRegionIdTmp[mt] == 1 && cidt == 0) ) {
+							pRegionIdTmp[mp] = 1;
+							nCellsChanged++;
+						}
+					}
+				}
+			}
+		}
+		plsRegionIdTmp->ImposeBoundaryCondition(blockManager);
+
+		long int nCellsChangedTmp = nCellsChanged;
+		MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+		nIterationCount++;
+	}while(nCellsChanged>0);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+
+		int* pRegionId    = plsRegionId->GetBlockData(block);
+		int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#pragma omp parallel for
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					if( pRegionIdTmp[m] == 1 ) {
+						pRegionId[m] = rid;
+					}
+				}
+			}
+		}
+	}
+	plsRegionId->ImposeBoundaryCondition(blockManager);
+}
+
+void FFVGrid::FillTheRest(int rid) {
+	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+
+		int* pRegionId    = plsRegionId->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#pragma omp parallel for
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					if( pRegionId[m] == -1 ) {
+						pRegionId[m] = rid;
+					}
+				}
+			}
+		}
+	}
+	plsRegionId->ImposeBoundaryCondition(blockManager);
+}
+
+void FFVGrid::FillRegion2(double xs, double ys, double zs, int rid) {
+	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
+
+	plsRegionIdTmp->Fill(blockManager, 0);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+		real dx[1]  = {cellSize.x};
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+		int ridtmp = 1;
+		bcut_set_seed_(
+			pRegionIdTmp,
+			&xs, &ys, &zs,
+			&ridtmp,
+			dx,
+			org,
+			sz, g);
+	}
+	plsRegionIdTmp->ImposeBoundaryCondition(blockManager);
+
+	int nIterationCount = 0;
+	long int nCellsChanged = 0;
+	do {
+		nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size      = block->getSize();
+			Vec3r origin    = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize  = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1]  = {vc};
+			int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+			int* pBoundaryCellFlag = plsBoundaryCellFlag->GetBlockData(block);
+			int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for(int k=vc; k<=size.z+vc-1; k++) {
+				for(int j=vc; j<=size.y+vc-1; j++) {
+					for(int i=vc; i<=size.x+vc-1; i++) {
+						int mp = i + nc[0]*( j + nc[1]*k );
+						int mw = i-1 + nc[0]*( j + nc[1]*k );
+						int me = i+1 + nc[0]*( j + nc[1]*k );
+						int ms = i + nc[0]*( j-1 + nc[1]*k );
+						int mn = i + nc[0]*( j+1 + nc[1]*k );
+						int mb = i + nc[0]*( j + nc[1]*(k-1) );
+						int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+						int bcfp = pBoundaryCellFlag[mp];
+						int bcfw = pBoundaryCellFlag[mw];
+						int bcfe = pBoundaryCellFlag[me];
+						int bcfs = pBoundaryCellFlag[ms];
+						int bcfn = pBoundaryCellFlag[mn];
+						int bcfb = pBoundaryCellFlag[mb];
+						int bcft = pBoundaryCellFlag[mt];
+
+						if( bcfp == 1 ) {
+							continue;
+						}
+
+						if( pRegionIdTmp[mp] == 1 ) {
+							continue;
+						}
+
+						if( (pRegionIdTmp[mw] == 1 && bcfw == 0) ||
+								(pRegionIdTmp[me] == 1 && bcfe == 0) ||
+								(pRegionIdTmp[ms] == 1 && bcfs == 0) ||
+								(pRegionIdTmp[mn] == 1 && bcfn == 0) ||
+								(pRegionIdTmp[mb] == 1 && bcfb == 0) ||
+								(pRegionIdTmp[mt] == 1 && bcft == 0) ) {
+							pRegionIdTmp[mp] = 1;
+							nCellsChanged++;
+						}
+					}
+				}
+			}
+		}
+		plsRegionIdTmp->ImposeBoundaryCondition(blockManager);
+
+		long int nCellsChangedTmp = nCellsChanged;
+		MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+		nIterationCount++;
+	}while(nCellsChanged>0);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+
+		int* pRegionId    = plsRegionId->GetBlockData(block);
+		int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#pragma omp parallel for
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					if( pRegionIdTmp[m] == 1 ) {
+						pRegionId[m] = rid;
+					}
+				}
+			}
+		}
+	}
+	plsRegionId->ImposeBoundaryCondition(blockManager);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1]  = {vc};
+		int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+		int* pBoundaryCellFlag = plsBoundaryCellFlag->GetBlockData(block);
+		int* pRegionId    = plsRegionId->GetBlockData(block);
+		int* pRegionIdTmp = plsRegionIdTmp->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int mp = i + nc[0]*( j + nc[1]*k );
+					int mw = i-1 + nc[0]*( j + nc[1]*k );
+					int me = i+1 + nc[0]*( j + nc[1]*k );
+					int ms = i + nc[0]*( j-1 + nc[1]*k );
+					int mn = i + nc[0]*( j+1 + nc[1]*k );
+					int mb = i + nc[0]*( j + nc[1]*(k-1) );
+					int mt = i + nc[0]*( j + nc[1]*(k+1) );
+					if( pBoundaryCellFlag[mp] == 1 ) {
+						if( (pRegionIdTmp[mw] == 1) ||
+								(pRegionIdTmp[me] == 1) ||
+								(pRegionIdTmp[ms] == 1) ||
+								(pRegionIdTmp[mn] == 1) ||
+								(pRegionIdTmp[mb] == 1) ||
+								(pRegionIdTmp[mt] == 1) ) {
+							pRegionId[mp] = rid;
+						}
+					}
+				}
+			}
+		}
+	}
+	plsRegionId->ImposeBoundaryCondition(blockManager);
 }
 
 void FFVGrid::WritePolygon(std::ofstream& ofs, float* pv) {

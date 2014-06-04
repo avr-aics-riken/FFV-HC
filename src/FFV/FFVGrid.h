@@ -51,9 +51,9 @@ private:
 	LocalScalar3D<int>      *plsNormalIndex4;
 	LocalScalar3D<int>      *plsNormalIndex5;
 
-	LocalScalar3D<int>      *plsPhaseId;
-
-	LocalScalar3D<int>      *plsCellId;
+	LocalScalar3D<int>      *plsBoundaryCellFlag;
+	LocalScalar3D<int>      *plsRegionId;
+	LocalScalar3D<int>      *plsRegionIdTmp;
 
 public:
 	void Init();
@@ -64,8 +64,11 @@ private:
 	void DistributePolygon();
 	void InitVarsForCutInfo();
 	void CalcCutInfo();
-	void ClasifyCell();
+	void DetectBoundaryCells();
 	void FillRegion();
+	void FillRegion(double xs, double ys, double zs, int rid);
+	void FillRegion2(double xs, double ys, double zs, int rid);
+	void FillTheRest(int rid);
 
 public:
 	void WriteCutRaw(const char* path, const char* prefix);
