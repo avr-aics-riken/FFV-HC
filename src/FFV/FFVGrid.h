@@ -65,10 +65,10 @@ private:
 	void InitVarsForCutInfo();
 	void CalcCutInfo();
 	void DetectBoundaryCells();
-	void FillRegion();
+	void DefineRegions();
 	void FillRegion(double xs, double ys, double zs, int rid);
 	void FillRegion2(double xs, double ys, double zs, int rid);
-	void FillTheRest(int rid);
+	void FillRemainingRegion(int rid);
 
 public:
 	void WriteCutRaw(const char* path, const char* prefix);

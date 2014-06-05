@@ -30,7 +30,7 @@ void FFVGrid::Init() {
 	InitVarsForCutInfo();
 	CalcCutInfo();
 	DetectBoundaryCells();
-	FillRegion();
+	DefineRegions();
 
 //	if(g_pFFVConfig->WritePolygon()) {
 		WriteCutRaw("./STL", "data");
@@ -247,13 +247,11 @@ g_pFFVPerfMonitor->Start(ffv_tm_Init_RegisterBlock, 0, 0, true);
 	blockManager.printBlockLayoutInfo();
 	blockManager.printBlockLayoutInfo(g_pFFVConfig->OutputLogFilenameBlock.c_str());
 
-	this->nBlocks = blockManager.getNumBlock();
-
 	MPI_Allreduce(MPI_IN_PLACE, &level_min, 1, MPI_INTEGER, MPI_MIN, MPI_COMM_WORLD);
 	MPI_Allreduce(MPI_IN_PLACE, &level_max, 1, MPI_INTEGER, MPI_MAX, MPI_COMM_WORLD);
-
 	levelMin = level_min;
 	levelMax = level_max;
+	this->nBlocks = blockManager.getNumBlock();
 }
 g_pFFVPerfMonitor->Stop(ffv_tm_Init_RegisterBlock);
 }
@@ -348,13 +346,13 @@ void FFVGrid::InitVarsForCutInfo() {
 	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 
-	plsBoundaryCellFlag = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsBoundaryCellFlag = new LocalScalar3D<int>(blockManager, vc, "AtOnce", boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsBoundaryCellFlag->Fill(blockManager, -1);
 
-	plsRegionIdTmp = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsRegionIdTmp = new LocalScalar3D<int>(blockManager, vc, "AtOnce", boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsRegionIdTmp->Fill(blockManager, -1);
 
-	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, "AtOnce", boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsRegionId->Fill(blockManager, -1);
 }
 
@@ -574,7 +572,7 @@ void FFVGrid::DetectBoundaryCells() {
 	plsBoundaryCellFlag->ImposeBoundaryCondition(blockManager);
 }
 
-void FFVGrid::FillRegion() {
+void FFVGrid::DefineRegions() {
 	double xs = g_pFFVConfig->FillingOrigin.x;
 	double ys = g_pFFVConfig->FillingOrigin.y;
 	double zs = g_pFFVConfig->FillingOrigin.z;
@@ -585,7 +583,7 @@ void FFVGrid::FillRegion() {
 //	FillRegion( 0.4, 0.0, 0.0, 1);
 //	FillRegion(-0.4, 0.0, 0.0, 2);
 
-	FillTheRest(5);
+	FillRemainingRegion(5);
 }
 
 void FFVGrid::FillRegion(double xs, double ys, double zs, int rid) {
@@ -729,7 +727,7 @@ void FFVGrid::FillRegion(double xs, double ys, double zs, int rid) {
 	plsRegionId->ImposeBoundaryCondition(blockManager);
 }
 
-void FFVGrid::FillTheRest(int rid) {
+void FFVGrid::FillRemainingRegion(int rid) {
 	int vc                   = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
 
 #ifdef _BLOCK_IS_LARGE_
