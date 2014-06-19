@@ -418,6 +418,8 @@ void FFVConfig::Load(std::string filename) {
 													= Read<bool>					("/GridGeneration/HoleFilling", true);
 	GridGenerationHoleFilling2
 													= Read<bool>					("/GridGeneration/HoleFilling2", true);
+	GridGenerationHoleFilling3
+													= Read<bool>					("/GridGeneration/HoleFilling3", false);
 	GridGenerationOutputSTL	= Read<bool>					("/GridGeneration/OutputSTL", false);
 
 

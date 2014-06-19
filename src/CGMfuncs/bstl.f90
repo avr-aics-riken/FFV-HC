@@ -1764,7 +1764,7 @@ subroutine bstl_detect_zerocut( &
 #endif
 end subroutine bstl_detect_zerocut
 
-subroutine bstl_fill_holes( &
+subroutine bstl_fill_holes_v1( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 n, &
@@ -2014,7 +2014,7 @@ subroutine bstl_fill_holes( &
 !$omp end parallel
 #else
 #endif
-end subroutine bstl_fill_holes
+end subroutine bstl_fill_holes_v1
 
 subroutine bstl_fill_holes_v2( &
                 c0, c1, c2, c3, c4, c5, &
@@ -2267,4 +2267,259 @@ subroutine bstl_fill_holes_v2( &
 #else
 #endif
 end subroutine bstl_fill_holes_v2
+
+subroutine bstl_fill_holes_v3( &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                n, &
+                bClose, &
+                sz, g)
+  implicit none
+  integer, dimension(3)   :: sz
+  integer                 :: g
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer                  :: n
+  integer                  :: bClose
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: cidw
+  integer                  :: cidw0, cidw1, cidw2, cidw3, cidw4, cidw5
+  integer                  :: cide
+  integer                  :: cide0, cide1, cide2, cide3, cide4, cide5
+  integer                  :: cids
+  integer                  :: cids0, cids1, cids2, cids3, cids4, cids5
+  integer                  :: cidn
+  integer                  :: cidn0, cidn1, cidn2, cidn3, cidn4, cidn5
+  integer                  :: cidb
+  integer                  :: cidb0, cidb1, cidb2, cidb3, cidb4, cidb5
+  integer                  :: cidt
+  integer                  :: cidt0, cidt1, cidt2, cidt3, cidt4, cidt5
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+  n = 0
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(cidw) &
+!$omp           private(cidw0, cidw1, cidw2, cidw3, cidw4, cidw5) &
+!$omp           private(cide) &
+!$omp           private(cide0, cide1, cide2, cide3, cide4, cide5) &
+!$omp           private(cids) &
+!$omp           private(cids0, cids1, cids2, cids3, cids4, cids5) &
+!$omp           private(cidn) &
+!$omp           private(cidn0, cidn1, cidn2, cidn3, cidn4, cidn5) &
+!$omp           private(cidb) &
+!$omp           private(cidb0, cidb1, cidb2, cidb3, cidb4, cidb5) &
+!$omp           private(cidt) &
+!$omp           private(cidt0, cidt1, cidt2, cidt3, cidt4, cidt5)
+!$omp do reduction(+: n)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+  do i=1, ix
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    cidw0 = cid0(i-1, j, k)
+    cidw1 = cid1(i-1, j, k)
+    cidw2 = cid2(i-1, j, k)
+    cidw3 = cid3(i-1, j, k)
+    cidw4 = cid4(i-1, j, k)
+    cidw5 = cid5(i-1, j, k)
+
+    cide0 = cid0(i+1, j, k)
+    cide1 = cid1(i+1, j, k)
+    cide2 = cid2(i+1, j, k)
+    cide3 = cid3(i+1, j, k)
+    cide4 = cid4(i+1, j, k)
+    cide5 = cid5(i+1, j, k)
+
+    cids0 = cid0(i, j-1, k)
+    cids1 = cid1(i, j-1, k)
+    cids2 = cid2(i, j-1, k)
+    cids3 = cid3(i, j-1, k)
+    cids4 = cid4(i, j-1, k)
+    cids5 = cid5(i, j-1, k)
+
+    cidn0 = cid0(i, j+1, k)
+    cidn1 = cid1(i, j+1, k)
+    cidn2 = cid2(i, j+1, k)
+    cidn3 = cid3(i, j+1, k)
+    cidn4 = cid4(i, j+1, k)
+    cidn5 = cid5(i, j+1, k)
+
+    cidb0 = cid0(i, j, k-1)
+    cidb1 = cid1(i, j, k-1)
+    cidb2 = cid2(i, j, k-1)
+    cidb3 = cid3(i, j, k-1)
+    cidb4 = cid4(i, j, k-1)
+    cidb5 = cid5(i, j, k-1)
+
+    cidt0 = cid0(i, j, k+1)
+    cidt1 = cid1(i, j, k+1)
+    cidt2 = cid2(i, j, k+1)
+    cidt3 = cid3(i, j, k+1)
+    cidt4 = cid4(i, j, k+1)
+    cidt5 = cid5(i, j, k+1)
+
+    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+      if( bClose == 1 ) then
+				if( cidp2 == 0 ) then
+					cidp2 = 1
+					cids3 = 1
+					c2(i, j  , k) = 0.5
+					c3(i, j-1, k) = 0.5
+				end if
+				if( cidp3 == 0 ) then
+					cidp3 = 1
+					cidn2 = 1
+					c3(i, j  , k) = 0.5
+					c2(i, j+1, k) = 0.5
+				end if
+				if( cidp4 == 0 ) then
+					cidp4 = 1
+					cidb5 = 1
+					c4(i, j, k  ) = 0.5
+					c5(i, j, k-1) = 0.5
+				end if
+				if( cidp5 == 0 ) then
+					cidp5 = 1
+					cidt4 = 1
+					c5(i, j, k  ) = 0.5
+					c4(i, j, k+1) = 0.5
+				end if
+      end if
+		end if
+
+    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+      if( bClose == 1 ) then
+				if( cidp0 == 0 ) then
+					cidp0 = 1
+					cidw1 = 1
+					c0(i  , j, k) = 0.5
+					c1(i-1, j, k) = 0.5
+				end if
+				if( cidp1 == 0 ) then
+					cidp1 = 1
+					cide0 = 1
+					c1(i  , j, k) = 0.5
+					c0(i+1, j, k) = 0.5
+				end if
+				if( cidp4 == 0 ) then
+					cidp4 = 1
+					cidb5 = 1
+					c4(i, j, k  ) = 0.5
+					c5(i, j, k-1) = 0.5
+				end if
+				if( cidp5 == 0 ) then
+					cidp5 = 1
+					cidt4 = 1
+					c5(i, j, k  ) = 0.5
+					c4(i, j, k+1) = 0.5
+				end if
+      end if
+		end if
+
+    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+      if( bClose == 1 ) then
+				if( cidp0 == 0 ) then
+					cidp0 = 1
+					cidw1 = 1
+					c0(i  , j, k) = 0.5
+					c1(i-1, j, k) = 0.5
+				end if
+				if( cidp1 == 0 ) then
+					cidp1 = 1
+					cide0 = 1
+					c1(i  , j, k) = 0.5
+					c0(i+1, j, k) = 0.5
+				end if
+				if( cidp2 == 0 ) then
+					cidp2 = 1
+					cids3 = 1
+					c2(i, j  , k) = 0.5
+					c3(i, j-1, k) = 0.5
+				end if
+				if( cidp3 == 0 ) then
+					cidp3 = 1
+					cidn2 = 1
+					c3(i, j  , k) = 0.5
+					c2(i, j+1, k) = 0.5
+				end if
+      end if
+		end if
+
+    if( (cidp0 /= 0 .and. cidp1 /= 0 ) .or.
+        (cidp2 /= 0 .and. cidp3 /= 0 ) .or.
+        (cidp4 /= 0 .and. cidp5 /= 0 ) ) then
+      n = n + 1
+		end if
+
+    cid0(i, j, k) = cidp0
+    cid1(i, j, k) = cidp1
+    cid2(i, j, k) = cidp2
+    cid3(i, j, k) = cidp3
+    cid4(i, j, k) = cidp4
+    cid5(i, j, k) = cidp5
+
+    cid0(i-1, j, k) = cidw0
+    cid1(i-1, j, k) = cidw1
+    cid2(i-1, j, k) = cidw2
+    cid3(i-1, j, k) = cidw3
+    cid4(i-1, j, k) = cidw4
+    cid5(i-1, j, k) = cidw5
+
+    cid0(i+1, j, k) = cide0
+    cid1(i+1, j, k) = cide1
+    cid2(i+1, j, k) = cide2
+    cid3(i+1, j, k) = cide3
+    cid4(i+1, j, k) = cide4
+    cid5(i+1, j, k) = cide5
+
+    cid0(i, j-1, k) = cids0
+    cid1(i, j-1, k) = cids1
+    cid2(i, j-1, k) = cids2
+    cid3(i, j-1, k) = cids3
+    cid4(i, j-1, k) = cids4
+    cid5(i, j-1, k) = cids5
+
+    cid0(i, j+1, k) = cidn0
+    cid1(i, j+1, k) = cidn1
+    cid2(i, j+1, k) = cidn2
+    cid3(i, j+1, k) = cidn3
+    cid4(i, j+1, k) = cidn4
+    cid5(i, j+1, k) = cidn5
+
+    cid0(i, j, k-1) = cidb0
+    cid1(i, j, k-1) = cidb1
+    cid2(i, j, k-1) = cidb2
+    cid3(i, j, k-1) = cidb3
+    cid4(i, j, k-1) = cidb4
+    cid5(i, j, k-1) = cidb5
+
+    cid0(i, j, k+1) = cidt0
+    cid1(i, j, k+1) = cidt1
+    cid2(i, j, k+1) = cidt2
+    cid3(i, j, k+1) = cidt3
+    cid4(i, j, k+1) = cidt4
+    cid5(i, j, k+1) = cidt5
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bstl_fill_holes_v3
 

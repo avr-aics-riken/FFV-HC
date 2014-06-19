@@ -212,6 +212,7 @@ public:
 //GridGeneration
 	bool					GridGenerationHoleFilling;
 	bool					GridGenerationHoleFilling2;
+	bool					GridGenerationHoleFilling3;
 	bool					GridGenerationOutputSTL;
 
 //Tuning

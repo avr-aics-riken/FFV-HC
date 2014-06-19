@@ -737,7 +737,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 
 	{
 /* ---------------------------------------------------------- */
-/* Fill holes                                                 */
+/* Fill holes v1                                              */
 /* ---------------------------------------------------------- */
 		PrintLog(1, "Filling hole(s)");
 /* ---------------------------------------------------------- */
@@ -774,7 +774,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 			if( g_pFFVConfig->GridGenerationHoleFilling == false ) {
 				bClose = 0;
 			}
-			bstl_fill_holes_(
+			bstl_fill_holes_v1_(
 							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
 							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 							&count,
@@ -883,6 +883,86 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		PrintLog(2, "Completed");
 /* ---------------------------------------------------------- */
 	}
+
+	{
+/* ---------------------------------------------------------- */
+/* Fill holes v3                                              */
+/* ---------------------------------------------------------- */
+		PrintLog(1, "Filling hole(s) 3");
+/* ---------------------------------------------------------- */
+		int nIterationCount = 0;
+		int countLocal = 0;
+		int countTotal = 0;
+		do {
+			countTotal = countLocal;
+			countLocal = 0;
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for reduction(+: countLocal)
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				Vec3i size = block->getSize();
+				Vec3r origin = block->getOrigin();
+				Vec3r blockSize = block->getBlockSize();
+				Vec3r cellSize = block->getCellSize();
+
+				int sz[3] = {size.x, size.y, size.z};
+				int g[1] = {vc};
+
+				real* pCut0 = plsCut0->GetBlockData(block);
+				real* pCut1 = plsCut1->GetBlockData(block);
+				real* pCut2 = plsCut2->GetBlockData(block);
+				real* pCut3 = plsCut3->GetBlockData(block);
+				real* pCut4 = plsCut4->GetBlockData(block);
+				real* pCut5 = plsCut5->GetBlockData(block);
+				int* pCutId0 = plsCutId0->GetBlockData(block);
+				int* pCutId1 = plsCutId1->GetBlockData(block);
+				int* pCutId2 = plsCutId2->GetBlockData(block);
+				int* pCutId3 = plsCutId3->GetBlockData(block);
+				int* pCutId4 = plsCutId4->GetBlockData(block);
+				int* pCutId5 = plsCutId5->GetBlockData(block);
+
+				int count = 0;
+				int bClose = 1;
+				if( g_pFFVConfig->GridGenerationHoleFilling3 == false ) {
+					bClose = 0;
+				}
+
+				bstl_fill_holes_v3_(
+								pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+								pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+								&count,
+								&bClose,
+								sz, g);
+
+				countLocal += count;
+			}
+			plsCut0->ImposeBoundaryCondition(blockManager);
+			plsCut1->ImposeBoundaryCondition(blockManager);
+			plsCut2->ImposeBoundaryCondition(blockManager);
+			plsCut3->ImposeBoundaryCondition(blockManager);
+			plsCut4->ImposeBoundaryCondition(blockManager);
+			plsCut5->ImposeBoundaryCondition(blockManager);
+			plsCutId0->ImposeBoundaryCondition(blockManager);
+			plsCutId1->ImposeBoundaryCondition(blockManager);
+			plsCutId2->ImposeBoundaryCondition(blockManager);
+			plsCutId3->ImposeBoundaryCondition(blockManager);
+			plsCutId4->ImposeBoundaryCondition(blockManager);
+			plsCutId5->ImposeBoundaryCondition(blockManager);
+
+			int countTmp = countLocal;
+			MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+			nIterationCount++;
+		}while( countLocal > countTotal && g_pFFVConfig->GridGenerationHoleFilling3 == true);
+/* ---------------------------------------------------------- */
+		PrintLog(2, "%-20s : %d (#Ite.: %d)", "Hole faces(multi)", countTotal, nIterationCount);
+		PrintLog(2, "Completed");
+/* ---------------------------------------------------------- */
+	}
+
 
 /* ---------------------------------------------------------- */
 /* Filling                                                    */

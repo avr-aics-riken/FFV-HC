@@ -59,13 +59,19 @@ extern "C" {
 				int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
 				int* count,
 				int* sz, int* g);
-	void bstl_fill_holes_(
+	void bstl_fill_holes_v1_(
 				real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
 				int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
 				int* count,
 				int* bClose,
 				int *sz, int *g);
 	void bstl_fill_holes_v2_(
+				real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+				int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+				int* count,
+				int* bClose,
+				int *sz, int *g);
+	void bstl_fill_holes_v3_(
 				real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
 				int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
 				int* count,
