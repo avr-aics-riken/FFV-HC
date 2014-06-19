@@ -2459,8 +2459,8 @@ subroutine bstl_fill_holes_v3( &
       end if
 		end if
 
-    if( (cidp0 /= 0 .and. cidp1 /= 0 ) .or.
-        (cidp2 /= 0 .and. cidp3 /= 0 ) .or.
+    if( (cidp0 /= 0 .and. cidp1 /= 0 ) .or. &
+        (cidp2 /= 0 .and. cidp3 /= 0 ) .or. &
         (cidp4 /= 0 .and. cidp5 /= 0 ) ) then
       n = n + 1
 		end if
