@@ -2329,6 +2329,7 @@ subroutine bcut_calc_ab_u( &
                 mu, &
                 dx, dt, &
                 Uc, &
+								eps, &
                 gx, gy, gz, &
                 sz, g)
   implicit none
@@ -2352,6 +2353,7 @@ subroutine bcut_calc_ab_u( &
   real                    :: mu
   real                    :: dx, dt
   real                    :: Uc
+	real										:: eps
   real                    :: gx, gy, gz
   real                    :: d0, d1, d2, d3, d4, d5
   real                    :: mu0, mu1, mu2, mu3, mu4, mu5
@@ -2440,6 +2442,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp0 /= 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
+			if( d0 < eps ) then
+				mu0 = 0.0
+				mu1 = mu
+			end if
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       dpx0 = dpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       m0 = 1.0d0
@@ -2448,6 +2454,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp1 /= 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
+			if( d1 < eps ) then
+				mu0 = mu
+				mu1 = 0.0
+			end if
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       dpx1 = dpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       m1 = 1.0d0
@@ -2456,6 +2466,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp2 /= 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
+			if( d2 < eps ) then
+				mu2 = 0.0
+				mu3 = mu
+			end if
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       dpy2 = dpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       m2 = 1.0d0
@@ -2464,6 +2478,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp3 /= 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
+			if( d3 < eps ) then
+				mu2 = mu
+				mu3 = 0.0
+			end if
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       dpy3 = dpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       m3 = 1.0d0
@@ -2472,6 +2490,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp4 /= 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
+			if( d4 < eps ) then
+				mu4 = 0.0
+				mu5 = mu
+			end if
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       dpz4 = dpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       m4 = 1.0d0
@@ -2480,6 +2502,10 @@ subroutine bcut_calc_ab_u( &
     if( cidp5 /= 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
+			if( d5 < eps ) then
+				mu4 = mu
+				mu5 = 0.0
+			end if
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       dpz5 = dpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       m5 = 1.0d0
