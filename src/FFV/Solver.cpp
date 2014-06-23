@@ -2662,6 +2662,7 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uxd0,
 				ux0,
@@ -2672,6 +2673,7 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		if( step==0 ) {
@@ -2689,7 +2691,6 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-
 		bcut_update_u_(
 				ux0,
 				uxc0, uxcp,
@@ -2851,6 +2852,7 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uyd0,
 				uy0,
@@ -2861,6 +2863,7 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		if( step==0 ) {
@@ -3039,6 +3042,7 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uzd0,
 				uz0,
@@ -3049,6 +3053,7 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		if( step==0 ) {
@@ -3438,6 +3443,7 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uxd0,
 				ux0,
@@ -3448,13 +3454,13 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		int axis=0;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_ab_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -3692,6 +3698,7 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uyd0,
 				uy0,
@@ -3702,13 +3709,13 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		int axis=1;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_ab_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -3946,6 +3953,7 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 					sz, g);
 		}
 
+		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_d_u_(
 				uzd0,
 				uz0,
@@ -3956,13 +3964,13 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 				&mu,
 				&dx, &dt,
 				&Uc,
+				&eps,
 				sz, g);
 
 		int axis=2;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		real eps = g_pFFVConfig->ShapeApproximationCutoff;
 		bcut_calc_ab_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,

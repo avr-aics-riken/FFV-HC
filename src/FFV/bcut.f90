@@ -1572,6 +1572,7 @@ subroutine bcut_calc_d_u( &
                 mu, &
                 dx, dt, &
                 Uc, &
+								eps, &
                 sz, g)
   implicit none
   integer                 :: i, j, k
@@ -1590,6 +1591,7 @@ subroutine bcut_calc_d_u( &
   real                    :: mu
   real                    :: dx, dt
   real                    :: Uc
+	real										:: eps
   real                    :: d0, d1, d2, d3, d4, d5
   real                    :: mu0, mu1, mu2, mu3, mu4, mu5
   real                    :: m0, m1, m2, m3, m4, m5
@@ -1649,36 +1651,60 @@ subroutine bcut_calc_d_u( &
     if( cidp0 /= 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
+			if( d0 < eps ) then
+				mu0 = 0.0
+				mu1 = mu
+			end if
       m0 = 1.0d0
     endif
 
     if( cidp1 /= 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
+			if( d1 < eps ) then
+				mu0 = mu
+				mu1 = 0.0
+			end if
       m1 = 1.0d0
     endif
 
     if( cidp2 /= 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
+			if( d2 < eps ) then
+				mu2 = 0.0
+				mu3 = mu
+			end if
       m2 = 1.0d0
     endif
 
     if( cidp3 /= 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
+			if( d3 < eps ) then
+				mu2 = mu
+				mu3 = 0.0
+			end if
       m3 = 1.0d0
     endif
 
     if( cidp4 /= 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
+			if( d4 < eps ) then
+				mu4 = 0.0
+				mu5 = mu
+			end if
       m4 = 1.0d0
     endif
 
     if( cidp5 /= 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
+			if( d5 < eps ) then
+				mu4 = mu
+				mu5 = 0.0
+			end if
       m5 = 1.0d0
     endif
 

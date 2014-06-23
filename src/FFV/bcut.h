@@ -86,6 +86,7 @@ extern "C" {
 				real* mu,
 				real* dx, real* dt,
 				real* Us,
+				real* eps,
 				int *sz, int *g);
 
 	void bcut_calc_nue_(
