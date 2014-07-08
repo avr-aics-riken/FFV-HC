@@ -408,6 +408,7 @@ srand( this->myrank + 1 );
 /* Init physical parameters                                   */
 /* ---------------------------------------------------------- */
 	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
+	dx_min= g_pFFVConfig->RootBlockLength/(double)(1 << maxLevel);
 
 	rhof	= g_pFFVConfig->MediumTableFluid[0].rho;
 	cpf		= g_pFFVConfig->MediumTableFluid[0].cp;
@@ -417,6 +418,21 @@ srand( this->myrank + 1 );
 	rhos	= g_pFFVConfig->MediumTableFluid[0].rho;
 	cps		= g_pFFVConfig->MediumTableFluid[0].cp;
 	ks		= g_pFFVConfig->MediumTableFluid[0].k;
+
+rhos = 8880.0;
+cps  = 386.0;
+ks   = 398.0;
+
+rhos = 2700.0;
+cps  = 905.0;
+ks   = 237.0;
+
+
+rhos = 3.0;
+cps  = 1.0;
+ks   = 0.1;
+std::cout << kf/(rhof*cpf)*dt/(dx_min*dx_min) << " " << ks/(rhos*cps)*dt/(dx_min*dx_min) << std::endl;
+
 /* ---------------------------------------------------------- */
 
 

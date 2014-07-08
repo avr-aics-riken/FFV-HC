@@ -3825,6 +3825,7 @@ subroutine bcut_calc_abd_t( &
   integer                      :: bc_n
   integer, dimension(0:bc_n-1):: bc_type
   real, dimension(0:bc_n-1)   :: bc_value
+	real										:: eps
   real                    :: dx, dt
   real, dimension(3)      :: org
   real                    :: d0, d1, d2, d3, d4, d5
@@ -3841,6 +3842,7 @@ subroutine bcut_calc_abd_t( &
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
+	eps = 0.01
 #ifdef _BLOCK_IS_LARGE_
 !$omp parallel private(i, j, k) &
 !$omp           private(cidp) &
@@ -3957,15 +3959,19 @@ subroutine bcut_calc_abd_t( &
     b4 = 0.0
     b5 = 0.0
     if( bc_type(cidp0) == 0 ) then
-      k0 = kf/d0*2.0/(d0 + d1)
-      k1 = kf/d1*2.0/(d0 + d1)
+      k0 = k_p/d0*2.0/(d0 + d1)
+      k1 = k_p/d1*2.0/(d0 + d1)
+			if( d0 < eps ) then
+				k0 = 0.0
+				k1 = k_p
+			end if
       t0 = bc_value(cidp0)
 			b0 = 0.0
     else if( bc_type(cidp0) == 1 ) then
 			nx = nx_( nidx0(i, j, k) )
 
       k0 = 0.0
-      k1 = kf/(d0 + 0.5)
+      k1 = k_p/(d0 + 0.5)
       t0 = 0.0
       b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
     else if( bc_type(cidp0) == 2 ) then
@@ -3976,13 +3982,18 @@ subroutine bcut_calc_abd_t( &
     end if
 
     if( bc_type(cidp1) == 0 ) then
-      k0 = kf/d0*2.0/(d0 + d1)
-      k1 = kf/d1*2.0/(d0 + d1)
+      k0 = k_p/d0*2.0/(d0 + d1)
+      k1 = k_p/d1*2.0/(d0 + d1)
+			if( d1 < eps ) then
+				k0 = k_p
+				k1 = 0.0
+			end if
       t1 = bc_value(cidp1)
+			b1 = 0.0
     else if( bc_type(cidp1) == 1 ) then
 			nx = nx_( nidx1(i, j, k) )
 
-      k0 = kf/(d1 + 0.5)
+      k0 = k_p/(d1 + 0.5)
       k1 = 0.0
       t1 = 0.0
       b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
@@ -3993,16 +4004,20 @@ subroutine bcut_calc_abd_t( &
       b1 = 0.0
     end if
 
-!write(*,*) bc_type(cidp2)
     if( bc_type(cidp2) == 0 ) then
-      k2 = kf/d2*2.0/(d2 + d3)
-      k3 = kf/d3*2.0/(d2 + d3)
+      k2 = k_p/d2*2.0/(d2 + d3)
+      k3 = k_p/d3*2.0/(d2 + d3)
+			if( d2 < eps ) then
+				k2 = 0.0
+				k3 = k_p
+			end if
       t2 = bc_value(cidp2)
+			b2 = 0.0
     else if( bc_type(cidp2) == 1 ) then
 			ny = ny_( nidx2(i, j, k) )
 
       k2 = 0.0
-      k3 = kf/(d2 + 0.5)
+      k3 = k_p/(d2 + 0.5)
       t2 = 0.0
       b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
     else if( bc_type(cidp2) == 2 ) then
@@ -4013,13 +4028,18 @@ subroutine bcut_calc_abd_t( &
     end if
 
     if( bc_type(cidp3) == 0 ) then
-      k2 = kf/d2*2.0/(d2 + d3)
-      k3 = kf/d3*2.0/(d2 + d3)
+      k2 = k_p/d2*2.0/(d2 + d3)
+      k3 = k_p/d3*2.0/(d2 + d3)
+			if( d3 < eps ) then
+				k2 = k_p
+				k3 = 0.0
+			end if
       t3 = bc_value(cidp3)
+			b3 = 0.0
     else if( bc_type(cidp3) == 1 ) then
 			ny = ny_( nidx3(i, j, k) )
 
-      k2 = kf/(d3 + 0.5)
+      k2 = k_p/(d3 + 0.5)
       k3 = 0.0
       t3 = 0.0
       b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
@@ -4031,14 +4051,19 @@ subroutine bcut_calc_abd_t( &
     end if
 
     if( bc_type(cidp4) == 0 ) then
-      k4 = kf/d4*2.0/(d4 + d5)
-      k5 = kf/d5*2.0/(d4 + d5)
+      k4 = k_p/d4*2.0/(d4 + d5)
+      k5 = k_p/d5*2.0/(d4 + d5)
+			if( d4 < eps ) then
+				k4 = 0.0
+				k5 = k_p
+			end if
       t4 = bc_value(cidp4)
+			b4 = 0.0
     else if( bc_type(cidp4) == 1 ) then
 			nz = nz_( nidx4(i, j, k) )
 
       k4 = 0.0
-      k5 = kf/(d4 + 0.5)
+      k5 = k_p/(d4 + 0.5)
       t4 = 0.0
       b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
     else if( bc_type(cidp4) == 2 ) then
@@ -4049,13 +4074,18 @@ subroutine bcut_calc_abd_t( &
     end if
 
     if( bc_type(cidp5) == 0 ) then
-      k4 = kf/d4*2.0/(d4 + d5)
-      k5 = kf/d5*2.0/(d4 + d5)
+      k4 = k_p/d4*2.0/(d4 + d5)
+      k5 = k_p/d5*2.0/(d4 + d5)
+			if( d5 < eps ) then
+				k4 = k_p
+				k5 = 0.0
+			end if
       t5 = bc_value(cidp5)
+			b5 = 0.0
     else if( bc_type(cidp5) == 1 ) then
 			nz = nz_( nidx5(i, j, k) )
 
-      k4 = kf/(d5 + 0.5)
+      k4 = k_p/(d5 + 0.5)
       k5 = 0.0
       t5 = 0.0
       b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
@@ -4081,7 +4111,7 @@ subroutine bcut_calc_abd_t( &
                     - k4*(tp - t4) &
                     )/(rho_p*cp_p)/(dx*dx)
 
-    bp = (b0 + b1 + b2 + b3 + b4 + b5)*kf/(rho_p*cp_p)/(dx*dx)
+    bp = (b0 + b1 + b2 + b3 + b4 + b5)*k_p/(rho_p*cp_p)/(dx*dx)
 
     if( pidp /= 1 ) then
 			tc0_(i, j, k) = 0.0
