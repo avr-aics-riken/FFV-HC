@@ -3915,36 +3915,36 @@ subroutine bcut_calc_abd_t( &
 		k_n   = kf
 		k_b   = kf
 		k_t   = kf
-		if( pid(i, j, k) /= 0 ) then
+		if( pid(i, j, k) /= 1 ) then
 			rho_p = rhos
 			cp_p  = cps
 			k_p   = ks
 		end if
-		if( pid(i-1, j, k) /= 0 ) then
+		if( pid(i-1, j, k) /= 1 ) then
 			k_w   = ks
 		end if
-		if( pid(i+1, j, k) /= 0 ) then
+		if( pid(i+1, j, k) /= 1 ) then
 			k_e   = ks
 		end if
-		if( pid(i, j-1, k) /= 0 ) then
+		if( pid(i, j-1, k) /= 1 ) then
 			k_s   = ks
 		end if
-		if( pid(i, j+1, k) /= 0 ) then
+		if( pid(i, j+1, k) /= 1 ) then
 			k_n   = ks
 		end if
-		if( pid(i, j, k-1) /= 0 ) then
+		if( pid(i, j, k-1) /= 1 ) then
 			k_b   = ks
 		end if
-		if( pid(i, j, k+1) /= 0 ) then
+		if( pid(i, j, k+1) /= 1 ) then
 			k_t   = ks
 		end if
 
-    k0 = kf
-    k1 = kf
-    k2 = kf
-    k3 = kf
-    k4 = kf
-    k5 = kf
+    k0 = k_p
+    k1 = k_p
+    k2 = k_p
+    k3 = k_p
+    k4 = k_p
+    k5 = k_p
     tp = t0_(i, j, k)
     t0 = t0_(i-1, j, k) 
     t1 = t0_(i+1, j, k) 
@@ -3976,9 +3976,6 @@ subroutine bcut_calc_abd_t( &
       b0 = - nx*bc_value(cidp0)*dx/(d0 + 0.5)
     else if( bc_type(cidp0) == 2 ) then
       k0 = k_p*k_w/(k_p*(1.0 - d0) + k_w*d0)
-      k1 = k_p*k_e/(k_p*(1.0 - d1) + k_e*d1)
-      t0 = 0.0
-      b0 = 0.0
     end if
 
     if( bc_type(cidp1) == 0 ) then
@@ -3998,10 +3995,7 @@ subroutine bcut_calc_abd_t( &
       t1 = 0.0
       b1 = + nx*bc_value(cidp1)*dx/(d1 + 0.5)
     else if( bc_type(cidp1) == 2 ) then
-      k0 = k_p*k_w/(k_p*(1.0 - d0) + k_w*d0)
       k1 = k_p*k_e/(k_p*(1.0 - d1) + k_e*d1)
-      t1 = 0.0
-      b1 = 0.0
     end if
 
     if( bc_type(cidp2) == 0 ) then
@@ -4022,9 +4016,6 @@ subroutine bcut_calc_abd_t( &
       b2 = - ny*bc_value(cidp2)*dx/(d2 + 0.5)
     else if( bc_type(cidp2) == 2 ) then
       k2 = k_p*k_s/(k_p*(1.0 - d2) + k_s*d2)
-      k3 = k_p*k_n/(k_p*(1.0 - d3) + k_n*d3)
-      t2 = 0.0
-      b2 = 0.0
     end if
 
     if( bc_type(cidp3) == 0 ) then
@@ -4044,10 +4035,7 @@ subroutine bcut_calc_abd_t( &
       t3 = 0.0
       b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
     else if( bc_type(cidp3) == 2 ) then
-      k2 = k_p*k_s/(k_p*(1.0 - d2) + k_s*d2)
       k3 = k_p*k_n/(k_p*(1.0 - d3) + k_n*d3)
-      t3 = 0.0
-      b3 = 0.0
     end if
 
     if( bc_type(cidp4) == 0 ) then
@@ -4068,9 +4056,6 @@ subroutine bcut_calc_abd_t( &
       b4 = - nz*bc_value(cidp4)*dx/(d4 + 0.5)
     else if( bc_type(cidp4) == 2 ) then
       k4 = k_p*k_b/(k_p*(1.0 - d4) + k_b*d4)
-      k5 = k_p*k_t/(k_p*(1.0 - d5) + k_t*d5)
-      t4 = 0.0
-      b4 = 0.0
     end if
 
     if( bc_type(cidp5) == 0 ) then
@@ -4090,10 +4075,7 @@ subroutine bcut_calc_abd_t( &
       t5 = 0.0
       b5 = + nz*bc_value(cidp5)*dx/(d5 + 0.5)
     else if( bc_type(cidp5) == 2 ) then
-      k4 = k_p*k_b/(k_p*(1.0 - d4) + k_b*d4)
       k5 = k_p*k_t/(k_p*(1.0 - d5) + k_t*d5)
-      t5 = 0.0
-      b5 = 0.0
     end if
 
     l0 = k0/(rho_p*cp_p)/(dx*dx)*dt

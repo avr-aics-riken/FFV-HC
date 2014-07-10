@@ -428,9 +428,12 @@ cps  = 905.0;
 ks   = 237.0;
 
 
-rhos = 3.0;
+rhos = 1.0;
 cps  = 1.0;
-ks   = 0.1;
+ks   = 0.05;
+ks   = 0.02;
+ks   = 0.03;
+ks   = 0.01;
 std::cout << kf/(rhof*cpf)*dt/(dx_min*dx_min) << " " << ks/(rhos*cps)*dt/(dx_min*dx_min) << std::endl;
 
 /* ---------------------------------------------------------- */
@@ -616,6 +619,21 @@ PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 					pCutId3[m] = bid3;
 					pCutId4[m] = bid4;
 					pCutId5[m] = bid5;
+
+/*
+					std::cout << (int)bid0;
+					std::cout << " ";
+					std::cout << (int)bid1;
+					std::cout << " ";
+					std::cout << (int)bid2;
+					std::cout << " ";
+					std::cout << (int)bid3;
+					std::cout << " ";
+					std::cout << (int)bid4;
+					std::cout << " ";
+					std::cout << (int)bid5;
+					std::cout << std::endl;
+*/
 				}
 			}
 		}
