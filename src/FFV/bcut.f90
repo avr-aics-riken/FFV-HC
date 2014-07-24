@@ -2832,7 +2832,7 @@ subroutine bcut_add_g( &
 !ocl nouxsimd
   do i=1, ix
 		ux_(i, j, k) = ux_(i, j, k) + gx*dt
-		uy_(i, j, k) = uy_(i, j, k) + gy*dt
+		uy_(i, j, k) = uy_(i, j, k) + gy*dt 
 		uz_(i, j, k) = uz_(i, j, k) + gz*dt + betag*(t_(i, j, k) - tr)*dt
   end do
   end do
@@ -3848,6 +3848,7 @@ subroutine bcut_calc_abd_t( &
       b0 = + abs(nx)*bc_value(cidp0)*dx/(d0 + 0.5)
     else if( bc_type(cidp0) == 2 ) then
       k0 = k_p*k_w/(k_p*(1.0 - d0) + k_w*d0)
+			m0 = 0.0
     else if( bc_type(cidp0) == 9 ) then
     endif
 
@@ -3864,6 +3865,7 @@ subroutine bcut_calc_abd_t( &
       b1 = + abs(nx)*bc_value(cidp1)*dx/(d1 + 0.5)
     else if( bc_type(cidp1) == 2 ) then
       k1 = k_p*k_e/(k_p*(1.0 - d1) + k_e*d1)
+			m1 = 0.0
     else if( bc_type(cidp1) == 9 ) then
     endif
 
@@ -3880,6 +3882,7 @@ subroutine bcut_calc_abd_t( &
       b2 = + abs(ny)*bc_value(cidp2)*dx/(d2 + 0.5)
     else if( bc_type(cidp2) == 2 ) then
       k2 = k_p*k_s/(k_p*(1.0 - d2) + k_s*d2)
+			m2 = 0.0
     else if( bc_type(cidp2) == 9 ) then
     endif
 
@@ -3896,6 +3899,7 @@ subroutine bcut_calc_abd_t( &
       b3 = + abs(ny)*bc_value(cidp3)*dx/(d3 + 0.5)
     else if( bc_type(cidp3) == 2 ) then
       k3 = k_p*k_n/(k_p*(1.0 - d3) + k_n*d3)
+			m3 = 0.0
     else if( bc_type(cidp3) == 9 ) then
     endif
 
@@ -3912,6 +3916,7 @@ subroutine bcut_calc_abd_t( &
       b4 = + abs(nz)*bc_value(cidp4)*dx/(d4 + 0.5)
     else if( bc_type(cidp4) == 2 ) then
       k4 = k_p*k_b/(k_p*(1.0 - d4) + k_b*d4)
+			m4 = 0.0
     else if( bc_type(cidp4) == 9 ) then
     endif
 
@@ -3928,15 +3933,16 @@ subroutine bcut_calc_abd_t( &
       b5 = + abs(nz)*bc_value(cidp5)*dx/(d5 + 0.5)
     else if( bc_type(cidp5) == 2 ) then
       k5 = k_p*k_t/(k_p*(1.0 - d5) + k_t*d5)
+			m5 = 0.0
     else if( bc_type(cidp5) == 9 ) then
     endif
 
-    l0 = k0/(rhof*cpf)/(dx*dx)*dt
-    l1 = k1/(rhof*cpf)/(dx*dx)*dt
-    l2 = k2/(rhof*cpf)/(dx*dx)*dt
-    l3 = k3/(rhof*cpf)/(dx*dx)*dt
-    l4 = k4/(rhof*cpf)/(dx*dx)*dt
-    l5 = k5/(rhof*cpf)/(dx*dx)*dt
+    l0 = k0/(rho_p*cp_p)/(dx*dx)*dt
+    l1 = k1/(rho_p*cp_p)/(dx*dx)*dt
+    l2 = k2/(rho_p*cp_p)/(dx*dx)*dt
+    l3 = k3/(rho_p*cp_p)/(dx*dx)*dt
+    l4 = k4/(rho_p*cp_p)/(dx*dx)*dt
+    l5 = k5/(rho_p*cp_p)/(dx*dx)*dt
 
     td0_(i, j, k) = ( k1*(t1 - tp) &
                     - k0*(tp - t0) &
@@ -3944,9 +3950,13 @@ subroutine bcut_calc_abd_t( &
                     - k2*(tp - t2) &
                     + k5*(t5 - tp) &
                     - k4*(tp - t4) &
-                    )/(rhof*cpf)/(dx*dx)
+                    )/(rho_p*cp_p)/(dx*dx)
 
-    bp = (b0 + b1 + b2 + b3 + b4 + b5)*kf/(rhof*cpf)/(dx*dx)
+    if( pidp /= 1 ) then
+			tc0_(i, j, k) = 0.0
+		end if
+
+    bp = (b0 + b1 + b2 + b3 + b4 + b5)*k_p/(rho_p*cp_p)/(dx*dx)
 
     Ap(i, j, k) = 1.0d0 + 0.5d0*(l0 + l1) &
                         + 0.5d0*(l2 + l3) &

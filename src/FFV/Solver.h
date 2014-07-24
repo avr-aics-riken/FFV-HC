@@ -36,6 +36,7 @@ private:
 
 private:
 	real dt;
+	real dx_min;
 
 	real rhof;
 	real rhos;
