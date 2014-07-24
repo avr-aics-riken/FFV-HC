@@ -417,6 +417,10 @@ srand( this->myrank + 1 );
 	rhos	= g_pFFVConfig->MediumTableFluid[0].rho;
 	cps		= g_pFFVConfig->MediumTableFluid[0].cp;
 	ks		= g_pFFVConfig->MediumTableFluid[0].k;
+
+	rhos	= 2700.0;
+	cps		= 900.0;
+	ks		= 204.0;
 /* ---------------------------------------------------------- */
 
 
