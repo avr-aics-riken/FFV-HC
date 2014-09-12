@@ -1,6 +1,6 @@
 !>  @file  bils4.f90
-!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric matrices) 
-!< 
+!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric 7-band matrices) 
+!<
 
 subroutine rbgs_smoother_4_d(x, A, b, param, color, offset, sz, g, &
 															mx, &

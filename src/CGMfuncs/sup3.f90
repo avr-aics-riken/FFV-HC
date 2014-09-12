@@ -140,12 +140,6 @@ subroutine sup3_copy_from_neighbor_c2f_x_p( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )
@@ -211,12 +205,6 @@ subroutine sup3_copy_from_neighbor_c2f_y_m( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )
@@ -282,12 +270,6 @@ subroutine sup3_copy_from_neighbor_c2f_y_p( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )
@@ -353,12 +335,6 @@ subroutine sup3_copy_from_neighbor_c2f_z_m( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )
@@ -424,12 +400,6 @@ subroutine sup3_copy_from_neighbor_c2f_z_p( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )
@@ -525,7 +495,6 @@ subroutine sup3_copy_to_buffer( &
   integer                  :: g
   integer, dimension(3)    :: sz
   integer, dimension(3)    :: sz_c
-!  real, dimension(0:sz_c(1)*sz_c(2)*sz_c(3)-1)            :: buffer
   real, dimension(0:sz_c(1)-1, 0:sz_c(2)-1, 0:sz_c(3)-1)  :: buffer
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: data_src
   integer, dimension(3)    :: i1_src
@@ -537,7 +506,6 @@ subroutine sup3_copy_to_buffer( &
   do k=0, sz_c(3)-1
   do j=0, sz_c(2)-1
   do i=0, sz_c(1)-1
-!    buffer(i + sz_c(1)*(j + sz_c(2)*k)) = data_src(i + i1_src(1), j + i1_src(2), k + i1_src(3)) 
     buffer(i, j, k) = data_src(i + i1_src(1), j + i1_src(2), k + i1_src(3)) 
   end do
   end do
@@ -588,12 +556,6 @@ subroutine sup3_copy_to_buffer_c2f( &
     call sup3_get_intp_index(i1, r, i0, sz(1))
     call sup3_get_intp_index(j1, s, j0, sz(2))
     call sup3_get_intp_index(k1, t, k0, sz(3))
-!    i1 = i0/2
-!    j1 = j0/2
-!    k1 = k0/2
-!    r = 0.25 + 0.5*mod(i0, 2)
-!    s = 0.25 + 0.5*mod(j0, 2)
-!    t = 0.25 + 0.5*mod(k0, 2)
     data_src_nnn = data_src(i1  , j1  , k1  )
     data_src_pnn = data_src(i1+1, j1  , k1  )
     data_src_npn = data_src(i1  , j1+1, k1  )

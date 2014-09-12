@@ -1,3 +1,7 @@
+!>  @file  bplt3d.f90
+!!  @brief Basic subprograms for I/O in PLOT3D format for Cartesian grid data structure
+!<
+
 subroutine bplt3d_open_file(filename, filenamelength, un)
   implicit none
   integer                    :: filenamelength

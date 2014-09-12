@@ -1,3 +1,7 @@
+!>  @file  bcax.f90
+!!  @brief Functions to compute the elements of the coefficient matrix at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices, special boundary conditions)
+!<
+
 function bc_get_u(x0, x1, um)
   implicit none
   real          :: bc_get_u

@@ -1,3 +1,7 @@
+!>  @file  bils.f90
+!!  @brief Basic subprograms for iterative linear solvers for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+!<
+
 subroutine jacobi_smoother( &
                 x1, x0, &
                 Ap, Aw, Ae, As, An, Ab, At, &

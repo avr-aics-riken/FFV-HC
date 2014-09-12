@@ -1,6 +1,6 @@
 !>  @file  blsm.f90
-!!  @brief Basic subprograms for the level-set method (BLSM) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for the level-set method for Cartesian grid data structure
+!<
 
 function lsm_getd(phi0, phi1)
   implicit none
@@ -241,21 +241,6 @@ subroutine lsm_calc_n(nx, ny, nz, divn, phi, sz, g)
 	end do
 	end do
 	end do
-
-!$omp do schedule(dynamic, 1)
-	do k=1, kx
-	do j=1, jx
-!ocl nouxsimd
-	do i=1, ix
-!		divn(i, j, k) = 0.5*( nx(i, j, k) + nx(i+1, j, k) ) &
-!									- 0.5*( nx(i, j, k) + nx(i-1, j, k) ) &
-!									+ 0.5*( ny(i, j, k) + ny(i, j+1, k) ) &
-!									- 0.5*( ny(i, j, k) + ny(i, j-1, k) ) &
-!									+ 0.5*( nz(i, j, k) + nz(i, j, k+1) ) &
-!									- 0.5*( nz(i, j, k) + nz(i, j, k-1) )
-	end do
-	end do
-	end do
 !$omp end do
 !$omp end parallel
 end subroutine lsm_calc_n
@@ -354,11 +339,6 @@ subroutine lsm_calc_i(fi, f0, phi, phinx, phiny, phinz, psi, sz, g)
 				x = real(i) - 0.5
 				y = real(j) - 0.5
 				z = real(k) - 0.5
-!				nx = 0.5*(phi(i+1, j, k) - phi(i-1, j, k))
-!				ny = 0.5*(phi(i, j+1, k) - phi(i, j-1, k))
-!				nz = 0.5*(phi(i, j, k+1) - phi(i, j, k-1))
-!				n2 = nx*nx + ny*ny + nz*nz
-!				nl = sqrt(n2)
 				xi = x - phi0*phinx(i, j, k)
 				yi = y - phi0*phiny(i, j, k)
 				zi = z - phi0*phinz(i, j, k)
@@ -1282,19 +1262,6 @@ subroutine lsm_reinit_core(phi1_, phi0_, dtau, phii_, phid_, psi, sz, g)
 		dpy_p2 = dpy_p1 - 0.5*lsm_getminmod(dpyy_c, dpyy_p)
 		dpz_p2 = dpz_p1 - 0.5*lsm_getminmod(dpzz_c, dpzz_p)
 
-!		dpx_n_max2 = max(dpx_n1, 0.0)*max(dpx_n1, 0.0)
-!		dpx_n_min2 = min(dpx_n1, 0.0)*min(dpx_n1, 0.0)
-!		dpx_p_max2 = max(dpx_p1, 0.0)*max(dpx_p1, 0.0)
-!		dpx_p_min2 = min(dpx_p1, 0.0)*min(dpx_p1, 0.0)
-!		dpy_n_max2 = max(dpy_n1, 0.0)*max(dpy_n1, 0.0)
-!		dpy_n_min2 = min(dpy_n1, 0.0)*min(dpy_n1, 0.0)
-!		dpy_p_max2 = max(dpy_p1, 0.0)*max(dpy_p1, 0.0)
-!		dpy_p_min2 = min(dpy_p1, 0.0)*min(dpy_p1, 0.0)
-!		dpz_n_max2 = max(dpz_n1, 0.0)*max(dpz_n1, 0.0)
-!		dpz_n_min2 = min(dpz_n1, 0.0)*min(dpz_n1, 0.0)
-!		dpz_p_max2 = max(dpz_p1, 0.0)*max(dpz_p1, 0.0)
-!		dpz_p_min2 = min(dpz_p1, 0.0)*min(dpz_p1, 0.0)
-
 		dpx_n_max2 = max(dpx_n2, 0.0)*max(dpx_n2, 0.0)
 		dpx_n_min2 = min(dpx_n2, 0.0)*min(dpx_n2, 0.0)
 		dpx_p_max2 = max(dpx_p2, 0.0)*max(dpx_p2, 0.0)
@@ -1410,25 +1377,6 @@ subroutine lsm_reinit_s_core(phi1_, phi0_, dtau, psi, psinx, psiny, psinz, theta
 		wx = psinx(i, j, k)
 		wy = psiny(i, j, k)
 		wz = psinz(i, j, k)
-
-!		dpx_p2 = phi0_(i+2, j, k) - phi0_(i+1, j, k)
-!		dpx_p1 = phi0_(i+1, j, k) - phi0_(i  , j, k)
-!		dpx_n1 = phi0_(i  , j, k) - phi0_(i-1, j, k)
-!		dpx_n2 = phi0_(i-1, j, k) - phi0_(i-2, j, k)
-!		dpy_p2 = phi0_(i, j+2, k) - phi0_(i, j+1, k)
-!		dpy_p1 = phi0_(i, j+1, k) - phi0_(i, j  , k)
-!		dpy_n1 = phi0_(i, j  , k) - phi0_(i, j-1, k)
-!		dpy_n2 = phi0_(i, j-1, k) - phi0_(i, j-2, k)
-!		dpz_p2 = phi0_(i, j, k+2) - phi0_(i, j, k+1)
-!		dpz_p1 = phi0_(i, j, k+1) - phi0_(i, j, k  )
-!		dpz_n1 = phi0_(i, j, k  ) - phi0_(i, j, k-1)
-!		dpz_n2 = phi0_(i, j, k-1) - phi0_(i, j, k-2)
-!		dpx_p = lsm_getweno3(dpx_p2, dpx_p1, dpx_n1)
-!		dpx_n = lsm_getweno3(dpx_n2, dpx_n1, dpx_p1)
-!		dpy_p = lsm_getweno3(dpy_p2, dpy_p1, dpy_n1)
-!		dpy_n = lsm_getweno3(dpy_n2, dpy_n1, dpy_p1)
-!		dpz_p = lsm_getweno3(dpz_p2, dpz_p1, dpz_n1)
-!		dpz_n = lsm_getweno3(dpz_n2, dpz_n1, dpz_p1)
 
 		dpx_n1 = phi0_(i, j, k) - phi0_(i-1, j, k)
 		dpy_n1 = phi0_(i, j, k) - phi0_(i, j-1, k)
@@ -1720,25 +1668,6 @@ subroutine lsm_extend_core(data1_, data0_, dtau, phi, nx, ny, nz, psi, sz, g)
 		wy = ny(i, j, k)*s
 		wz = nz(i, j, k)*s
 
-!		ddx_p2 = data0_(i+2, j, k) - data0_(i+1, j, k)
-!		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
-!		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
-!		ddx_n2 = data0_(i-1, j, k) - data0_(i-2, j, k)
-!		ddy_p2 = data0_(i, j+2, k) - data0_(i, j+1, k)
-!		ddy_p1 = data0_(i, j+1, k) - data0_(i, j  , k)
-!		ddy_n1 = data0_(i, j  , k) - data0_(i, j-1, k)
-!		ddy_n2 = data0_(i, j-1, k) - data0_(i, j-2, k)
-!		ddz_p2 = data0_(i, j, k+2) - data0_(i, j, k+1)
-!		ddz_p1 = data0_(i, j, k+1) - data0_(i, j, k  )
-!		ddz_n1 = data0_(i, j, k  ) - data0_(i, j, k-1)
-!		ddz_n2 = data0_(i, j, k-1) - data0_(i, j, k-2)
-!		ddx_p = lsm_getweno3(ddx_p2, ddx_p1, ddx_n1)
-!		ddx_n = lsm_getweno3(ddx_n2, ddx_n1, ddx_p1)
-!		ddy_p = lsm_getweno3(ddy_p2, ddy_p1, ddy_n1)
-!		ddy_n = lsm_getweno3(ddy_n2, ddy_n1, ddy_p1)
-!		ddz_p = lsm_getweno3(ddz_p2, ddz_p1, ddz_n1)
-!		ddz_n = lsm_getweno3(ddz_n2, ddz_n1, ddz_p1)
-
 		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
 		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
 		ddy_p1 = data0_(i, j+1, k) - data0_(i, j  , k)
@@ -1881,25 +1810,6 @@ subroutine lsm_extend_s_core(data1_, data0_, dtau, psi, psinx, psiny, psinz, sz,
 		ddy_n = ddy_n1
 		ddz_p = ddz_p1
 		ddz_n = ddz_n1
-
-!		ddx_p2 = data0_(i+2, j, k) - data0_(i+1, j, k)
-!		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
-!		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
-!		ddx_n2 = data0_(i-1, j, k) - data0_(i-2, j, k)
-!		ddy_p2 = data0_(i, j+2, k) - data0_(i, j+1, k)
-!		ddy_p1 = data0_(i, j+1, k) - data0_(i, j  , k)
-!		ddy_n1 = data0_(i, j  , k) - data0_(i, j-1, k)
-!		ddy_n2 = data0_(i, j-1, k) - data0_(i, j-2, k)
-!		ddz_p2 = data0_(i, j, k+2) - data0_(i, j, k+1)
-!		ddz_p1 = data0_(i, j, k+1) - data0_(i, j, k  )
-!		ddz_n1 = data0_(i, j, k  ) - data0_(i, j, k-1)
-!		ddz_n2 = data0_(i, j, k-1) - data0_(i, j, k-2)
-!		ddx_p = lsm_getweno3(ddx_p2, ddx_p1, ddx_n1)
-!		ddx_n = lsm_getweno3(ddx_n2, ddx_n1, ddx_p1)
-!		ddy_p = lsm_getweno3(ddy_p2, ddy_p1, ddy_n1)
-!		ddy_n = lsm_getweno3(ddy_n2, ddy_n1, ddy_p1)
-!		ddz_p = lsm_getweno3(ddz_p2, ddz_p1, ddz_n1)
-!		ddz_n = lsm_getweno3(ddz_n2, ddz_n1, ddz_p1)
 
 		data1_(i, j, k) = data0_(i, j, k) -( &
 																			+ (max(wx, 0.0)*ddx_n + min(wx, 0.0)*ddx_p) &

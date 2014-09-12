@@ -1,3 +1,7 @@
+!>  @file  comm.f90
+!!  @brief Wrapper functions for inter-process communications for Cartesian grid data structure
+!<
+
 subroutine comm_sum(total, a)
   implicit none
   include 'mpif.h'

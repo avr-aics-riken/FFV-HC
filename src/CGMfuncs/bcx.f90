@@ -1,3 +1,7 @@
+!>  @file  bcx.f90
+!!  @brief Functions to compute the right-hand side values at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+!<
+
 subroutine bc_x1_d(x, xc, sz, g)
   implicit none
   integer                  :: i, j, k

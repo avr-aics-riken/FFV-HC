@@ -1,6 +1,6 @@
 !>  @file  bils7.f90
-!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric/asymmetric matrices) 
-!< 
+!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices) 
+!<
 
 subroutine rbgs_smoother_7_b(x, A, b, param, color, offset, sz, g)
 	implicit none

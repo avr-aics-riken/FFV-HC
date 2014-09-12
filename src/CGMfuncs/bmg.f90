@@ -1,6 +1,6 @@
 !>  @file  bmg.f90
-!!  @brief Basic subprograms for the multigrid method (BMG) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for the multigrid method for Cartesian grid data structure
+!<
 
 function mg_geth(phi)
 	implicit none
