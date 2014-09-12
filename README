@@ -14,21 +14,39 @@
 OUTLINE
 =======
 
-FFV-HC is an experimental branch of FFV, which aims at effective control of grid density
-by using hierarchical Cartesian grids. 
+FrontFlow/violet (FFV) provides numerical solutions for 3D transient fluid flow
+and heat transfer problems encountered in practical engineering applications.
+Based on Cartesian grid techniques, it offers several advantages over conventional
+solvers including:
 
-In FFV-HC, a block-based octree data structure
-is employed to organize Cartesian grids. Thanks to this data structure, it is possible
-to share basic algorithms for the computation of fluid dynamics with FFV-C, and thus
-the key features are still retained - high performance on massively parallel computers.
+- High accuracy
+- High performance computation with good scalability
+- High portability of the source codes (from personal computers to supercomputers)
+- High consistency with pre-/post-processing
+  Ex) Fully parallel and automatic grid generation function is built-in
 
-CAUTION
-=======
+Thus, FFV aims at reducing the total turnaround time in the design cycle for
+industrial products.
 
-This is a prototype version of FFV-HC.
-Compared with FFV-C, less functions are implemented and available for use.
-A regular version with full functionality, and less bugs, will be released in April 2014.
+FFV-Hierarchical Cartesian (FFV-HC) is an experimental branch of FFV, and is developed
+to work on hierarchical Cartesian grids. In FFV-HC, a block-based octree data structure
+is employed to organize hierarchical Cartesian grids. Thanks to this data structure,
+it is possible to share basic algorithms for the computation of fluid dynamics with FFV-C,
+and thus the key features are still retained.
 
+
+RELEASE PLAN
+============
+
+FFV-HC is still being under extensive development, and will be released with new features.
+Please note, however, that such new features are implemented in the next version (ver 2.x.x),
+which will be released by the end of March in 2015. 
+This version (ver 1.x.x) will be updated only for bug fixes.
+
+[NEW FEATURES]
+- An enhanced immersed boundary method for moving boundaries
+- A new solver for two-phase flows in complex geometries
+  and so on.
 
 INGREDIENTS
 ===========
@@ -44,6 +62,7 @@ doc/            Documents
 examples/       Example files
 src/            Source files
    FFV          FFV source codes
+   CGMfuncs     Fortran subroutines for CFD-related algorithms on Cartesian grids
 
 
 COMMENTS & KNOWN ISSUES
