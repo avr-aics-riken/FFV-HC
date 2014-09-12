@@ -214,33 +214,6 @@ extern "C" {
 			real* dx, real* dt,
 			int *sz, int *g);
 
-	void bcut_calc_f_p_0_(
-			real *fspx,
-			real *fspy,
-			real *fspz,
-			real *fsp,
-			real *p,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			real* dx, real* dt,
-			int *sz, int *g);
-	void bcut_calc_f_v_0_(
-			real *fsvx,
-			real *fsvy,
-			real *fsvz,
-			real *fsv,
-			real *ux,
-			real *uy,
-			real *uz,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			real* rho,
-			real* mu,
-			real* dx, real* dt,
-			real* Us,
-			int *sz, int *g);
 	void bcut_calc_f_p_(
 			real *fspx,
 			real *fspy,
