@@ -1,6 +1,6 @@
 !>  @file  blsm.f90
-!!  @brief Basic subprograms for the level-set method (BLSM) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for the level-set method for Cartesian grid data structure
+!<
 
 function lsm_getd(phi0, phi1)
   implicit none
@@ -168,7 +168,7 @@ subroutine lsm_calc_n(nx, ny, nz, divn, phi, sz, g)
 !$omp					,private(dpl_c, dp2_c) &
 !$omp					,private(dpxx_c, dpyy_c, dpzz_c) &
 !$omp					,private(dpxy_c, dpyz_c, dpzx_c)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -238,21 +238,6 @@ subroutine lsm_calc_n(nx, ny, nz, divn, phi, sz, g)
 										- 2.0*dpy_c*dpz_c*dpyz_c &
 										- 2.0*dpz_c*dpx_c*dpzx_c &
 									)/(dpl_c**3 + eps);
-	end do
-	end do
-	end do
-
-!$omp do schedule(dynamic, 1)
-	do k=1, kx
-	do j=1, jx
-!ocl nouxsimd
-	do i=1, ix
-!		divn(i, j, k) = 0.5*( nx(i, j, k) + nx(i+1, j, k) ) &
-!									- 0.5*( nx(i, j, k) + nx(i-1, j, k) ) &
-!									+ 0.5*( ny(i, j, k) + ny(i, j+1, k) ) &
-!									- 0.5*( ny(i, j, k) + ny(i, j-1, k) ) &
-!									+ 0.5*( nz(i, j, k) + nz(i, j, k+1) ) &
-!									- 0.5*( nz(i, j, k) + nz(i, j, k-1) )
 	end do
 	end do
 	end do
@@ -354,11 +339,6 @@ subroutine lsm_calc_i(fi, f0, phi, phinx, phiny, phinz, psi, sz, g)
 				x = real(i) - 0.5
 				y = real(j) - 0.5
 				z = real(k) - 0.5
-!				nx = 0.5*(phi(i+1, j, k) - phi(i-1, j, k))
-!				ny = 0.5*(phi(i, j+1, k) - phi(i, j-1, k))
-!				nz = 0.5*(phi(i, j, k+1) - phi(i, j, k-1))
-!				n2 = nx*nx + ny*ny + nz*nz
-!				nl = sqrt(n2)
 				xi = x - phi0*phinx(i, j, k)
 				yi = y - phi0*phiny(i, j, k)
 				zi = z - phi0*phinz(i, j, k)
@@ -415,7 +395,7 @@ subroutine lsm_update_phi_v(phi1_, phi0_, v0_, psi_, sz, g)
 !$omp					,private(psi0, psi1, psi3, psi2, psi4, psi5, psi6) &
 !$omp					,private(dpsi0, dpsi1, dpsi3, dpsi2, dpsi4, dpsi5, dpsi6) &
 !$omp					,private(q1, q3, q2, q4, q5, q6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -558,7 +538,7 @@ subroutine lsm_update_phi_v_2(phi1_, phi0_, v0_, psi, sz, g)
 !$omp					,private(phi1p, phi3p, phi2p, phi4p, phi5p, phi6p) &
 !$omp					,private(phi1n, phi3n, phi2n, phi4n, phi5n, phi6n) &
 !$omp					,private(phi0, phi1, phi3, phi2, phi4, phi5, phi6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -637,7 +617,7 @@ subroutine lsm_update_phi_v_quick(phi1_, phi0_, v0_, psi_, sz, g)
 !$omp					,private(phi0, phi1, phi3, phi2, phi4, phi5, phi6) &
 !$omp					,private(psi0, psi1, psi3, psi2, psi4, psi5, psi6) &
 !$omp					,private(dpsi0, dpsi1, dpsi3, dpsi2, dpsi4, dpsi5, dpsi6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -749,7 +729,7 @@ subroutine lsm_update_phi_v_weno3(phi1_, phi0_, v0_, sz, g)
 !$omp					,private(dpx_p, dpy_p, dpz_p) &
 !$omp					,private(dpx_n, dpy_n, dpz_n) &
 !$omp					,private(vx, vy, vz)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -826,7 +806,7 @@ subroutine lsm_update_phi_f(phi1_, phi0_, phif, sz, g)
 !$omp					,private(dpx_p2, dpy_p2, dpz_p2) &
 !$omp					,private(dpx_n2, dpy_n2, dpz_n2) &
 !$omp					,private(dp_p, dp_n)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -915,7 +895,7 @@ subroutine lsm_update_phi_f_2(phi1_, phi0_, phif, psi, sz, g)
 !$omp					,private(dpx_p2, dpy_p2, dpz_p2) &
 !$omp					,private(dpx_n2, dpy_n2, dpz_n2) &
 !$omp					,private(dp_p, dp_n)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -1012,7 +992,7 @@ subroutine lsm_calc_signeddistance(d, phi, sz, g)
 !$omp					,private(dpx_c, dpy_c, dpz_c) &
 !$omp					,private(dpx_n, dpy_n, dpz_n) &
 !$omp					,private(dphi1, dphi2, dphi3, dphi4, dphi5, dphi6, dphi7, dphi)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -1251,7 +1231,7 @@ subroutine lsm_reinit_core(phi1_, phi0_, dtau, phii_, phid_, psi, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1281,19 +1261,6 @@ subroutine lsm_reinit_core(phi1_, phi0_, dtau, phii_, phid_, psi, sz, g)
 		dpx_p2 = dpx_p1 - 0.5*lsm_getminmod(dpxx_c, dpxx_p)
 		dpy_p2 = dpy_p1 - 0.5*lsm_getminmod(dpyy_c, dpyy_p)
 		dpz_p2 = dpz_p1 - 0.5*lsm_getminmod(dpzz_c, dpzz_p)
-
-!		dpx_n_max2 = max(dpx_n1, 0.0)*max(dpx_n1, 0.0)
-!		dpx_n_min2 = min(dpx_n1, 0.0)*min(dpx_n1, 0.0)
-!		dpx_p_max2 = max(dpx_p1, 0.0)*max(dpx_p1, 0.0)
-!		dpx_p_min2 = min(dpx_p1, 0.0)*min(dpx_p1, 0.0)
-!		dpy_n_max2 = max(dpy_n1, 0.0)*max(dpy_n1, 0.0)
-!		dpy_n_min2 = min(dpy_n1, 0.0)*min(dpy_n1, 0.0)
-!		dpy_p_max2 = max(dpy_p1, 0.0)*max(dpy_p1, 0.0)
-!		dpy_p_min2 = min(dpy_p1, 0.0)*min(dpy_p1, 0.0)
-!		dpz_n_max2 = max(dpz_n1, 0.0)*max(dpz_n1, 0.0)
-!		dpz_n_min2 = min(dpz_n1, 0.0)*min(dpz_n1, 0.0)
-!		dpz_p_max2 = max(dpz_p1, 0.0)*max(dpz_p1, 0.0)
-!		dpz_p_min2 = min(dpz_p1, 0.0)*min(dpz_p1, 0.0)
 
 		dpx_n_max2 = max(dpx_n2, 0.0)*max(dpx_n2, 0.0)
 		dpx_n_min2 = min(dpx_n2, 0.0)*min(dpx_n2, 0.0)
@@ -1411,25 +1378,6 @@ subroutine lsm_reinit_s_core(phi1_, phi0_, dtau, psi, psinx, psiny, psinz, theta
 		wy = psiny(i, j, k)
 		wz = psinz(i, j, k)
 
-!		dpx_p2 = phi0_(i+2, j, k) - phi0_(i+1, j, k)
-!		dpx_p1 = phi0_(i+1, j, k) - phi0_(i  , j, k)
-!		dpx_n1 = phi0_(i  , j, k) - phi0_(i-1, j, k)
-!		dpx_n2 = phi0_(i-1, j, k) - phi0_(i-2, j, k)
-!		dpy_p2 = phi0_(i, j+2, k) - phi0_(i, j+1, k)
-!		dpy_p1 = phi0_(i, j+1, k) - phi0_(i, j  , k)
-!		dpy_n1 = phi0_(i, j  , k) - phi0_(i, j-1, k)
-!		dpy_n2 = phi0_(i, j-1, k) - phi0_(i, j-2, k)
-!		dpz_p2 = phi0_(i, j, k+2) - phi0_(i, j, k+1)
-!		dpz_p1 = phi0_(i, j, k+1) - phi0_(i, j, k  )
-!		dpz_n1 = phi0_(i, j, k  ) - phi0_(i, j, k-1)
-!		dpz_n2 = phi0_(i, j, k-1) - phi0_(i, j, k-2)
-!		dpx_p = lsm_getweno3(dpx_p2, dpx_p1, dpx_n1)
-!		dpx_n = lsm_getweno3(dpx_n2, dpx_n1, dpx_p1)
-!		dpy_p = lsm_getweno3(dpy_p2, dpy_p1, dpy_n1)
-!		dpy_n = lsm_getweno3(dpy_n2, dpy_n1, dpy_p1)
-!		dpz_p = lsm_getweno3(dpz_p2, dpz_p1, dpz_n1)
-!		dpz_n = lsm_getweno3(dpz_n2, dpz_n1, dpz_p1)
-
 		dpx_n1 = phi0_(i, j, k) - phi0_(i-1, j, k)
 		dpy_n1 = phi0_(i, j, k) - phi0_(i, j-1, k)
 		dpz_n1 = phi0_(i, j, k) - phi0_(i, j, k-1)
@@ -1506,7 +1454,7 @@ subroutine lsm_reinit_core_0(phi1_, phi0_, dtau, phii_, phid_, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1608,7 +1556,7 @@ subroutine lsm_smooth_core(phi1_, phi0_, dtau, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1719,25 +1667,6 @@ subroutine lsm_extend_core(data1_, data0_, dtau, phi, nx, ny, nz, psi, sz, g)
 		wx = nx(i, j, k)*s
 		wy = ny(i, j, k)*s
 		wz = nz(i, j, k)*s
-
-!		ddx_p2 = data0_(i+2, j, k) - data0_(i+1, j, k)
-!		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
-!		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
-!		ddx_n2 = data0_(i-1, j, k) - data0_(i-2, j, k)
-!		ddy_p2 = data0_(i, j+2, k) - data0_(i, j+1, k)
-!		ddy_p1 = data0_(i, j+1, k) - data0_(i, j  , k)
-!		ddy_n1 = data0_(i, j  , k) - data0_(i, j-1, k)
-!		ddy_n2 = data0_(i, j-1, k) - data0_(i, j-2, k)
-!		ddz_p2 = data0_(i, j, k+2) - data0_(i, j, k+1)
-!		ddz_p1 = data0_(i, j, k+1) - data0_(i, j, k  )
-!		ddz_n1 = data0_(i, j, k  ) - data0_(i, j, k-1)
-!		ddz_n2 = data0_(i, j, k-1) - data0_(i, j, k-2)
-!		ddx_p = lsm_getweno3(ddx_p2, ddx_p1, ddx_n1)
-!		ddx_n = lsm_getweno3(ddx_n2, ddx_n1, ddx_p1)
-!		ddy_p = lsm_getweno3(ddy_p2, ddy_p1, ddy_n1)
-!		ddy_n = lsm_getweno3(ddy_n2, ddy_n1, ddy_p1)
-!		ddz_p = lsm_getweno3(ddz_p2, ddz_p1, ddz_n1)
-!		ddz_n = lsm_getweno3(ddz_n2, ddz_n1, ddz_p1)
 
 		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
 		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
@@ -1881,25 +1810,6 @@ subroutine lsm_extend_s_core(data1_, data0_, dtau, psi, psinx, psiny, psinz, sz,
 		ddy_n = ddy_n1
 		ddz_p = ddz_p1
 		ddz_n = ddz_n1
-
-!		ddx_p2 = data0_(i+2, j, k) - data0_(i+1, j, k)
-!		ddx_p1 = data0_(i+1, j, k) - data0_(i  , j, k)
-!		ddx_n1 = data0_(i  , j, k) - data0_(i-1, j, k)
-!		ddx_n2 = data0_(i-1, j, k) - data0_(i-2, j, k)
-!		ddy_p2 = data0_(i, j+2, k) - data0_(i, j+1, k)
-!		ddy_p1 = data0_(i, j+1, k) - data0_(i, j  , k)
-!		ddy_n1 = data0_(i, j  , k) - data0_(i, j-1, k)
-!		ddy_n2 = data0_(i, j-1, k) - data0_(i, j-2, k)
-!		ddz_p2 = data0_(i, j, k+2) - data0_(i, j, k+1)
-!		ddz_p1 = data0_(i, j, k+1) - data0_(i, j, k  )
-!		ddz_n1 = data0_(i, j, k  ) - data0_(i, j, k-1)
-!		ddz_n2 = data0_(i, j, k-1) - data0_(i, j, k-2)
-!		ddx_p = lsm_getweno3(ddx_p2, ddx_p1, ddx_n1)
-!		ddx_n = lsm_getweno3(ddx_n2, ddx_n1, ddx_p1)
-!		ddy_p = lsm_getweno3(ddy_p2, ddy_p1, ddy_n1)
-!		ddy_n = lsm_getweno3(ddy_n2, ddy_n1, ddy_p1)
-!		ddz_p = lsm_getweno3(ddz_p2, ddz_p1, ddz_n1)
-!		ddz_n = lsm_getweno3(ddz_n2, ddz_n1, ddz_p1)
 
 		data1_(i, j, k) = data0_(i, j, k) -( &
 																			+ (max(wx, 0.0)*ddx_n + min(wx, 0.0)*ddx_p) &

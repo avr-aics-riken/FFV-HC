@@ -1,6 +1,6 @@
 !>  @file  bca4.f90
-!!  @brief Functions to compute the coefficient matrix (BCA) at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric matrices)
-!< 
+!!  @brief Functions to compute the elements of the coefficient matrix at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric 7-band matrices)
+!<
 
 subroutine bc_A1_d_4(A, b, xc, sz, g)
 	implicit none

@@ -1,3 +1,6 @@
+/// @file  bplt3d.h
+/// @brief Basic subprograms for I/O in PLOT3D format for Cartesian grid data structure
+
 #ifndef BPLT3D_H
 #define BPLT3D_H
 

@@ -1,5 +1,5 @@
 /// @file  bsim.h
-/// @brief Basic subprograms for a sharp interface method (BSIM) for Cartesian grid data structure
+/// @brief Basic subprograms for a sharp interface method for Cartesian grid data structure
 
 #ifndef SIM_H
 #define SIM_H

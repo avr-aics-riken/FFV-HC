@@ -1,5 +1,5 @@
 /// @file  bsdf.h
-/// @brief Basic subprograms for initializing the signed distance functions (BSDF) for Cartesian grid data structure
+/// @brief Basic subprograms for initializing the signed distance functions for Cartesian grid data structure
 
 #ifndef BSDF_H
 #define BSDF_H

@@ -13,50 +13,50 @@ int main(int argc, char** argv)
 	int nResultInit = pSolver->Init(argc, argv);
 	switch( nResultInit ) {
 		case EX_SUCCESS : {
-			break;
-		}
+												break;
+											}
 		case EX_FAILURE : {
-			delete pSolver;
-			return EX_SUCCESS;
-			break;
-		}
+												delete pSolver;
+												return EX_SUCCESS;
+												break;
+											}
 		default : {
-			break;
-		}
+								break;
+							}
 	}
 
 	int nResultLoop = pSolver->Loop();
 	switch( nResultLoop ) {
 		case EX_SUCCESS : {
-			break;
-		}
+												break;
+											}
 		case EX_FAILURE : {
-			delete pSolver;
-			return EX_SUCCESS;
-			break;
-		}
+												delete pSolver;
+												return EX_SUCCESS;
+												break;
+											}
 		default : {
-			break;
-		}
+								break;
+							}
 	}
 
 	int nResultPost = pSolver->Post();
 	switch( nResultPost ) {
 		case EX_SUCCESS : {
-			break;
-		}
+												break;
+											}
 		case EX_FAILURE : {
-			delete pSolver;
-			return EX_SUCCESS;
-			break;
-		}
+												delete pSolver;
+												return EX_SUCCESS;
+												break;
+											}
 		default : {
-			break;
-		}
+								break;
+							}
 	}
 
 	delete pSolver;
 
-  return EX_SUCCESS;
+	return EX_SUCCESS;
 }
 

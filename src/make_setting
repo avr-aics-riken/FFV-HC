@@ -3,18 +3,18 @@
 # FFV-BCM
 # FrontFlow/violet based on Building-cube Method
 #
-# Copyright (c) 2013 Institute of Industrial Science, The University of Tokyo. 
+# Copyright (c) 2013,2014 Institute of Industrial Science, The University of Tokyo. 
 # All rights reserved.
 #
-# Copyright (c) 2013 Advanced Institute for Computational Science, RIKEN. 
+# Copyright (c) 2013,2014 Advanced Institute for Computational Science, RIKEN. 
 # All rights reserved.
 #
 #############################################################################
 
 MPI_DIR     := /usr/local
 MPI_DIR     := 
-MPI_DIR     := /usr/lib/openmpi
 MPI_DIR     := /opt/openmpi
+MPI_DIR     := /usr/lib/openmpi
 
 FFV_HOME    := ../../lib
 FFV_HOME    := $(HOME)/FFV
@@ -26,6 +26,7 @@ CUTLIB      := $(FFV_HOME)/Catlib
 PMLIB       := $(FFV_HOME)/PMlib
 BCM_DIR     := $(FFV_HOME)/BCMTools
 HDMLIB      := $(FFV_HOME)/HDMlib
+CGM_FUNCS   := ../CGMfuncs
 
 #POLYLIB     := $(FFV_HOME)/Polylib-float
 #CUTLIB      := $(FFV_HOME)/Cutlib-float
@@ -41,8 +42,6 @@ FFV_REAL    := double
 
 FFV_THREAD  := IJK
 FFV_THREAD  := BLOCK
-
-CGM_FUNCS   := ../CGMfuncs
 
 ifeq ($(FFV_COMP),gnu)
   CXX         := g++

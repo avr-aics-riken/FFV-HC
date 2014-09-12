@@ -18,7 +18,7 @@ class BlockBoundingBox {
 	const Vec3i& size;
 	int vc;
 
-public:
+	public:
 
 	BlockBoundingBox(const BCMOctree* tree, 
 			const Vec3r& rootOrigin, double rootLength, const Vec3i& size,

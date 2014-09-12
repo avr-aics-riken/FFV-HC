@@ -1,6 +1,6 @@
 !>  @file  bils4.f90
-!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric matrices) 
-!< 
+!!  @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric 7-band matrices) 
+!<
 
 subroutine rbgs_smoother_4_d(x, A, b, param, color, offset, sz, g, &
 															mx, &
@@ -857,7 +857,7 @@ subroutine calc_ax_4_b(y, A, x, sz, g)
 	kx = sz(3)
 !$omp parallel private(i, j, k) &
 !$omp					,private(ax)	
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -891,7 +891,7 @@ subroutine calc_r_4_b(r, A, b, x, sz, g)
 	jx = sz(2)
 	kx = sz(3)
 !$omp parallel private(i, j, k) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -927,7 +927,7 @@ subroutine calc_rr_4_b(rr, A, b, x, sz, g)
 	rr = 0.0
 !$omp parallel private(i, j, k) &
 !$omp					,private(r)
-!$omp do schedule(dynamic, 1), reduction(+:rr)
+!$omp do schedule(static, 1), reduction(+:rr)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1011,7 +1011,7 @@ subroutine calc_ax_4_s(y, A0, A1, A2, A3, x, sz, g)
 	kx = sz(3)
 !$omp parallel private(i, j, k) &
 !$omp					,private(ax)	
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1047,7 +1047,7 @@ subroutine calc_r_4_s(r, A0, A1, A2, A3, b, x, sz, g)
 	kx = sz(3)
 !$omp parallel private(i, j, k) &
 !$omp					,private(ax)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1085,7 +1085,7 @@ subroutine calc_rr_4_s(rr, A0, A1, A2, A3, b, x, sz, g)
 !$omp parallel private(i, j, k) &
 !$omp					,private(ax) &
 !$omp					,private(r)
-!$omp do schedule(dynamic, 1), reduction(+:rr)
+!$omp do schedule(static, 1), reduction(+:rr)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix

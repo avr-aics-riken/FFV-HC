@@ -1,3 +1,7 @@
+!>  @file  blas.f90
+!!  @brief Basic subprograms for linear algebra for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+!<
+
 subroutine fill(x, a, sz, g)
   implicit none
   integer, dimension(3)   :: sz

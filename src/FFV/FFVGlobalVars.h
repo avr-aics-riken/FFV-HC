@@ -19,4 +19,3 @@ void PrintLog(int myrank, int level, const char* format, ...);
 double RandomUniform();
 double RandomNormal(double mu, double sigma);
 
-

@@ -1,5 +1,5 @@
 /// @file  bils7.h
-/// @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric/asymmetric matrices) 
+/// @brief Basic subprograms for iterative linear solvers (BILS) for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices) 
 
 #ifndef BILS7_H
 #define BILS7_H

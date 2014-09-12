@@ -1,6 +1,6 @@
 !>  @file  bsim.f90
-!!  @brief Basic subprograms for a sharp interface method (BSIM) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for a sharp interface method for Cartesian grid data structure
+!<
 
 function sim_geth(phi)
   implicit none
@@ -230,7 +230,7 @@ subroutine sim_calc_c( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -410,7 +410,7 @@ subroutine sim_calc_c_u( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -633,7 +633,7 @@ subroutine sim_calc_c_u_u1( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -868,7 +868,7 @@ subroutine sim_calc_c_u_quick( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -1149,7 +1149,7 @@ subroutine sim_calc_c_u_test( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -1422,7 +1422,7 @@ subroutine sim_calc_abd_u( &
 !$omp					,private(duxdz1, duxdz3, duydz2, duydz4, duzdz5, duzdz6) &
 !$omp					,private(Uw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -2286,10 +2286,6 @@ subroutine sim_calc_abd_u2( &
 		if( dir == 0 ) then
 			a1 = (1.0 + nl_viscosity)*mu1m/(rho0)
 			a3 = (1.0 + nl_viscosity)*mu3m/(rho0)
-!			duydx2 = 0.25*( work0_(i, j, k) + work0_(i+1, j, k) + work0_(i, j+1, k) + work0_(i+1, j+1, k) )
-!			duydx4 = 0.25*( work0_(i, j, k) + work0_(i+1, j, k) + work0_(i, j-1, k) + work0_(i+1, j-1, k) )
-!			duzdx5 = 0.25*( work1_(i, j, k) + work1_(i+1, j, k) + work1_(i, j, k+1) + work1_(i+1, j, k+1) )
-!			duzdx6 = 0.25*( work1_(i, j, k) + work1_(i+1, j, k) + work1_(i, j, k-1) + work1_(i+1, j, k-1) )
 			ud0_(i, j, k) = ( &
 											+ mu2m*duydx2 - mu4m*duydx4 &
 											+ mu5m*duzdx5 - mu6m*duzdx6 &
@@ -2297,10 +2293,6 @@ subroutine sim_calc_abd_u2( &
 		else if( dir == 1 ) then
 			a2 = (1.0 + nl_viscosity)*mu2m/(rho0)
 			a4 = (1.0 + nl_viscosity)*mu4m/(rho0)
-!			duxdy1 = 0.25*( work0_(i, j, k) + work0_(i, j+1, k) + work0_(i+1, j, k) + work0_(i+1, j+1, k) )
-!			duxdy3 = 0.25*( work0_(i, j, k) + work0_(i, j+1, k) + work0_(i-1, j, k) + work0_(i-1, j+1, k) )
-!			duzdy5 = 0.25*( work1_(i, j, k) + work1_(i, j+1, k) + work1_(i, j, k+1) + work1_(i, j+1, k+1) )
-!			duzdy6 = 0.25*( work1_(i, j, k) + work1_(i, j+1, k) + work1_(i, j, k-1) + work1_(i, j+1, k-1) )
 			ud0_(i, j, k) = ( &
 												mu1m*duxdy1 - mu3m*duxdy3 &
 											+ mu5m*duzdy5 - mu6m*duzdy6 &
@@ -2308,12 +2300,6 @@ subroutine sim_calc_abd_u2( &
 		else if( dir == 2 ) then
 			a5 = (1.0 + nl_viscosity)*mu5m/(rho0)
 			a6 = (1.0 + nl_viscosity)*mu6m/(rho0)
-!			duxdz1 = 0.25*( work0_(i, j, k) + work0_(i, j, k+1) + work0_(i+1, j, k) + work0_(i+1, j, k+1) )
-!			duxdz3 = 0.25*( work0_(i, j, k) + work0_(i, j, k+1) + work0_(i-1, j, k) + work0_(i-1, j, k+1) )
-!			duydz2 = 0.25*( work1_(i, j, k) + work1_(i, j, k+1) + work1_(i, j+1, k) + work1_(i, j+1, k+1) )
-!			duydz4 = 0.25*( work1_(i, j, k) + work1_(i, j, k+1) + work1_(i, j-1, k) + work1_(i, j-1, k+1) )
-!			duzdz5 = work2_(i, j, k+1)
-!			duzdz6 = work2_(i, j, k)
 			ud0_(i, j, k) = ( &
 												mu1m*duxdz1 - mu3m*duxdz3 &
 											+ mu2m*duydz2 - mu4m*duydz4 &
@@ -2330,8 +2316,6 @@ subroutine sim_calc_abd_u2( &
 		A(i, j, k, 5) = - alpha*a5*(1.0 - mask5)
 		A(i, j, k, 6) = - alpha*a6*(1.0 - mask6)
 		b(i, j, k) = u0_(i, j, k) &
-!									- (1.5*uc0_(i, j, k) - 0.5*ucp_(i, j, k)) &
-!									+ (1.5*ud0_(i, j, k) - 0.5*udp_(i, j, k)) &
 									- (uc0_(i, j, k)) &
 									+ (ud0_(i, j, k)) &
 									+ (1.0 - alpha)*( &
@@ -2441,7 +2425,7 @@ subroutine sim_calc_abd_t( &
 !$omp					,private(t0, t1, t3, t2, t4, t5, t6) &
 !$omp					,private(Tw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -2644,8 +2628,6 @@ subroutine sim_calc_abd_t( &
 		A(i, j, k, 5) = - alpha*a5*(1.0 - mask5)
 		A(i, j, k, 6) = - alpha*a6*(1.0 - mask6)
 		b(i, j, k) = t0_(i, j, k) &
-!									- (1.5*tc0_(i, j, k) - 0.5*tcp_(i, j, k)) &
-!									+ (1.5*td0_(i, j, k) - 0.5*tdp_(i, j, k)) &
 									- tc0_(i, j, k) &
 									+ (1.0 - alpha)*( &
 										+ a1*(t1 - t0) + a3*(t3 - t0) &
@@ -2849,7 +2831,7 @@ subroutine sim_calc_ab_p( &
 !$omp          ,private(divv) &
 !$omp          ,private(Uw, Vw, Ww) &
 !$omp					 ,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
   do i=1, ix
@@ -3346,7 +3328,7 @@ subroutine sim_corr_u( &
 !$omp          ,private(cdpx, cdpy, cdpz) &
 !$omp          ,private(Uw, Vw, Ww) &
 !$omp					 ,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -3558,11 +3540,6 @@ subroutine sim_corr_u( &
     v1_(i, j, k, 5) = v0_(i, j, k, 5) - cdpz5
     v1_(i, j, k, 6) = v0_(i, j, k, 6) - cdpz6
 
-!      if( psi6 >= 0 ) then
-!        write(*, *) v0_(i, j, k, 6), v1_(i, j, k, 6), uz0_(i, j, k), uz1_(i, j, k)
-!        write(*,*) dpsi6
-!      end if
-
     if( psi0 >= 0 ) then
       ux1_(i, j, k) = 0.0
       uy1_(i, j, k) = 0.0
@@ -3659,7 +3636,7 @@ subroutine sim_set_ic_u( &
 !$omp					,private(duxdz1, duxdz3, duydz2, duydz4, duzdz5, duzdz6) &
 !$omp					,private(Uw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd

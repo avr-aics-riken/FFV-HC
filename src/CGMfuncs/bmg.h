@@ -1,5 +1,5 @@
 /// @file  bmg.h
-/// @brief Basic subprograms for the multigrid method (BMG) for Cartesian grid data structure
+/// @brief Basic subprograms for the multigrid method for Cartesian grid data structure
 
 #ifndef MG_H
 #define MG_H

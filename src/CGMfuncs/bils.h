@@ -1,3 +1,6 @@
+/// @file  bils.h
+/// @brief Basic subprograms for iterative linear solvers for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+
 #ifndef BILS_H
 #define BILS_H
 
@@ -10,6 +13,12 @@ extern "C" {
 					real* b,
 					real* omega,
 					int* sz, int* g);
+	void jacobi_smoother2_(
+					real* x1, real* x0,
+					real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At,
+					real* b,
+					real* omega,
+					int* sz, int* g);
 	void rbgs_smoother_(
 					real* x,
 					real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At,
@@ -17,12 +26,7 @@ extern "C" {
 					real* omega,
 					int* color, int* offset,
 					int* sz, int* g);
-	void jacobi_smoother2_(
-					real* x1, real* x0,
-					real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At,
-					real* b,
-					real* omega,
-					int* sz, int* g);
+
 	void calc_ax_( 
 					real* Ax,
 					real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At,

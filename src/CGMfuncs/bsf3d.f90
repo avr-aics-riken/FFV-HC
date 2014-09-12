@@ -1,3 +1,7 @@
+!>  @file  bsf3d.f90
+!!  @brief Basic subprograms for 3D scalar fields for Cartesian grid data structure
+!<
+
 subroutine sf3d_copy_x2(x, xc, sz, g)
   implicit none
   integer                  :: i, j, k

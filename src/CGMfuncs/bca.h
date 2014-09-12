@@ -1,3 +1,6 @@
+/// @file  bca.h
+/// @brief Functions to compute the elements of the coefficient matrix at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+
 #ifndef BCA_H
 #define BCA_H
 

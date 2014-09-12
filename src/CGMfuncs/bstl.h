@@ -1,3 +1,6 @@
+/// @file  bstl.h
+/// @brief Basic subprograms for treating STL format for Cartesian grid data structure
+
 #ifndef BSTL_H
 #define BSTL_H
 

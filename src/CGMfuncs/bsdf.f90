@@ -1,6 +1,6 @@
 !>  @file  bsdf.f90
-!!  @brief Basic subprograms for initializing the signed distance functions (BSDF) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for initializing the signed distance functions for Cartesian grid data structure
+!<
 
 subroutine bsdf_liquid(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 	implicit none
@@ -38,7 +38,7 @@ subroutine bsdf_liquid(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -99,7 +99,7 @@ subroutine bsdf_pipe(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -168,7 +168,7 @@ subroutine bsdf_pipe2(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -251,7 +251,7 @@ subroutine bsdf_bubble2d(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -315,7 +315,7 @@ subroutine bsdf_drop(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -377,7 +377,7 @@ subroutine bsdf_bubble(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -439,7 +439,7 @@ subroutine bsdf_beaker(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -508,7 +508,7 @@ subroutine bsdf_ducky(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -577,7 +577,7 @@ subroutine bsdf_dambreak2d(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 !$omp					,private(rx, ry, rz, r2, rl) &
 !$omp					,private(phi0, phi1, phi2, phi3) &
 !$omp					,private(psi0, psi1, psi2, psi3) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1-g, kx+g
 	do j=1-g, jx+g
 	do i=1-g, ix+g
@@ -617,21 +617,7 @@ subroutine bsdf_dambreak2d(phi, psi, xc, yc, zc, rc, lc, wc, hc, sz, g, b, gsz)
 			phi2 = -r2
 		end if
 
-!		write(*,*), phi0, phi1, phi2, phi3
-
-!		phi(i, j, k) = phi0
-!		if( abs(phi1) < abs(phi(i, j, k)) ) then
-!			phi(i, j, k) = phi1
-!		endif
-!		if( abs(phi2) < abs(phi(i, j, k)) ) then
-!			phi(i, j, k) = phi2
-!		endif
-!		if( abs(phi3) < abs(phi(i, j, k)) ) then
-!			phi(i, j, k) = phi3
-!		endif
-
 		phi(i, j, k) = phi2
-
 		psi(i, j, k) = -(rl + 100.0)
 	end do
 	end do

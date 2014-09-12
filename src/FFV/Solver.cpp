@@ -33,28 +33,28 @@
 
 Solver::Solver()
 	: blockManager(BlockManager::getInstance()) {
-}
+	}
 
 Solver::~Solver() {
 	MPI::Finalize();
 }
 
 int Solver::Init(int argc, char** argv){
-/* ---------------------------------------------------------- */
-/* Init MPI                                                   */
-/* ---------------------------------------------------------- */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init MPI                                                   */
+	/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	MPI::Init(argc, argv);
 	MPI::Comm& comm = MPI::COMM_WORLD;
 	this->myrank = comm.Get_rank();
 
-srand( this->myrank + 1 );
+	srand( this->myrank + 1 );
 
 	if( argc != 2 ) {
 		PrintLog(0, "usage: %s configfile", argv[0]);
 		comm.Abort(EX_USAGE);
 	}
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, FFV_SOLVERNAME);
 	PrintLog(2, "%-20s : %s", "Version", FFV_VERSION);
 	PrintLog(2, "%-20s : %s", "Revision", FFV_REVISION);
@@ -64,28 +64,28 @@ srand( this->myrank + 1 );
 #ifdef _OPENMP
 	PrintLog(2, "%-20s : %d", "OpenMP threads", omp_get_max_threads());
 #endif
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Init Config                                                */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init Config                                                */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Loading configuration file");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	g_pFFVConfig = new FFVConfig();
 	g_pFFVConfig->Load(argv[1]);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "%-20s : %s", "tree type", g_pFFVConfig->TreeType.c_str());
 	PrintLog(2, "%-20s : %s", "ordering",  g_pFFVConfig->TuningBlockOrdering.c_str());
 	PrintLog(2, "%-20s : %d", "block size", g_pFFVConfig->LeafBlockNumberOfCells);
 	PrintLog(2, "%-20s : %d", "vc width", g_pFFVConfig->LeafBlockNumberOfVirtualCells);
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Init PMlib                                                 */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init PMlib                                                 */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Initializing PMlib");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	g_pPM = new pm_lib::PerfMonitor;
 	g_pPM->initialize(tm_END);
 	g_pPM->setRankInfo(this->myrank);
@@ -153,15 +153,15 @@ srand( this->myrank + 1 );
 	nThreads = omp_get_max_threads();
 #endif
 	g_pPM->setParallelMode("Hybrid", nThreads, comm.Get_size());
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Load STL                                                   */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Load STL                                                   */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Loading STL file(s)");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_LoadSTL, 0, 0, true);
 	PolylibNS::BCMPolylib* pl = new PolylibNS::BCMPolylib;
 	struct stat st;
@@ -171,15 +171,15 @@ srand( this->myrank + 1 );
 	} else {
 	}
 	PM_Stop(tm_Init_LoadSTL);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Divide domain                                              */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Divide domain                                              */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Dividing domain");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_DivideDomain, 0, 0, true);
 	Divider* divider = 0;
 	if(myrank == 0) {
@@ -196,59 +196,59 @@ srand( this->myrank + 1 );
 
 		if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "flat") || !strcasecmp(g_pFFVConfig->TreeType.c_str(), "uniform")) {
 			divider = new FlatDivider(
-												rootGrid,
-												g_pFFVConfig->TreeMaxLevel);
+					rootGrid,
+					g_pFFVConfig->TreeMaxLevel);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "simple")) {
 			divider = new SimpleDivider(
-												rootGrid,
-												g_pFFVConfig->TreeMinLevel,
-												g_pFFVConfig->TreeMaxLevel);
+					rootGrid,
+					g_pFFVConfig->TreeMinLevel,
+					g_pFFVConfig->TreeMaxLevel);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "polygon")) {
 			divider = new PolygonBBoxDivider(
-												g_pFFVConfig->RootBlockOrigin,
-												g_pFFVConfig->RootBlockLength,
-												rootGrid,
-												g_pFFVConfig->TreeMinLevel,
-												pl,
-												g_pFFVConfig->PolygonGroupList,
-												g_pFFVConfig->BoundingBoxList,
-												(double)((double)g_pFFVConfig->LeafBlockNumberOfMarginalCells/(double)g_pFFVConfig->LeafBlockNumberOfCells));
+					g_pFFVConfig->RootBlockOrigin,
+					g_pFFVConfig->RootBlockLength,
+					rootGrid,
+					g_pFFVConfig->TreeMinLevel,
+					pl,
+					g_pFFVConfig->PolygonGroupList,
+					g_pFFVConfig->BoundingBoxList,
+					(double)((double)g_pFFVConfig->LeafBlockNumberOfMarginalCells/(double)g_pFFVConfig->LeafBlockNumberOfCells));
 		} else if(!strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere_old") || !strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere2")) {
 			divider = new SphereDivider2(
-												rootGrid,
-												g_pFFVConfig->TreeMinLevel,
-												g_pFFVConfig->TreeMaxLevel,
-												g_pFFVConfig->TreeDividerCenter.x,
-												g_pFFVConfig->TreeDividerCenter.y,
-												g_pFFVConfig->TreeDividerCenter.z,
-												g_pFFVConfig->TreeDividerRadius,
-												g_pFFVConfig->TreeDividerDeltaR,
-												g_pFFVConfig->TreeDividerHollow);
+					rootGrid,
+					g_pFFVConfig->TreeMinLevel,
+					g_pFFVConfig->TreeMaxLevel,
+					g_pFFVConfig->TreeDividerCenter.x,
+					g_pFFVConfig->TreeDividerCenter.y,
+					g_pFFVConfig->TreeDividerCenter.z,
+					g_pFFVConfig->TreeDividerRadius,
+					g_pFFVConfig->TreeDividerDeltaR,
+					g_pFFVConfig->TreeDividerHollow);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere")) {
 			divider = new SphereDivider3(
-												g_pFFVConfig->RootBlockOrigin,
-												g_pFFVConfig->RootBlockLength,
-												rootGrid,
-												g_pFFVConfig->TreeMinLevel,
-												pl,
-												g_pFFVConfig->PolygonGroupList,
-												g_pFFVConfig->BoundingBoxList,
-												g_pFFVConfig->SphericalBoxList,
-												(double)g_pFFVConfig->LeafBlockNumberOfVirtualCells/g_pFFVConfig->LeafBlockNumberOfCells);
+					g_pFFVConfig->RootBlockOrigin,
+					g_pFFVConfig->RootBlockLength,
+					rootGrid,
+					g_pFFVConfig->TreeMinLevel,
+					pl,
+					g_pFFVConfig->PolygonGroupList,
+					g_pFFVConfig->BoundingBoxList,
+					g_pFFVConfig->SphericalBoxList,
+					(double)g_pFFVConfig->LeafBlockNumberOfVirtualCells/g_pFFVConfig->LeafBlockNumberOfCells);
 		} else {
 			exit(EX_READ_CONFIG);
 		}
 	}
 	PM_Stop(tm_Init_DivideDomain);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Create tree                                                */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Create tree                                                */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Creating tree");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_CreateTree, 0, 0, true);
 	if(myrank == 0) {
 		BCMOctree::Ordering ordering;
@@ -264,13 +264,13 @@ srand( this->myrank + 1 );
 			exit(EX_READ_CONFIG);
 		}
 		tree = new BCMOctree(rootGrid, divider, ordering);
-    tree->broadcast();
+		tree->broadcast();
 	} else {
-    tree = BCMOctree::ReceiveFromMaster();
+		tree = BCMOctree::ReceiveFromMaster();
 	}
 	PM_Stop(tm_Init_CreateTree);
-/* ---------------------------------------------------------- */
-  int numLeafNode = tree->getNumLeafNode();
+	/* ---------------------------------------------------------- */
+	int numLeafNode = tree->getNumLeafNode();
 	partition = new Partition(comm.Get_size(), numLeafNode);
 	for(int n=0; n<comm.Get_size(); n++) {
 		if( n==0 ) {
@@ -280,20 +280,20 @@ srand( this->myrank + 1 );
 		}
 	}
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Register blocks                                            */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Register blocks                                            */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Registering block(s)");
-/* ---------------------------------------------------------- */
-  // ブロック内のセル数
+	/* ---------------------------------------------------------- */
+	// ブロック内のセル数
 	Vec3i size(g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells);
 	Vec3r rootOrigin = g_pFFVConfig->RootBlockOrigin;
 	double rootLength = g_pFFVConfig->RootBlockLength;
-  std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
-  for (int id = partition->getStart(myrank); id < partition->getEnd(myrank); id++) {
-    Node* node = leafNodeArray[id];
+	std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
+	for (int id = partition->getStart(myrank); id < partition->getEnd(myrank); id++) {
+		Node* node = leafNodeArray[id];
 		int level = node->getLevel();
 		Vec3r origin = tree->getOrigin(node) * rootLength + rootOrigin;
 		Vec3r blockSize = node->getBlockSize() * rootLength;
@@ -326,20 +326,20 @@ srand( this->myrank + 1 );
 		}
 
 		BlockBase* block = new BlockBase(size, origin, blockSize, level, neighborInfo);
-    blockManager.registerBlock(block);
-  }
-  blockManager.endRegisterBlock();
-/* ---------------------------------------------------------- */
-//  blockManager.printBlockLayoutInfo();
-  blockManager.printBlockLayoutInfo("data-block.txt");
+		blockManager.registerBlock(block);
+	}
+	blockManager.endRegisterBlock();
+	/* ---------------------------------------------------------- */
+	//  blockManager.printBlockLayoutInfo();
+	blockManager.printBlockLayoutInfo("data-block.txt");
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Distribute STL                                             */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Distribute STL                                             */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Distributing polygon(s)");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_DistributeSTL, 0, 0, true);
 	if( myrank == 0 ) {
 		Vec3r rootOrigin = g_pFFVConfig->RootBlockOrigin;
@@ -360,27 +360,27 @@ srand( this->myrank + 1 );
 		pl->load_from_rank0();
 	}
 	PM_Stop(tm_Init_DistributeSTL);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Repair polygon                                             */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Repair polygon                                             */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Repairing polygon(s)");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_RepairPolygonData, 0, 0, true);
 	cutlib::RepairPolygonData(pl);
 	PM_Stop(tm_Init_RepairPolygonData);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Misc.                                                      */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Misc.                                                      */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Summarizing block layout");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	maxLevel = 0;
 	minLevel = INT_MAX;
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
@@ -396,17 +396,17 @@ srand( this->myrank + 1 );
 	diffLevel = maxLevel - minLevel;
 	vc = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
 	updateMethod = g_pFFVConfig->TuningVCUpdate;
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "%-20s : %d", "num", blockManager.getNumBlock());
 	PrintLog(2, "%-20s : %d", "min level", minLevel);
 	PrintLog(2, "%-20s : %d", "max level", maxLevel);
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/* ---------------------------------------------------------- */
-/* Init physical parameters                                   */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init physical parameters                                   */
+	/* ---------------------------------------------------------- */
 	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
 
 	rhof	= g_pFFVConfig->MediumTableFluid[0].rho;
@@ -417,7 +417,7 @@ srand( this->myrank + 1 );
 	rhos	= g_pFFVConfig->MediumTableFluid[0].rho;
 	cps		= g_pFFVConfig->MediumTableFluid[0].cp;
 	ks		= g_pFFVConfig->MediumTableFluid[0].k;
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
 	int boundaryTypeNULL[NUM_FACE] = {
@@ -433,11 +433,11 @@ srand( this->myrank + 1 );
 	};
 
 
-/* ---------------------------------------------------------- */
-/* Calc cutinfo                                               */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Calc cutinfo                                               */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Computing cuts");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_CalcCutInfo, 0, 0, true);
 
 	plsCut0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -508,10 +508,10 @@ srand( this->myrank + 1 );
 		cutlib::CutBidArray*    cutBid = new cutlib::CutBid5Array(ncell);
 		cutlib::CutNormalArray* cutNormal = new cutlib::CutNormalArray(ncell);
 
-//		CutInfoCell(org, dx, pl, cutPos, cutBid);
-PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
+		//		CutInfoCell(org, dx, pl, cutPos, cutBid);
+		PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
 		int ret = CalcCutInfo(grid, pl, cutPos, cutBid, cutNormal);
-PM_Stop(tm_Init_CalcCutInfo01);
+		PM_Stop(tm_Init_CalcCutInfo01);
 
 		pNormalN[n] = cutNormal->getNumNormal();
 		pNormalX[n] = new real [pNormalN[n]];
@@ -558,7 +558,7 @@ PM_Stop(tm_Init_CalcCutInfo01);
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
-PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
+		PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 #pragma omp parallel for
 		for(int k=vc; k<vc+size.z; k++) {
 			for(int j=vc; j<vc+size.y; j++) {
@@ -607,39 +607,39 @@ PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 		delete cutPos;
 		delete cutBid;
 		delete cutNormal;
-PM_Stop(tm_Init_CalcCutInfo02);
+		PM_Stop(tm_Init_CalcCutInfo02);
 
-PM_Start(tm_Init_CalcCutInfo03, 0, 0, false);
+		PM_Start(tm_Init_CalcCutInfo03, 0, 0, false);
 		if( g_pFFVConfig->ShapeApproximationMethod == "cut" ) {
 			real eps[1] = {g_pFFVConfig->ShapeApproximationCutoff};
 			bstl_cutoff_(
-							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-							eps,
-							sz, g);
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					eps,
+					sz, g);
 		}
-PM_Stop(tm_Init_CalcCutInfo03);
+		PM_Stop(tm_Init_CalcCutInfo03);
 
-PM_Start(tm_Init_CalcCutInfo04, 0, 0, false);
+		PM_Start(tm_Init_CalcCutInfo04, 0, 0, false);
 		if( g_pFFVConfig->ShapeApproximationVoxelization ) {
 			bstl_voxelize_(
-							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-							sz, g);
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					sz, g);
 		}
-PM_Stop(tm_Init_CalcCutInfo04);
+		PM_Stop(tm_Init_CalcCutInfo04);
 
-PM_Start(tm_Init_CalcCutInfo05, 0, 0, false);
+		PM_Start(tm_Init_CalcCutInfo05, 0, 0, false);
 		if( g_pFFVConfig->ShapeApproximationSymmetrization ) {
 			bstl_symmetrize_(
-							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-							sz, g);
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					sz, g);
 		}
-PM_Stop(tm_Init_CalcCutInfo05);
+		PM_Stop(tm_Init_CalcCutInfo05);
 	}
 
-PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
+	PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
 	plsCut0->ImposeBoundaryCondition(blockManager);
 	plsCut1->ImposeBoundaryCondition(blockManager);
 	plsCut2->ImposeBoundaryCondition(blockManager);
@@ -652,30 +652,30 @@ PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
 	plsCutId3->ImposeBoundaryCondition(blockManager);
 	plsCutId4->ImposeBoundaryCondition(blockManager);
 	plsCutId5->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_Init_CalcCutInfo06);
+	PM_Stop(tm_Init_CalcCutInfo06);
 
 	PM_Stop(tm_Init_CalcCutInfo);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	if( g_pFFVConfig->GridGenerationOutputSTL ) {
 		PrintLog(1, "Printing STL files for cut info");
 		PrintCut(0);
 		PrintHole(0);
 		WriteGrid(
-					rootGrid,
-					tree,
-					partition);
+				rootGrid,
+				tree,
+				partition);
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
 	{
-/* ---------------------------------------------------------- */
-/* Detect zero-cut                                            */
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
+		/* Detect zero-cut                                            */
+		/* ---------------------------------------------------------- */
 		PrintLog(1, "Detecting zero-cut");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		int countLocal = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -706,10 +706,10 @@ PM_Stop(tm_Init_CalcCutInfo06);
 
 			int count = 0;
 			bstl_detect_zerocut_(
-							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-							&count,
-							sz, g);
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					&count,
+					sz, g);
 
 			countLocal += count;
 		}
@@ -729,18 +729,18 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		int countTmp = countLocal;
 		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d", "Zero distance", countLocal);
 		PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 	}
 
 	{
-/* ---------------------------------------------------------- */
-/* Fill holes v1                                              */
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
+		/* Fill holes v1                                              */
+		/* ---------------------------------------------------------- */
 		PrintLog(1, "Filling hole(s)");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		int countLocal = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -775,11 +775,11 @@ PM_Stop(tm_Init_CalcCutInfo06);
 				bClose = 0;
 			}
 			bstl_fill_holes_v1_(
-							pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-							pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-							&count,
-							&bClose,
-							sz, g);
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					&count,
+					&bClose,
+					sz, g);
 
 			countLocal += count;
 		}
@@ -799,18 +799,18 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		int countTmp = countLocal;
 		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d", "Hole faces(single)", countLocal);
 		PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 	}
 
 	{
-/* ---------------------------------------------------------- */
-/* Fill holes v2                                              */
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
+		/* Fill holes v2                                              */
+		/* ---------------------------------------------------------- */
 		PrintLog(1, "Filling hole(s) 2");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		int nIterationCount = 0;
 		int countLocal = 0;
 		int countTotal = 0;
@@ -851,11 +851,11 @@ PM_Stop(tm_Init_CalcCutInfo06);
 				}
 
 				bstl_fill_holes_v2_(
-								pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-								pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-								&count,
-								&bClose,
-								sz, g);
+						pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+						pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+						&count,
+						&bClose,
+						sz, g);
 
 				countLocal += count;
 			}
@@ -878,18 +878,18 @@ PM_Stop(tm_Init_CalcCutInfo06);
 			nIterationCount++;
 			countTotal += countLocal;
 		}while( countLocal > 0 && g_pFFVConfig->GridGenerationHoleFilling2 == true);
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d (#Ite.: %d)", "Hole faces(multi)", countTotal, nIterationCount);
 		PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 	}
 
 	{
-/* ---------------------------------------------------------- */
-/* Fill holes v3                                              */
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
+		/* Fill holes v3                                              */
+		/* ---------------------------------------------------------- */
 		PrintLog(1, "Filling hole(s) 3");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		int nIterationCount = 0;
 		int countLocal = 0;
 		int countTotal = 0;
@@ -931,11 +931,11 @@ PM_Stop(tm_Init_CalcCutInfo06);
 				}
 
 				bstl_fill_holes_v3_(
-								pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-								pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-								&count,
-								&bClose,
-								sz, g);
+						pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+						pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+						&count,
+						&bClose,
+						sz, g);
 
 				countLocal += count;
 			}
@@ -957,18 +957,18 @@ PM_Stop(tm_Init_CalcCutInfo06);
 
 			nIterationCount++;
 		}while( countLocal > countTotal && g_pFFVConfig->GridGenerationHoleFilling3 == true);
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d (#Ite.: %d)", "Hole faces(multi)", countTotal, nIterationCount);
 		PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 	}
 
 
-/* ---------------------------------------------------------- */
-/* Filling                                                    */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Filling                                                    */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Filling fluid");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_Filling, 0, 0, true);
 
 	real xs = g_pFFVConfig->FillingOrigin.x;
@@ -994,11 +994,11 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
 		bcut_set_fluidseed_(
-			pPhaseId,
-			&xs, &ys, &zs,
-			&dx,
-			org,
-			sz, g);
+				pPhaseId,
+				&xs, &ys, &zs,
+				&dx,
+				org,
+				sz, g);
 
 	}
 	plsPhaseId->ImposeBoundaryCondition(blockManager);
@@ -1010,7 +1010,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 			nCellsChanged = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
-//#pragma omp parallel for reduction(+: nCellsChanged)
+			//#pragma omp parallel for reduction(+: nCellsChanged)
 #endif
 			for (int n=0; n<blockManager.getNumBlock(); ++n) {
 				BlockBase* block = blockManager.getBlock(n);
@@ -1038,7 +1038,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 
 				int* pPhaseId = plsPhaseId->GetBlockData(block);
 #ifdef _BLOCK_IS_LARGE_
-//#pragma omp parallel for reduction(+: nCellsChanged)
+				//#pragma omp parallel for reduction(+: nCellsChanged)
 #else
 #endif
 				for(int k=vc; k<=size.z+vc-1; k++) {
@@ -1121,36 +1121,36 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		countTmp = countS;
 		MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d", "Iteration", nIterationCount);
 		PrintLog(2, "%-20s : %d", "FLUID cells", count);
 		PrintLog(2, "%-20s : %d", "SOLID cells", countS);
-/* ---------------------------------------------------------- */
+		/* ---------------------------------------------------------- */
 	}
 	PM_Stop(tm_Init_Filling);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	if( g_pFFVConfig->GridGenerationOutputSTL ) {
 		PrintLog(1, "Printing STL files for cut info");
 		PrintCut(1);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/* ---------------------------------------------------------- */
-/* Compute geometrical properties                             */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Compute geometrical properties                             */
+	/* ---------------------------------------------------------- */
 	PrintLog(1, "Computing geometrical properties of flow");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	double VGlobal = 0.0;
 	double SGlobal = 0.0;
 	double SGlobal2 = 0.0;
 	PM_Start(tm_Init_GeometricalProperties, 0, 0, true);
 	{
-			double VLocal = 0.0;
-			double SLocal = 0.0;
-			double SLocal2 = 0.0;
+		double VLocal = 0.0;
+		double SLocal = 0.0;
+		double SLocal2 = 0.0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -1253,33 +1253,33 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		MPI_Allreduce(&SLocal, &SGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 		MPI_Allreduce(&SLocal2, &SGlobal2, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 	}
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "%-20s : %f", "Volume",       VGlobal);
 	PrintLog(2, "%-20s : %f", "Surface area", SGlobal);
 	PrintLog(2, "%-20s : %f", "Surface area (voxel)", SGlobal2);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PM_Stop(tm_Init_GeometricalProperties, 0, 0, true);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
 		return EX_FAILURE;
 		return EX_SUCCESS;
 	}
 
-/* ---------------------------------------------------------- */
-/* Init vars                                                  */
-/* ---------------------------------------------------------- */
-		PrintLog(1, "Initializing variables");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init vars                                                  */
+	/* ---------------------------------------------------------- */
+	PrintLog(1, "Initializing variables");
+	/* ---------------------------------------------------------- */
 
 	PM_Start(tm_Init_InitVars, 0, 0, true);
 
-/* ---------------------------------------------------------- */
-/* Init mask                                                  */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init mask                                                  */
+	/* ---------------------------------------------------------- */
 	plsMaskId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsMaskId->Fill(blockManager, 0);
 	plsM = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1302,15 +1302,15 @@ PM_Stop(tm_Init_CalcCutInfo06);
 		int* pMaskId = plsMaskId->GetBlockData(block);
 
 		setup_mask_(
-			pM, 
-			pMaskId, 
-			sz, g);
+				pM, 
+				pMaskId, 
+				sz, g);
 	}
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Init vars                                                  */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init vars                                                  */
+	/* ---------------------------------------------------------- */
 	int boundaryTypeUX[NUM_FACE] = {
 		g_pFFVConfig->OuterBCUX[X_M].type,
 		g_pFFVConfig->OuterBCUX[X_P].type,
@@ -1503,12 +1503,12 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plsP0->ImposeBoundaryCondition(blockManager);
 	plsP1->ImposeBoundaryCondition(blockManager);
 	plsLapP->ImposeBoundaryCondition(blockManager);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/* ---------------------------------------------------------- */
-/* Init A and b                                               */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init A and b                                               */
+	/* ---------------------------------------------------------- */
 	plsAp = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsAw = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsAe = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1533,16 +1533,16 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plsAb->ImposeBoundaryCondition(blockManager);
 	plsAt->ImposeBoundaryCondition(blockManager);
 	plsb ->ImposeBoundaryCondition(blockManager);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
-/* ---------------------------------------------------------- */
-/* Init ILS                                                   */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init ILS                                                   */
+	/* ---------------------------------------------------------- */
 	omegaU		= g_pFFVConfig->IterationOmegaU;
 	countMaxU	= g_pFFVConfig->IterationMaxCountU;
 	epsilonU	= g_pFFVConfig->IterationEpsilonU;
 	countPreConditionerU
-						= g_pFFVConfig->IterationPreCountU;
+		= g_pFFVConfig->IterationPreCountU;
 	countUX		= 0;
 	residualUX= 0.0;
 	countUY		= 0;
@@ -1554,7 +1554,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	countMaxP	= g_pFFVConfig->IterationMaxCountP;
 	epsilonP	= g_pFFVConfig->IterationEpsilonP;
 	countPreConditionerP
-						= g_pFFVConfig->IterationPreCountP;
+		= g_pFFVConfig->IterationPreCountP;
 	countP		= 0;
 	residualP	= 0.0;
 
@@ -1562,7 +1562,7 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	countMaxT	= g_pFFVConfig->IterationMaxCountT;
 	epsilonT	= g_pFFVConfig->IterationEpsilonT;
 	countPreConditionerT
-						= g_pFFVConfig->IterationPreCountT;
+		= g_pFFVConfig->IterationPreCountT;
 	countT		= 0;
 	residualT	= 0.0;
 
@@ -1585,12 +1585,12 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plss ->Fill(blockManager, 0.0);
 	plss_->Fill(blockManager, 0.0);
 	plst_->Fill(blockManager, 0.0);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/* ---------------------------------------------------------- */
-/* Init Force                                                 */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init Force                                                 */
+	/* ---------------------------------------------------------- */
 	int vc2 = 2;
 	plsFspx = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsFspy = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1604,12 +1604,12 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plsFsvx->Fill(blockManager, 0.0);
 	plsFsvy->Fill(blockManager, 0.0);
 	plsFsvz->Fill(blockManager, 0.0);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/* ---------------------------------------------------------- */
-/* Init Heat flux                                             */
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
+	/* Init Heat flux                                             */
+	/* ---------------------------------------------------------- */
 	int vc3 = 2;
 	plsQx = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsQy = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1617,31 +1617,31 @@ PM_Stop(tm_Init_CalcCutInfo06);
 	plsQx->Fill(blockManager, 0.0);
 	plsQy->Fill(blockManager, 0.0);
 	plsQz->Fill(blockManager, 0.0);
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 	PM_Stop(tm_Init_InitVars);
 
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-/* ---------------------------------------------------------- */
+	/* ---------------------------------------------------------- */
 
 
-/////////////////////////////////////////////
+	/////////////////////////////////////////////
 	if( g_pFFVConfig->OutputDataBasicVariablesFormatBCM ) {
 		BCMFileSaverInit(
-					rootGrid,
-					tree,
-					partition);
+				rootGrid,
+				tree,
+				partition);
 	}
 	if( g_pFFVConfig->OutputDataBasicVariablesFormatPLOT3D ) {
 		WriteXYZInPlot3DFormat(
-					"xyz",
-					diffLevel,
-					rootGrid,
-					tree,
-					partition);
+				"xyz",
+				diffLevel,
+				rootGrid,
+				tree,
+				partition);
 	}
-/////////////////////////////////////////////
+	/////////////////////////////////////////////
 
 
 
@@ -1686,43 +1686,43 @@ int Solver::Loop() {
 
 
 int Solver::Print(int step) {
-PM_Start(tm_Print, 0, 0, true);
+	PM_Start(tm_Print, 0, 0, true);
 
 	if( g_pFFVConfig->OutputLogLaptime ) {
-PM_Start(tm_PrintTime, 0, 0, true);
+		PM_Start(tm_PrintTime, 0, 0, true);
 		PrintTime(step);
-PM_Stop(tm_PrintTime);
+		PM_Stop(tm_PrintTime);
 	}
 
 	if( g_pFFVConfig->OutputLogIteration ) {
-PM_Start(tm_PrintILS, 0, 0, true);
+		PM_Start(tm_PrintILS, 0, 0, true);
 		PrintILS(step);
-PM_Stop(tm_PrintILS);
+		PM_Stop(tm_PrintILS);
 	}
 
 	if( g_pFFVConfig->OutputLogStatistics ) {
-PM_Start(tm_PrintStats, 0, 0, true);
+		PM_Start(tm_PrintStats, 0, 0, true);
 		PrintStats(step);
-PM_Stop(tm_PrintStats);
+		PM_Stop(tm_PrintStats);
 	}
 
 	if( g_pFFVConfig->OutputLogForce ) {
-PM_Start(tm_PrintForce, 0, 0, true);
+		PM_Start(tm_PrintForce, 0, 0, true);
 		PrintForce(step);
-PM_Stop(tm_PrintForce);
+		PM_Stop(tm_PrintForce);
 	}
 
 	if( g_pFFVConfig->OutputLogHeatFlux ) {
-PM_Start(tm_PrintHeatFlux, 0, 0, true);
+		PM_Start(tm_PrintHeatFlux, 0, 0, true);
 		PrintHeatFlux(step);
-PM_Stop(tm_PrintHeatFlux);
+		PM_Stop(tm_PrintHeatFlux);
 	}
 
-PM_Start(tm_PrintData, 0, 0, true);
+	PM_Start(tm_PrintData, 0, 0, true);
 	PrintData(step);
-PM_Stop(tm_PrintData);
+	PM_Stop(tm_PrintData);
 
-PM_Stop(tm_Print);
+	PM_Stop(tm_Print);
 
 	return EX_SUCCESS;
 }
@@ -1939,7 +1939,7 @@ void Solver::PrintStats(int step) {
 
 	double dt = g_pFFVConfig->TimeControlTimeStepDeltaT;
 	double dx = g_pFFVConfig->RootBlockLength/(double)(1 << maxLevel);
-//	std::cout << dt << " " << dx << std::endl;
+	//	std::cout << dt << " " << dx << std::endl;
 	if( plsUX0->GetAbsMaxL()*dt/dx > 0.9 ) {
 		std::cout << myrank << " " << plsUX0->GetAbsMaxL()*dt/dx << std::endl;
 	}
@@ -1993,7 +1993,7 @@ void Solver::PrintHeatFluxCID(int step, int cid_target) {
 		int g[1] = {vc};
 		real dx = cellSize.x;
 		real org[3] = {origin.x, origin.y, origin.z};
-		
+
 		real* t0   = plsT0 ->GetBlockData(block);
 
 		real* pCut0 = plsCut0->GetBlockData(block);
@@ -2152,7 +2152,7 @@ void Solver::PrintForceCID(int step, int cid_target) {
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-		
+
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uy0  = plsUY0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
@@ -2415,37 +2415,37 @@ void Solver::PrintCS(int step) {
 
 		int j = size.y/2 + vc;
 		for(int k=vc; k<vc+size.z; k++) {
-		for(int i=vc; i<vc+size.x; i++) {
-			double x = (i - vc + 0.5)*cellSize.x + origin.x;
-			double y = (j - vc + 0.5)*cellSize.y + origin.y;
-			double z = (k - vc + 0.5)*cellSize.z + origin.z;
-			int m = i + nc[0]*(j + nc[1]*k);
-			ofs.setf(std::ios::scientific, std::ios::floatfield);
-			ofs.precision(16);
-			ofs << i - vc;
-			ofs << " ";
-			ofs << j - vc;
-			ofs << " ";
-			ofs << k - vc;
-			ofs << " ";
-			ofs << x;
-			ofs << " ";
-			ofs << y;
-			ofs << " ";
-			ofs << z;
-			ofs << " ";
-			ofs << pUX0[m];
-			ofs << " ";
-			ofs << pUX1[m];
-			ofs << " ";
-			ofs << pUY0[m];
-			ofs << " ";
-			ofs << pUZ0[m];
-			ofs << " ";
-			ofs << pP0[m];
+			for(int i=vc; i<vc+size.x; i++) {
+				double x = (i - vc + 0.5)*cellSize.x + origin.x;
+				double y = (j - vc + 0.5)*cellSize.y + origin.y;
+				double z = (k - vc + 0.5)*cellSize.z + origin.z;
+				int m = i + nc[0]*(j + nc[1]*k);
+				ofs.setf(std::ios::scientific, std::ios::floatfield);
+				ofs.precision(16);
+				ofs << i - vc;
+				ofs << " ";
+				ofs << j - vc;
+				ofs << " ";
+				ofs << k - vc;
+				ofs << " ";
+				ofs << x;
+				ofs << " ";
+				ofs << y;
+				ofs << " ";
+				ofs << z;
+				ofs << " ";
+				ofs << pUX0[m];
+				ofs << " ";
+				ofs << pUX1[m];
+				ofs << " ";
+				ofs << pUY0[m];
+				ofs << " ";
+				ofs << pUZ0[m];
+				ofs << " ";
+				ofs << pP0[m];
+				ofs << std::endl;
+			}
 			ofs << std::endl;
-		}
-		ofs << std::endl;
 		}
 	}
 	ofs.close();
@@ -2470,8 +2470,8 @@ int Solver::Post() {
 }
 
 int Solver::Update(int step) {
-PM_Start(tm_Update, 0, 0, true);
-double t0 = GetTime();
+	PM_Start(tm_Update, 0, 0, true);
+	double t0 = GetTime();
 
 	if( g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI > 0 && step <= g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI ) {
 		real vb = g_pFFVConfig->OuterBCUX[X_M].value*(real)step/(real)g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI;
@@ -2479,53 +2479,53 @@ double t0 = GetTime();
 		plsUX1->ResetBoundaryConditionValue(blockManager, 0, vb);
 	}
 
-PM_Start(tm_UpdateT, 0, 0, true);
+	PM_Start(tm_UpdateT, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
 		UpdateTe(step);
 	} else {
 		UpdateT(step);
 	}
-PM_Stop(tm_UpdateT);
-double t1 = GetTime();
+	PM_Stop(tm_UpdateT);
+	double t1 = GetTime();
 
-PM_Start(tm_UpdateUX, 0, 0, true);
+	PM_Start(tm_UpdateUX, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
 		UpdateUXe(step);
 	} else {
 		UpdateUX(step);
 	}
-PM_Stop(tm_UpdateUX);
-double t2 = GetTime();
+	PM_Stop(tm_UpdateUX);
+	double t2 = GetTime();
 
-PM_Start(tm_UpdateUY, 0, 0, true);
+	PM_Start(tm_UpdateUY, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
 		UpdateUYe(step);
 	} else {
 		UpdateUY(step);
 	}
-PM_Stop(tm_UpdateUY);
-double t3 = GetTime();
+	PM_Stop(tm_UpdateUY);
+	double t3 = GetTime();
 
-PM_Start(tm_UpdateUZ, 0, 0, true);
+	PM_Start(tm_UpdateUZ, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
 		UpdateUZe(step);
 	} else {
 		UpdateUZ(step);
 	}
-PM_Stop(tm_UpdateUZ);
-double t4 = GetTime();
+	PM_Stop(tm_UpdateUZ);
+	double t4 = GetTime();
 
-PM_Start(tm_UpdateP, 0, 0, true);
+	PM_Start(tm_UpdateP, 0, 0, true);
 	UpdateP(step);
-PM_Stop(tm_UpdateP);
-double t5 = GetTime();
+	PM_Stop(tm_UpdateP);
+	double t5 = GetTime();
 
-PM_Start(tm_UpdateU, 0, 0, true);
+	PM_Start(tm_UpdateU, 0, 0, true);
 	UpdateU(step);
-PM_Stop(tm_UpdateU);
-double t6 = GetTime();
+	PM_Stop(tm_UpdateU);
+	double t6 = GetTime();
 
-PM_Stop(tm_Update);
+	PM_Stop(tm_Update);
 
 	this->times[0] = t6 - t0;
 	this->times[1] = t1 - t0;
@@ -2539,10 +2539,10 @@ PM_Stop(tm_Update);
 }
 
 void Solver::UpdateUXe(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -2557,7 +2557,7 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* vw = plsVw->GetBlockData(block);
 		real* ve = plsVe->GetBlockData(block);
 		real* vs = plsVs->GetBlockData(block);
@@ -2715,23 +2715,23 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 				uxd0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUX01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX04, 0, 0, true);
 	plsUX0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUX04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateUYe(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -2746,7 +2746,7 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* vw = plsVw->GetBlockData(block);
 		real* ve = plsVe->GetBlockData(block);
 		real* vs = plsVs->GetBlockData(block);
@@ -2903,23 +2903,23 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 				uyd0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUY01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY04, 0, 0, true);
 	plsUY0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUY04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateUZe(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -2934,7 +2934,7 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* vw = plsVw->GetBlockData(block);
 		real* ve = plsVe->GetBlockData(block);
 		real* vs = plsVs->GetBlockData(block);
@@ -3091,23 +3091,23 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 				uzd0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUZ01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ04, 0, 0, true);
 	plsUZ0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUZ04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateTe(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3123,7 +3123,7 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		int g[1] = {vc};
 		real dx = cellSize.x;
 		real org[3] = {origin.x, origin.y, origin.z};
-		
+
 		real* t0  = plsT0->GetBlockData(block);
 		real* tc0 = plsTC->GetBlockData(block);
 		real* tcp = plsTCP->GetBlockData(block);
@@ -3165,7 +3165,7 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		for(int m=0; m<bc_n[0]; m++) {
 			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
 			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
+			//			std::cout << bc_type[n] << " " << bc_value[n] << std::endl;
 		}
 
 		real Tc = 1.0;
@@ -3294,23 +3294,23 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				td0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateT01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT04, 0, 0, true);
 	plsT0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateT04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateUX(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3325,7 +3325,7 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -3475,94 +3475,94 @@ PM_Start(tm_UpdateUX01, 0, 0, true);
 				uxc0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUX01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (A)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX02, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (A)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX02, 0, 0, true);
 	plsUX0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
-PM_Stop(tm_UpdateUX02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Solve Ax = b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Solve Ax = b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX03, 0, 0, true);
 	if( g_pFFVConfig->TuningMasking == true ) {
 		pils->BiCGSTAB_Mask(
-							blockManager,
-							plsUX0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUX1,
-							plsMaskId,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUX,
-							residualUX);
+				blockManager,
+				plsUX0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUX1,
+				plsMaskId,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUX,
+				residualUX);
 	} else {
 		pils->BiCGSTAB(
-							blockManager,
-							plsUX0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUX1,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUX,
-							residualUX);
+				blockManager,
+				plsUX0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUX1,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUX,
+				residualUX);
 	}
-PM_Stop(tm_UpdateUX03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX03);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUX04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUX04, 0, 0, true);
 	plsUX0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUX04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUX04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateUY(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3577,7 +3577,7 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -3727,94 +3727,94 @@ PM_Start(tm_UpdateUY01, 0, 0, true);
 				uyc0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUY01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (A)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY02, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (A)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY02, 0, 0, true);
 	plsUY0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
-PM_Stop(tm_UpdateUY02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Solve Ax = b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Solve Ax = b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY03, 0, 0, true);
 	if( g_pFFVConfig->TuningMasking == true ) {
 		pils->BiCGSTAB_Mask(
-							blockManager,
-							plsUY0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUY1,
-							plsMaskId,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUY,
-							residualUY);
+				blockManager,
+				plsUY0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUY1,
+				plsMaskId,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUY,
+				residualUY);
 	} else {
 		pils->BiCGSTAB(
-							blockManager,
-							plsUY0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUY1,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUY,
-							residualUY);
+				blockManager,
+				plsUY0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUY1,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUY,
+				residualUY);
 	}
-PM_Stop(tm_UpdateUY03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY03);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUY04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUY04, 0, 0, true);
 	plsUY0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUY04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUY04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateUZ(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3829,7 +3829,7 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -3979,94 +3979,94 @@ PM_Start(tm_UpdateUZ01, 0, 0, true);
 				uzc0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateUZ01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (A)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ02, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (A)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ02, 0, 0, true);
 	plsUZ0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
-PM_Stop(tm_UpdateUZ02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Solve Ax = b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Solve Ax = b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ03, 0, 0, true);
 	if( g_pFFVConfig->TuningMasking == true ) {
 		pils->BiCGSTAB_Mask(
-							blockManager,
-							plsUZ0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUZ1,
-							plsMaskId,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUZ,
-							residualUZ);
+				blockManager,
+				plsUZ0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUZ1,
+				plsMaskId,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUZ,
+				residualUZ);
 	} else {
 		pils->BiCGSTAB(
-							blockManager,
-							plsUZ0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsUZ1,
-							omegaU,
-							countPreConditionerU,
-							countMaxU,
-							epsilonU,
-							countUZ,
-							residualUZ);
+				blockManager,
+				plsUZ0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsUZ1,
+				omegaU,
+				countPreConditionerU,
+				countMaxU,
+				epsilonU,
+				countUZ,
+				residualUZ);
 	}
-PM_Stop(tm_UpdateUZ03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ03);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateUZ04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateUZ04, 0, 0, true);
 	plsUZ0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateUZ04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateUZ04);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateP(int step) {
-/////////////////////////////////////////////
-// Remove Grad. P
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Remove Grad. P
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -4081,7 +4081,7 @@ PM_Start(tm_UpdateP01, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -4144,23 +4144,23 @@ PM_Start(tm_UpdateP01, 0, 0, true);
 				&dx, &dt,
 				sz, g);
 	}
-PM_Stop(tm_UpdateP01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C UX, UY, UZ
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP02, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C UX, UY, UZ
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP02, 0, 0, true);
 	plsUX0->ImposeBoundaryCondition(blockManager);
 	plsUY0->ImposeBoundaryCondition(blockManager);
 	plsUZ0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateP02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP03, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -4175,7 +4175,7 @@ PM_Start(tm_UpdateP03, 0, 0, true);
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
-	
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -4225,13 +4225,13 @@ PM_Start(tm_UpdateP03, 0, 0, true);
 				&dx, &dt,
 				sz, g);
 	}
-PM_Stop(tm_UpdateP03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP03);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Set ref. P
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Set ref. P
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP04, 0, 0, true);
 	if( g_pFFVConfig->IterationReferencePressureActive ) {
 		real xr = g_pFFVConfig->IterationReferencePressurePoint.x;
 		real yr = g_pFFVConfig->IterationReferencePressurePoint.y;
@@ -4252,7 +4252,7 @@ PM_Start(tm_UpdateP04, 0, 0, true);
 			int g[1] = {vc};
 			real dx = cellSize.x;
 			real org[3] = {origin.x, origin.y, origin.z};
-		
+
 			real* Ap = plsAp->GetBlockData(block);
 			real* Aw = plsAw->GetBlockData(block);
 			real* Ae = plsAe->GetBlockData(block);
@@ -4299,113 +4299,113 @@ PM_Start(tm_UpdateP04, 0, 0, true);
 					sz, g);
 		}
 	}
-PM_Stop(tm_UpdateP04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP04);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (A)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP05, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (A)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP05, 0, 0, true);
 	plsP0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
-PM_Stop(tm_UpdateP05);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP05);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Solve Ax = b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP06, 0, 0, true);
+	/////////////////////////////////////////////
+	// Solve Ax = b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP06, 0, 0, true);
 	if( g_pFFVConfig->IterationSolverP == "RBGS" ) {
 		pils->RBGS(
-							blockManager,
-							plsP0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							omegaP,
-							countMaxP,
-							epsilonP,
-							countP,
-							residualP);
+				blockManager,
+				plsP0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				omegaP,
+				countMaxP,
+				epsilonP,
+				countP,
+				residualP);
 	} else {
 		if( g_pFFVConfig->TuningMasking == true ) {
 			pils->BiCGSTAB_Mask(
-								blockManager,
-								plsP0,
-								plsAp,
-								plsAw,
-								plsAe,
-								plsAs,
-								plsAn,
-								plsAb,
-								plsAt,
-								plsb,
-								plsr,
-								plsr0,
-								plsp,
-								plsp_,
-								plsq_,
-								plss,
-								plss_,
-								plst_,
-								plsP1,
-								plsMaskId,
-								omegaP,
-								countPreConditionerP,
-								countMaxP,
-								epsilonP,
-								countP,
-								residualP);
+					blockManager,
+					plsP0,
+					plsAp,
+					plsAw,
+					plsAe,
+					plsAs,
+					plsAn,
+					plsAb,
+					plsAt,
+					plsb,
+					plsr,
+					plsr0,
+					plsp,
+					plsp_,
+					plsq_,
+					plss,
+					plss_,
+					plst_,
+					plsP1,
+					plsMaskId,
+					omegaP,
+					countPreConditionerP,
+					countMaxP,
+					epsilonP,
+					countP,
+					residualP);
 		} else {
 			pils->BiCGSTAB(
-								blockManager,
-								plsP0,
-								plsAp,
-								plsAw,
-								plsAe,
-								plsAs,
-								plsAn,
-								plsAb,
-								plsAt,
-								plsb,
-								plsr,
-								plsr0,
-								plsp,
-								plsp_,
-								plsq_,
-								plss,
-								plss_,
-								plst_,
-								plsP1,
-								omegaP,
-								countPreConditionerP,
-								countMaxP,
-								epsilonP,
-								countP,
-								residualP);
+					blockManager,
+					plsP0,
+					plsAp,
+					plsAw,
+					plsAe,
+					plsAs,
+					plsAn,
+					plsAb,
+					plsAt,
+					plsb,
+					plsr,
+					plsr0,
+					plsp,
+					plsp_,
+					plsq_,
+					plss,
+					plss_,
+					plst_,
+					plsP1,
+					omegaP,
+					countPreConditionerP,
+					countMaxP,
+					epsilonP,
+					countP,
+					residualP);
 		}
 	}
-PM_Stop(tm_UpdateP06);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP06);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateP07, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateP07, 0, 0, true);
 	plsP0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateP07);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateP07);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateU(int step) {
-/////////////////////////////////////////////
-// Correct U
-/////////////////////////////////////////////
-PM_Start(tm_UpdateU01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Correct U
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateU01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -4461,34 +4461,34 @@ PM_Start(tm_UpdateU01, 0, 0, true);
 				&dx, &dt,
 				sz, g);
 	}
-PM_Stop(tm_UpdateU01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateU01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// ImposeBC UX, UY, UZ
-/////////////////////////////////////////////
-PM_Start(tm_UpdateU02, 0, 0, true);
+	/////////////////////////////////////////////
+	// ImposeBC UX, UY, UZ
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateU02, 0, 0, true);
 	plsUX0->ImposeBoundaryCondition(blockManager);
 	plsUY0->ImposeBoundaryCondition(blockManager);
 	plsUZ0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateU02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateU02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Calc Laplace P
-/////////////////////////////////////////////
-PM_Start(tm_UpdateU03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc Laplace P
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateU03, 0, 0, true);
 	plsP0->ImposeBoundaryCondition(blockManager);
 	plsLapP->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateU03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateU03);
+	/////////////////////////////////////////////
 }
 
 void Solver::UpdateT(int step) {
-/////////////////////////////////////////////
-// Calc A & b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT01, 0, 0, true);
+	/////////////////////////////////////////////
+	// Calc A & b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT01, 0, 0, true);
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -4504,7 +4504,7 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		int g[1] = {vc};
 		real dx = cellSize.x;
 		real org[3] = {origin.x, origin.y, origin.z};
-		
+
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
 		real* Ae = plsAe->GetBlockData(block);
@@ -4554,8 +4554,8 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 		for(int m=0; m<bc_n[0]; m++) {
 			bc_type[m]  = g_pFFVConfig->BCInternalBoundaryType[m];
 			bc_value[m] = g_pFFVConfig->BCInternalBoundaryValue[m];
-//			std::cout << m << " " << bc_type[m] << " " << bc_value[m] << std::endl;
-//			std::cout << m << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
+			//			std::cout << m << " " << bc_type[m] << " " << bc_value[m] << std::endl;
+			//			std::cout << m << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
 		}
 
 		real Tc = 1.0;
@@ -4656,13 +4656,13 @@ PM_Start(tm_UpdateT01, 0, 0, true);
 				tc0,
 				sz, g);
 	}
-PM_Stop(tm_UpdateT01);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT01);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Set ref. T
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT02, 0, 0, true);
+	/////////////////////////////////////////////
+	// Set ref. T
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT02, 0, 0, true);
 	if( g_pFFVConfig->IterationReferenceTemperatureActive ) {
 		real xr = g_pFFVConfig->IterationReferenceTemperaturePoint.x;
 		real yr = g_pFFVConfig->IterationReferenceTemperaturePoint.y;
@@ -4683,7 +4683,7 @@ PM_Start(tm_UpdateT02, 0, 0, true);
 			int g[1] = {vc};
 			real dx = cellSize.x;
 			real org[3] = {origin.x, origin.y, origin.z};
-		
+
 			real* Ap = plsAp->GetBlockData(block);
 			real* Aw = plsAw->GetBlockData(block);
 			real* Ae = plsAe->GetBlockData(block);
@@ -4730,87 +4730,87 @@ PM_Start(tm_UpdateT02, 0, 0, true);
 					sz, g);
 		}
 	}
-PM_Stop(tm_UpdateT02);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT02);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (A)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT03, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (A)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT03, 0, 0, true);
 	plsT0->ImposeBoundaryCondition(blockManager, plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt, plsb);
-PM_Stop(tm_UpdateT03);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT03);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Solve Ax = b
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT04, 0, 0, true);
+	/////////////////////////////////////////////
+	// Solve Ax = b
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT04, 0, 0, true);
 	if( g_pFFVConfig->TuningMasking == true ) {
 		pils->BiCGSTAB_Mask(
-							blockManager,
-							plsT0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsT1,
-							plsMaskId,
-							omegaT,
-							countPreConditionerT,
-							countMaxT,
-							epsilonT,
-							countT,
-							residualT);
+				blockManager,
+				plsT0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsT1,
+				plsMaskId,
+				omegaT,
+				countPreConditionerT,
+				countMaxT,
+				epsilonT,
+				countT,
+				residualT);
 	} else {
 		pils->BiCGSTAB(
-							blockManager,
-							plsT0,
-							plsAp,
-							plsAw,
-							plsAe,
-							plsAs,
-							plsAn,
-							plsAb,
-							plsAt,
-							plsb,
-							plsr,
-							plsr0,
-							plsp,
-							plsp_,
-							plsq_,
-							plss,
-							plss_,
-							plst_,
-							plsT1,
-							omegaT,
-							countPreConditionerT,
-							countMaxT,
-							epsilonT,
-							countT,
-							residualT);
+				blockManager,
+				plsT0,
+				plsAp,
+				plsAw,
+				plsAe,
+				plsAs,
+				plsAn,
+				plsAb,
+				plsAt,
+				plsb,
+				plsr,
+				plsr0,
+				plsp,
+				plsp_,
+				plsq_,
+				plss,
+				plss_,
+				plst_,
+				plsT1,
+				omegaT,
+				countPreConditionerT,
+				countMaxT,
+				epsilonT,
+				countT,
+				residualT);
 	}
-PM_Stop(tm_UpdateT04);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT04);
+	/////////////////////////////////////////////
 
-/////////////////////////////////////////////
-// Impose B.C. (x)
-/////////////////////////////////////////////
-PM_Start(tm_UpdateT05, 0, 0, true);
+	/////////////////////////////////////////////
+	// Impose B.C. (x)
+	/////////////////////////////////////////////
+	PM_Start(tm_UpdateT05, 0, 0, true);
 	plsT0->ImposeBoundaryCondition(blockManager);
-PM_Stop(tm_UpdateT05);
-/////////////////////////////////////////////
+	PM_Stop(tm_UpdateT05);
+	/////////////////////////////////////////////
 }
 
 #include <sys/time.h>
@@ -4868,7 +4868,7 @@ void Solver::PrintHole(int id) {
 		int g[1] = {vc};
 		int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
 		real dx = cellSize.x;
-	
+
 		real* pCut0 = plsCut0->GetBlockData(block);
 		real* pCut1 = plsCut1->GetBlockData(block);
 		real* pCut2 = plsCut2->GetBlockData(block);
@@ -5086,7 +5086,7 @@ void Solver::PrintCut(int id) {
 		int g[1] = {vc};
 		int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
 		real dx = cellSize.x;
-	
+
 		real* pCut0 = plsCut0->GetBlockData(block);
 		real* pCut1 = plsCut1->GetBlockData(block);
 		real* pCut2 = plsCut2->GetBlockData(block);
@@ -5201,7 +5201,7 @@ void Solver::PrintCut(int id) {
 						v[8] = z[1];
 						WritePolygon(ofs, v);
 					}
-				
+
 				}
 			}
 		}

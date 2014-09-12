@@ -634,30 +634,6 @@ subroutine bcut_calc_c_f_e3( &
       fc(i, j, k) = 0.0d0
     endif
 
-!    f0 = bcut_getupwind(vx0, fw, fp)
-!    f1 = bcut_getupwind(vx1, fp, fe)
-!    f2 = bcut_getupwind(vy2, fs, fp)
-!    f3 = bcut_getupwind(vy3, fp, fn)
-!    f4 = bcut_getupwind(vz4, fb, fp)
-!    f5 = bcut_getupwind(vz5, fp, ft)
-!
-!    f0 = 0.5d0*(fp + fw)
-!    f1 = 0.5d0*(fp + fe)
-!    f2 = 0.5d0*(fp + fs)
-!    f3 = 0.5d0*(fp + fn)
-!    f4 = 0.5d0*(fp + fb)
-!    f5 = 0.5d0*(fp + ft)
-!
-!    f0 = 0.5d0*(fp + fw)*0.95 + bcut_getupwind(vx0, fw, fp)*0.05
-!    f1 = 0.5d0*(fp + fe)*0.95 + bcut_getupwind(vx1, fp, fe)*0.05
-!    f2 = 0.5d0*(fp + fs)*0.95 + bcut_getupwind(vy2, fs, fp)*0.05
-!    f3 = 0.5d0*(fp + fn)*0.95 + bcut_getupwind(vy3, fp, fn)*0.05
-!    f4 = 0.5d0*(fp + fb)*0.95 + bcut_getupwind(vz4, fb, fp)*0.05
-!    f5 = 0.5d0*(fp + ft)*0.95 + bcut_getupwind(vz5, fp, ft)*0.05
-!
-!    fc(i, j, k) = (f1*vx1 - f0*vx0)/dx &
-!                + (f3*vy3 - f2*vy2)/dx &
-!                + (f5*vz5 - f4*vz4)/dx
   end do
   end do
   end do
@@ -792,22 +768,22 @@ subroutine bcut_calc_c_f_quick( &
     f5 = bcut_getupwind(vz5, 0.125*(6.0*fp + 3.0*ft - fb) , 0.125*(3.0*fp + 6.0*ft - ftt))
 
     if( cidw0 /= 0 ) then
-			f0 = 0.5*(fp + fw)
+      f0 = 0.5*(fp + fw)
     endif
     if( cide1 /= 0 ) then
-			f1 = 0.5*(fp + fe)
+      f1 = 0.5*(fp + fe)
     endif
     if( cids2 /= 0 ) then
-			f2 = 0.5*(fp + fs)
+      f2 = 0.5*(fp + fs)
     endif
     if( cidn3 /= 0 ) then
-			f3 = 0.5*(fp + fn)
+      f3 = 0.5*(fp + fn)
     endif
     if( cidb4 /= 0 ) then
-			f4 = 0.5*(fp + fb)
+      f4 = 0.5*(fp + fb)
     endif
     if( cidt5 /= 0 ) then
-			f5 = 0.5*(fp + ft)
+      f5 = 0.5*(fp + ft)
     endif
 
     q0 = vx0*f0
@@ -1054,57 +1030,6 @@ subroutine bcut_calc_c_f_w3( &
     fc(i, j, k) = (max(vx, 0.0)*dfx_n + min(vx, 0.0)*dfx_p) &
                 + (max(vy, 0.0)*dfy_n + min(vy, 0.0)*dfy_p) &
                 + (max(vz, 0.0)*dfz_n + min(vz, 0.0)*dfz_p) 
-
-
-!    f0 = bcut_getupwind(vx0, fw + 0.5*dfx_n, fp - 0.5*dfx_c)
-!    f1 = bcut_getupwind(vx1, fp + 0.5*dfx_c, fe - 0.5*dfx_p)
-!    f2 = bcut_getupwind(vy2, fs + 0.5*dfy_n, fp - 0.5*dfy_c)
-!    f3 = bcut_getupwind(vy3, fp + 0.5*dfy_c, fn - 0.5*dfy_p)
-!    f4 = bcut_getupwind(vz4, fb + 0.5*dfz_n, fp - 0.5*dfz_c)
-!    f5 = bcut_getupwind(vz5, fp + 0.5*dfz_c, ft - 0.5*dfz_p)
-!
-!    q0 = vx0*f0
-!    q1 = vx1*f1
-!    q2 = vy2*f2
-!    q3 = vy3*f3
-!    q4 = vz4*f4
-!    q5 = vz5*f5
-!
-!    m0 = 0.0d0
-!    m1 = 0.0d0
-!    m2 = 0.0d0
-!    m3 = 0.0d0
-!    m4 = 0.0d0
-!    m5 = 0.0d0
-!
-!    if( cidp0 /= 0 ) then
-!      q0 = (d0 - 0.5d0)/(d0 + 0.5d0)*q1
-!      m0 = 1.0d0
-!    endif
-!    if( cidp1 /= 0 ) then
-!      q1 = (d1 - 0.5d0)/(d1 + 0.5d0)*q0
-!      m1 = 1.0d0
-!    endif
-!    if( cidp2 /= 0 ) then
-!      q2 = (d2 - 0.5d0)/(d2 + 0.5d0)*q3
-!      m2 = 1.0d0
-!    endif
-!    if( cidp3 /= 0 ) then
-!      q3 = (d3 - 0.5d0)/(d3 + 0.5d0)*q2
-!      m3 = 1.0d0
-!    endif
-!    if( cidp4 /= 0 ) then
-!      q4 = (d4 - 0.5d0)/(d4 + 0.5d0)*q5
-!      m4 = 1.0d0
-!    endif
-!    if( cidp5 /= 0 ) then
-!      q5 = (d5 - 0.5d0)/(d5 + 0.5d0)*q4
-!      m5 = 1.0d0
-!    endif
-!
-!    fc(i, j, k) = (q1 - q0)/dx &
-!                + (q3 - q2)/dx &
-!                + (q5 - q4)/dx
 
     if( pidp /= 1 ) then
       fc(i, j, k) = 0.0d0
@@ -1423,49 +1348,48 @@ subroutine bcut_calc_c_u_quick( &
     pidp = pid(i, j, k)
 
     if( cidp0 /= 0 ) then
-			fw  = 0.0
-			fww = 0.0
+      fw  = 0.0
+      fww = 0.0
     endif
     if( cidp1 /= 0 ) then
-			fe  = 0.0
-			fee = 0.0
+      fe  = 0.0
+      fee = 0.0
     endif
     if( cidp2 /= 0 ) then
-			fs  = 0.0
-			fss = 0.0
+      fs  = 0.0
+      fss = 0.0
     endif
     if( cidp3 /= 0 ) then
-			fn  = 0.0
-			fnn = 0.0
+      fn  = 0.0
+      fnn = 0.0
     endif
     if( cidp4 /= 0 ) then
-			fb  = 0.0
-			fbb = 0.0
+      fb  = 0.0
+      fbb = 0.0
     endif
     if( cidp5 /= 0 ) then
-			ft  = 0.0
-			ftt = 0.0
+      ft  = 0.0
+      ftt = 0.0
     endif
 
     if( cidw0 /= 0 ) then
-			fww = fw
+      fww = fw
     endif
     if( cide1 /= 0 ) then
-			fee = fe
+      fee = fe
     endif
     if( cids2 /= 0 ) then
-			fss = fs
+      fss = fs
     endif
     if( cidn3 /= 0 ) then
-			fnn = fn
+      fnn = fn
     endif
     if( cidb4 /= 0 ) then
-			fbb = fb
+      fbb = fb
     endif
     if( cidt5 /= 0 ) then
-			ftt = ft
+      ftt = ft
     endif
-
 
     if( cidp0 /= 0 ) then
       fw  = (1.0d0 - 1.0d0/d0)*fp + (1.0d0/d0)*fi
@@ -1722,7 +1646,7 @@ end subroutine bcut_calc_d_u
 subroutine bcut_calc_d_u_e( &
                 ud0_, &
                 u0_, &
-								nue_, &
+                nue_, &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
@@ -1794,10 +1718,10 @@ subroutine bcut_calc_d_u_e( &
 
     if( pidp /= 1 ) then
       ud0_(i, j, k) = 0.0d0
-			cycle
+      cycle
     endif
 
-		nup = nue_(i, j, k)
+    nup = nue_(i, j, k)
     nu0 = nue_(i-1, j, k)
     nu1 = nue_(i+1, j, k)
     nu2 = nue_(i, j-1, k)
@@ -1805,12 +1729,12 @@ subroutine bcut_calc_d_u_e( &
     nu4 = nue_(i, j, k-1)
     nu5 = nue_(i, j, k+1)
 
-		a0 = nup*nu0/(nup + nu0)*2.0
-		a1 = nup*nu1/(nup + nu1)*2.0
-		a2 = nup*nu2/(nup + nu2)*2.0
-		a3 = nup*nu3/(nup + nu3)*2.0
-		a4 = nup*nu4/(nup + nu4)*2.0
-		a5 = nup*nu5/(nup + nu5)*2.0
+    a0 = nup*nu0/(nup + nu0)*2.0
+    a1 = nup*nu1/(nup + nu1)*2.0
+    a2 = nup*nu2/(nup + nu2)*2.0
+    a3 = nup*nu3/(nup + nu3)*2.0
+    a4 = nup*nu4/(nup + nu4)*2.0
+    a5 = nup*nu5/(nup + nu5)*2.0
 
     m0 = 0.0d0
     m1 = 0.0d0
@@ -1820,27 +1744,27 @@ subroutine bcut_calc_d_u_e( &
     m5 = 0.0d0
     if( cidp0 /= 0 ) then
       m0 = 1.0d0
-			a0 = nup*(d0 - 0.5)/d0
+      a0 = nup*(d0 - 0.5)/d0
     endif
     if( cidp1 /= 0 ) then
       m1 = 1.0d0
-			a1 = nup*(d1 - 0.5)/d1
+      a1 = nup*(d1 - 0.5)/d1
     endif
     if( cidp2 /= 0 ) then
       m2 = 1.0d0
-			a2 = nup*(d2 - 0.5)/d2
+      a2 = nup*(d2 - 0.5)/d2
     endif
     if( cidp3 /= 0 ) then
       m3 = 1.0d0
-			a3 = nup*(d3 - 0.5)/d3
+      a3 = nup*(d3 - 0.5)/d3
     endif
     if( cidp4 /= 0 ) then
       m4 = 1.0d0
-			a4 = nup*(d4 - 0.5)/d4
+      a4 = nup*(d4 - 0.5)/d4
     endif
     if( cidp5 /= 0 ) then
       m5 = 1.0d0
-			a5 = nup*(d5 - 0.5)/d5
+      a5 = nup*(d5 - 0.5)/d5
     endif
 
     l0 = a0/(dx*dx)
@@ -1878,11 +1802,11 @@ subroutine bcut_calc_d_u_e( &
 end subroutine bcut_calc_d_u_e
 
 subroutine bcut_calc_nue( &
-								nue_, &
-								csm_c2, &
+                nue_, &
+                csm_c2, &
                 ux_, &
-								uy_, &
-								uz_, &
+                uy_, &
+                uz_, &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
@@ -1897,7 +1821,7 @@ subroutine bcut_calc_nue( &
   integer                 :: g
   integer, dimension(3)   :: sz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nue_
-	real										:: csm_c2
+  real                    :: csm_c2
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux_, uy_, uz_
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
@@ -1916,13 +1840,13 @@ subroutine bcut_calc_nue( &
   real                    :: up, uw, ue, us, un, ub, ut
   real                    :: vp, vw, ve, vs, vn, vb, vt
   real                    :: wp, ww, we, ws, wn, wb, wt
-	real										:: dudx, dudy, dudz
-	real										:: dvdx, dvdy, dvdz
-	real										:: dwdx, dwdy, dwdz
-	real										:: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
-	real										:: s2, sl
-	real										:: wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz
-	real										:: csm_e, csm_q, csm_fcs, csm_fom, csm_c
+  real                    :: dudx, dudy, dudz
+  real                    :: dvdx, dvdy, dvdz
+  real                    :: dwdx, dwdy, dwdz
+  real                    :: sxx, sxy, sxz, syx, syy, syz, szx, szy, szz
+  real                    :: s2, sl
+  real                    :: wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz
+  real                    :: csm_e, csm_q, csm_fcs, csm_fom, csm_c
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
@@ -1938,13 +1862,13 @@ subroutine bcut_calc_nue( &
 !$omp           private(up, uw, ue, us, un, ub, ut) &
 !$omp           private(vp, vw, ve, vs, vn, vb, vt) &
 !$omp           private(wp, ww, we, ws, wn, wb, wt) &
-!$omp						private(dudx, dudy, dudz) &
-!$omp						private(dvdx, dvdy, dvdz) &
-!$omp						private(dwdx, dwdy, dwdz) &
-!$omp						private(sxx, sxy, sxz, syx, syy, syz, szx, szy, szz) &
-!$omp						private(s2, sl) &
-!$omp						private(wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz) &
-!$omp						private(csm_e, csm_q, csm_fcs, csm_fom, csm_c) 
+!$omp            private(dudx, dudy, dudz) &
+!$omp            private(dvdx, dvdy, dvdz) &
+!$omp            private(dwdx, dwdy, dwdz) &
+!$omp            private(sxx, sxy, sxz, syx, syy, syz, szx, szy, szz) &
+!$omp            private(s2, sl) &
+!$omp            private(wxx, wxy, wxz, wyx, wyy, wyz, wzx, wzy, wzz) &
+!$omp            private(csm_e, csm_q, csm_fcs, csm_fom, csm_c) 
 !$omp do schedule(static, 1)
 #else
 #endif
@@ -2018,53 +1942,43 @@ subroutine bcut_calc_nue( &
     wb = uz_(i, j, k-1)*(1.0 - m4) + Wc*m4
     wt = uz_(i, j, k+1)*(1.0 - m5) + Wc*m5
 
-		dudx = 2.0/(d1 + d0)*((ue - up)/(d1*dx) + (up - uw)/(d0*dx))
-		dudy = 2.0/(d3 + d2)*((un - up)/(d3*dx) + (up - us)/(d2*dx))
-		dudz = 2.0/(d5 + d4)*((ut - up)/(d5*dx) + (up - ub)/(d4*dx))
+    dudx = 2.0/(d1 + d0)*((ue - up)/(d1*dx) + (up - uw)/(d0*dx))
+    dudy = 2.0/(d3 + d2)*((un - up)/(d3*dx) + (up - us)/(d2*dx))
+    dudz = 2.0/(d5 + d4)*((ut - up)/(d5*dx) + (up - ub)/(d4*dx))
 
-		dvdx = 2.0/(d1 + d0)*((ve - vp)/(d1*dx) + (vp - vw)/(d0*dx))
-		dvdy = 2.0/(d3 + d2)*((vn - vp)/(d3*dx) + (vp - vs)/(d2*dx))
-		dvdz = 2.0/(d5 + d4)*((vt - vp)/(d5*dx) + (vp - vb)/(d4*dx))
+    dvdx = 2.0/(d1 + d0)*((ve - vp)/(d1*dx) + (vp - vw)/(d0*dx))
+    dvdy = 2.0/(d3 + d2)*((vn - vp)/(d3*dx) + (vp - vs)/(d2*dx))
+    dvdz = 2.0/(d5 + d4)*((vt - vp)/(d5*dx) + (vp - vb)/(d4*dx))
 
-		dwdx = 2.0/(d1 + d0)*((we - wp)/(d1*dx) + (wp - ww)/(d0*dx))
-		dwdy = 2.0/(d3 + d2)*((wn - wp)/(d3*dx) + (wp - ws)/(d2*dx))
-		dwdz = 2.0/(d5 + d4)*((wt - wp)/(d5*dx) + (wp - wb)/(d4*dx))
+    dwdx = 2.0/(d1 + d0)*((we - wp)/(d1*dx) + (wp - ww)/(d0*dx))
+    dwdy = 2.0/(d3 + d2)*((wn - wp)/(d3*dx) + (wp - ws)/(d2*dx))
+    dwdz = 2.0/(d5 + d4)*((wt - wp)/(d5*dx) + (wp - wb)/(d4*dx))
 
-		sxx = 0.5*(dudx + dudx)
-		sxy = 0.5*(dvdx + dudy)
-		sxz = 0.5*(dwdx + dudz)
-		syx = 0.5*(dudy + dvdx)
-		syy = 0.5*(dvdy + dvdy)
-		syz = 0.5*(dwdy + dvdz)
-		szx = 0.5*(dudz + dwdx)
-		szy = 0.5*(dvdz + dwdy)
-		szz = 0.5*(dwdz + dwdz)
-		s2 = 2.0*(sxx*sxx + syy*syy + szz*szz) + 4.0*(sxy*sxy + syz*syz + szx*szx)
-		sl = sqrt(s2)
+    sxx = 0.5*(dudx + dudx)
+    sxy = 0.5*(dvdx + dudy)
+    sxz = 0.5*(dwdx + dudz)
+    syx = 0.5*(dudy + dvdx)
+    syy = 0.5*(dvdy + dvdy)
+    syz = 0.5*(dwdy + dvdz)
+    szx = 0.5*(dudz + dwdx)
+    szy = 0.5*(dvdz + dwdy)
+    szz = 0.5*(dwdz + dwdz)
+    s2 = 2.0*(sxx*sxx + syy*syy + szz*szz) + 4.0*(sxy*sxy + syz*syz + szx*szx)
+    sl = sqrt(s2)
 
-!		wxx = 0.5*(dudx - dudx)
-!		wxy = 0.5*(dvdx - dudy)
-!		wxz = 0.5*(dwdx - dudz)
-!		wyx = 0.5*(dudy - dvdx)
-!		wyy = 0.5*(dvdy - dvdy)
-!		wyz = 0.5*(dwdy - dvdz)
-!		wzx = 0.5*(dudz - dwdx)
-!		wzy = 0.5*(dvdz - dwdy)
-!		wzz = 0.5*(dwdz - dwdz)
+    csm_e =  0.5*(dudx*dudx + dudy*dudy + dudz*dudz &
+                + dvdx*dvdx + dvdy*dvdy + dvdz*dvdz &
+                + dwdx*dwdx + dwdy*dwdy + dwdz*dwdz)
+    csm_q = -0.5*(dudx*dudx + dudy*dvdx + dudz*dwdx &
+                + dvdx*dudy + dvdy*dvdy + dvdz*dwdy &
+                + dwdx*dudz + dwdy*dvdz + dwdz*dwdz)
+    csm_fcs = csm_q/csm_e
+    csm_fom = 1.0 - csm_fcs
+    csm_c = csm_c2*csm_fom*(abs(csm_fcs))**1.5
 
-		csm_e =  0.5*(dudx*dudx + dudy*dudy + dudz*dudz &
-								+ dvdx*dvdx + dvdy*dvdy + dvdz*dvdz &
-								+ dwdx*dwdx + dwdy*dwdy + dwdz*dwdz)
-		csm_q = -0.5*(dudx*dudx + dudy*dvdx + dudz*dwdx &
-								+ dvdx*dudy + dvdy*dvdy + dvdz*dwdy &
-								+ dwdx*dudz + dwdy*dvdz + dwdz*dwdz)
-		csm_fcs = csm_q/csm_e
-		csm_fom = 1.0 - csm_fcs
-		csm_c = csm_c2*csm_fom*(abs(csm_fcs))**1.5
-
-		nue_(i, j, k) = csm_c*dx*dx*sl
+    nue_(i, j, k) = csm_c*dx*dx*sl
     if( pidp /= 1 ) then
-			nue_(i, j, k) = 0.0
+      nue_(i, j, k) = 0.0
     endif
   end do
   end do
@@ -2082,9 +1996,9 @@ subroutine bcut_calc_d_t( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
-								nnum, &
-								nx_, ny_, nz_, &
-								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                nnum, &
+                nx_, ny_, nz_, &
+                nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
                 rhof, rhos, &
                 cpf, cps, &
                 kf, ks, &
@@ -2104,8 +2018,8 @@ subroutine bcut_calc_d_t( &
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-	integer									 :: nnum
-	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer                   :: nnum
+  real, dimension(0:nnum-1) :: nx_, ny_, nz_
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
   integer                  :: cidp
   integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
@@ -2218,7 +2132,7 @@ subroutine bcut_calc_d_t( &
       k1 = kf/d1*2.0/(d0 + d1)
       t0 = bc_value(cidp0)
     else if( bc_type(cidp0) == 1 ) then
-			nx = nx_( nidx0(i, j, k) )
+      nx = nx_( nidx0(i, j, k) )
 
       k0 = 0.0
       k1 = kf/(d0 + 0.5)
@@ -2230,7 +2144,7 @@ subroutine bcut_calc_d_t( &
       k1 = kf/d1*2.0/(d0 + d1)
       t1 = bc_value(cidp1)
     else if( bc_type(cidp1) == 1 ) then
-			nx = nx_( nidx1(i, j, k) )
+      nx = nx_( nidx1(i, j, k) )
 
       k0 = kf/(d1 + 0.5)
       k1 = 0.0
@@ -2242,7 +2156,7 @@ subroutine bcut_calc_d_t( &
       k3 = kf/d3*2.0/(d2 + d3)
       t2 = bc_value(cidp2)
     else if( bc_type(cidp2) == 1 ) then
-			ny = ny_( nidx2(i, j, k) )
+      ny = ny_( nidx2(i, j, k) )
 
       k2 = 0.0
       k3 = kf/(d2 + 0.5)
@@ -2254,7 +2168,7 @@ subroutine bcut_calc_d_t( &
       k3 = kf/d3*2.0/(d2 + d3)
       t3 = bc_value(cidp3)
     else if( bc_type(cidp3) == 1 ) then
-			ny = ny_( nidx3(i, j, k) )
+      ny = ny_( nidx3(i, j, k) )
 
       k2 = kf/(d3 + 0.5)
       k3 = 0.0
@@ -2266,7 +2180,7 @@ subroutine bcut_calc_d_t( &
       k5 = kf/d5*2.0/(d4 + d5)
       t4 = bc_value(cidp4)
     else if( bc_type(cidp4) == 1 ) then
-			nz = nz_( nidx4(i, j, k) )
+      nz = nz_( nidx4(i, j, k) )
 
       k4 = 0.0
       k5 = kf/(d4 + 0.5)
@@ -2278,7 +2192,7 @@ subroutine bcut_calc_d_t( &
       k5 = kf/d5*2.0/(d4 + d5)
       t5 = bc_value(cidp5)
     else if( bc_type(cidp5) == 1 ) then
-			nz = nz_( nidx5(i, j, k) )
+      nz = nz_( nidx5(i, j, k) )
 
       k4 = kf/(d5 + 0.5)
       k5 = 0.0
@@ -2804,10 +2718,10 @@ end subroutine bcut_update_u
 
 subroutine bcut_add_g( &
                 ux_, uy_, uz_, &
-								t_, &
+                t_, &
                 gx, gy, gz, &
-								betag, tr, &
-								dx, dt, &
+                betag, tr, &
+                dx, dt, &
                 sz, g)
   implicit none
   integer                 :: i, j, k
@@ -2816,9 +2730,9 @@ subroutine bcut_add_g( &
   integer, dimension(3)   :: sz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux_, uy_, uz_
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: t_
-	real										:: gx, gy, gz
-	real										:: betag, tr
-	real										:: dx, dt
+  real                    :: gx, gy, gz
+  real                    :: betag, tr
+  real                    :: dx, dt
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
@@ -2831,9 +2745,9 @@ subroutine bcut_add_g( &
   do j=1, jx
 !ocl nouxsimd
   do i=1, ix
-		ux_(i, j, k) = ux_(i, j, k) + gx*dt
-		uy_(i, j, k) = uy_(i, j, k) + gy*dt
-		uz_(i, j, k) = uz_(i, j, k) + gz*dt + betag*(t_(i, j, k) - tr)*dt
+    ux_(i, j, k) = ux_(i, j, k) + gx*dt
+    uy_(i, j, k) = uy_(i, j, k) + gy*dt
+    uz_(i, j, k) = uz_(i, j, k) + gz*dt + betag*(t_(i, j, k) - tr)*dt
   end do
   end do
   end do
@@ -3668,9 +3582,9 @@ subroutine bcut_calc_abd_t( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
-								nnum, &
-								nx_, ny_, nz_, &
-								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                nnum, &
+                nx_, ny_, nz_, &
+                nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
                 rhof, rhos, &
                 cpf, cps, &
                 kf, ks, &
@@ -3692,8 +3606,8 @@ subroutine bcut_calc_abd_t( &
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-	integer									 :: nnum
-	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer                   :: nnum
+  real, dimension(0:nnum-1) :: nx_, ny_, nz_
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
   integer                  :: cidp
   integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
@@ -3802,7 +3716,7 @@ subroutine bcut_calc_abd_t( &
       k1 = kf/d1*2.0/(d0 + d1)
       t0 = bc_value(cidp0)
     else if( bc_type(cidp0) == 1 ) then
-			nx = nx_( nidx0(i, j, k) )
+      nx = nx_( nidx0(i, j, k) )
 
       k0 = 0.0
       k1 = kf/(d0 + 0.5)
@@ -3816,7 +3730,7 @@ subroutine bcut_calc_abd_t( &
       k1 = kf/d1*2.0/(d0 + d1)
       t1 = bc_value(cidp1)
     else if( bc_type(cidp1) == 1 ) then
-			nx = nx_( nidx1(i, j, k) )
+      nx = nx_( nidx1(i, j, k) )
 
       k0 = kf/(d1 + 0.5)
       k1 = 0.0
@@ -3830,7 +3744,7 @@ subroutine bcut_calc_abd_t( &
       k3 = kf/d3*2.0/(d2 + d3)
       t2 = bc_value(cidp2)
     else if( bc_type(cidp2) == 1 ) then
-			ny = ny_( nidx2(i, j, k) )
+      ny = ny_( nidx2(i, j, k) )
 
       k2 = 0.0
       k3 = kf/(d2 + 0.5)
@@ -3844,7 +3758,7 @@ subroutine bcut_calc_abd_t( &
       k3 = kf/d3*2.0/(d2 + d3)
       t3 = bc_value(cidp3)
     else if( bc_type(cidp3) == 1 ) then
-			ny = ny_( nidx3(i, j, k) )
+      ny = ny_( nidx3(i, j, k) )
 
       k2 = kf/(d3 + 0.5)
       k3 = 0.0
@@ -3858,7 +3772,7 @@ subroutine bcut_calc_abd_t( &
       k5 = kf/d5*2.0/(d4 + d5)
       t4 = bc_value(cidp4)
     else if( bc_type(cidp4) == 1 ) then
-			nz = nz_( nidx4(i, j, k) )
+      nz = nz_( nidx4(i, j, k) )
 
       k4 = 0.0
       k5 = kf/(d4 + 0.5)
@@ -3872,7 +3786,7 @@ subroutine bcut_calc_abd_t( &
       k5 = kf/d5*2.0/(d4 + d5)
       t5 = bc_value(cidp5)
     else if( bc_type(cidp5) == 1 ) then
-			nz = nz_( nidx5(i, j, k) )
+      nz = nz_( nidx5(i, j, k) )
 
       k4 = kf/(d5 + 0.5)
       k5 = 0.0
@@ -4013,398 +3927,12 @@ subroutine bcut_update_t( &
 #endif
 end subroutine bcut_update_t
 
-subroutine bcut_calc_f_p_0( &
-                fspx, &
-                fspy, &
-                fspz, &
-                fsp, &
-                p, &
-                c0, c1, c2, c3, c4, c5, &
-                cid0, cid1, cid2, cid3, cid4, cid5, &
-                pid, &
-                dx, dt, &
-                sz, g)
-  implicit none
-  integer                  :: i, j, k
-  integer                  :: ix, jx, kx
-  integer                  :: g
-  integer, dimension(3)    :: sz
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fspx, fspy, fspz
-  real, dimension(1:3)    :: fsp
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: p
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
-  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
-  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-  integer                  :: cidp
-  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
-  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
-  real                    :: dx, dt
-  real                    :: fsx, fsy, fsz
-  real                    :: d0, d1, d2, d3, d4, d5
-  real                    :: m0, m1, m2, m3, m4, m5
-  real                    :: p0, p1, p2, p3, p4, p5
-  ix = sz(1)
-  jx = sz(2)
-  kx = sz(3)
-  fsx = 0.0
-  fsy = 0.0
-  fsz = 0.0
-#ifdef _BLOCK_IS_LARGE_
-!$omp parallel private(i, j, k) &
-!$omp           private(cidp) &
-!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
-!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
-!$omp           private(d0, d1, d2, d3, d4, d5) &
-!$omp           private(m0, m1, m2, m3, m4, m5) &
-!$omp           private(p0, p1, p2, p3, p4, p5) 
-!$omp do schedule(static, 1), &
-!$omp     reduction(+:fsx, fsy, fsz)
-#else
-#endif
-  do k=1, kx
-  do j=1, jx
-!ocl nouxsimd
-  do i=1, ix
-    p0 = 0.5*(p(i, j, k) + p(i-1, j, k))
-    p1 = 0.5*(p(i, j, k) + p(i+1, j, k))
-    p2 = 0.5*(p(i, j, k) + p(i, j-1, k))
-    p3 = 0.5*(p(i, j, k) + p(i, j+1, k))
-    p4 = 0.5*(p(i, j, k) + p(i, j, k-1))
-    p5 = 0.5*(p(i, j, k) + p(i, j, k+1))
-
-    m0 = 0.0d0
-    m1 = 0.0d0
-    m2 = 0.0d0
-    m3 = 0.0d0
-    m4 = 0.0d0
-    m5 = 0.0d0
-
-    d0 = c0(i, j, k)
-    d1 = c1(i, j, k)
-    d2 = c2(i, j, k)
-    d3 = c3(i, j, k)
-    d4 = c4(i, j, k)
-    d5 = c5(i, j, k)
-
-    cidp0 = cid0(i, j, k)
-    cidp1 = cid1(i, j, k)
-    cidp2 = cid2(i, j, k)
-    cidp3 = cid3(i, j, k)
-    cidp4 = cid4(i, j, k)
-    cidp5 = cid5(i, j, k)
-
-    pidp = pid(i, j, k)
-
-    if( cidp0 /= 0 ) then
-      p0 = p(i, j, k)
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*d0*d0/(d0 + 0.5d0)
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*d0*(d0 - 0.5d0)/(d0 + 0.5d0)
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*0.5d0*(d0 - 0.5d0)/(d0 + 0.5d0)
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*d0*d0/(d0 + 0.5d0)
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*d0
-      p0 = p(i, j, k) + (p(i, j, k) - p(i+1, j, k))*0.5d0
-      m0 = 1.0d0
-    endif
-
-    if( cidp1 /= 0 ) then
-      p1 = p(i, j, k)
-      p1 = p(i, j, k) + (p(i, j, k) - p(i-1, j, k))*d1*(d1 - 0.5d0)/(d1 + 0.5d0) 
-      p1 = p(i, j, k) + (p(i, j, k) - p(i-1, j, k))*0.5d0*(d1 - 0.5d0)/(d1 + 0.5d0) 
-      p1 = p(i, j, k) + (p(i, j, k) - p(i-1, j, k))*d1*d1/(d1 + 0.5d0)
-      p1 = p(i, j, k) + (p(i, j, k) - p(i-1, j, k))*d1 
-      p1 = p(i, j, k) + (p(i, j, k) - p(i-1, j, k))*0.5d0
-      m1 = 1.0d0
-    endif
-
-    if( cidp2 /= 0 ) then
-      p2 = p(i, j, k)
-      p2 = p(i, j, k) + (p(i, j, k) - p(i, j+1, k))*d2*(d2 - 0.5d0)/(d2 + 0.5d0)
-      p2 = p(i, j, k) + (p(i, j, k) - p(i, j+1, k))*0.5d0*(d2 - 0.5d0)/(d2 + 0.5d0)
-      p2 = p(i, j, k) + (p(i, j, k) - p(i, j+1, k))*d2*d2/(d2 + 0.5d0)
-      p2 = p(i, j, k) + (p(i, j, k) - p(i, j+1, k))*d2
-      p2 = p(i, j, k) + (p(i, j, k) - p(i, j+1, k))*0.5d0
-      m2 = 1.0d0
-    endif
-
-    if( cidp3 /= 0 ) then
-      p3 = p(i, j, k)
-      p3 = p(i, j, k) + (p(i, j, k) - p(i, j-1, k))*d3*(d3 - 0.5d0)/(d3 + 0.5d0)
-      p3 = p(i, j, k) + (p(i, j, k) - p(i, j-1, k))*0.5d0*(d3 - 0.5d0)/(d3 + 0.5d0)
-      p3 = p(i, j, k) + (p(i, j, k) - p(i, j-1, k))*d3*d3/(d3 + 0.5d0)
-      p3 = p(i, j, k) + (p(i, j, k) - p(i, j-1, k))*d3
-      p3 = p(i, j, k) + (p(i, j, k) - p(i, j-1, k))*0.5d0
-      m3 = 1.0d0
-    endif
-
-    if( cidp4 /= 0 ) then
-      p4 = p(i, j, k)
-      p4 = p(i, j, k) + (p(i, j, k) - p(i, j, k+1))*d4*(d4 - 0.5d0)/(d4 + 0.5d0)
-      p4 = p(i, j, k) + (p(i, j, k) - p(i, j, k+1))*0.5d0*(d4 - 0.5d0)/(d4 + 0.5d0)
-      p4 = p(i, j, k) + (p(i, j, k) - p(i, j, k+1))*d4*d4/(d4 + 0.5d0)
-      p4 = p(i, j, k) + (p(i, j, k) - p(i, j, k+1))*d4
-      p4 = p(i, j, k) + (p(i, j, k) - p(i, j, k+1))*0.5d0
-      m4 = 1.0d0
-    endif
-
-    if( cidp5 /= 0 ) then
-      p5 = p(i, j, k)
-      p5 = p(i, j, k) + (p(i, j, k) - p(i, j, k-1))*d5*(d5 - 0.5d0)/(d5 + 0.5d0)
-      p5 = p(i, j, k) + (p(i, j, k) - p(i, j, k-1))*0.5d0*(d5 - 0.5d0)/(d5 + 0.5d0)
-      p5 = p(i, j, k) + (p(i, j, k) - p(i, j, k-1))*d5*d5/(d5 + 0.5d0)
-      p5 = p(i, j, k) + (p(i, j, k) - p(i, j, k-1))*d5
-      p5 = p(i, j, k) + (p(i, j, k) - p(i, j, k-1))*0.5d0
-      m5 = 1.0d0
-    endif
-
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
-      p0 = p(i, j, k)
-      p1 = p(i, j, k)
-      m0 = 1.0d0
-      m1 = 1.0d0
-    endif
-
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
-      p2 = p(i, j, k)
-      p3 = p(i, j, k)
-      m2 = 1.0d0
-      m3 = 1.0d0
-    endif
-
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
-      p4 = p(i, j, k)
-      p5 = p(i, j, k)
-      m4 = 1.0d0
-      m5 = 1.0d0
-    endif
-
-
-    if( pidp /= 1 ) then
-      m0 = 0.0d0
-      m1 = 0.0d0
-      m2 = 0.0d0
-      m3 = 0.0d0
-      m4 = 0.0d0
-      m5 = 0.0d0
-    endif
-
-    fspx(i, j, k) = (m1*p1 - m0*p0)
-    fspy(i, j, k) = (m3*p3 - m2*p2)
-    fspz(i, j, k) = (m5*p5 - m4*p4)
-
-    fsx = fsx + fspx(i, j, k)*dx*dx
-    fsy = fsy + fspy(i, j, k)*dx*dx
-    fsz = fsz + fspz(i, j, k)*dx*dx
-  end do
-  end do
-  end do
-#ifdef _BLOCK_IS_LARGE_
-!$omp end do
-!$omp end parallel
-#else
-#endif
-  fsp(1) = fsx
-  fsp(2) = fsy
-  fsp(3) = fsz
-end subroutine bcut_calc_f_p_0
-
-subroutine bcut_calc_f_v_0( &
-                fsvx, &
-                fsvy, &
-                fsvz, &
-                fsv, &
-                ux, &
-                uy, &
-                uz, &
-                c0, c1, c2, c3, c4, c5, &
-                cid0, cid1, cid2, cid3, cid4, cid5, &
-                pid, &
-                rho, &
-                mu, &
-                dx, dt, &
-                Uc, &
-                sz, g)
-  implicit none
-  integer                  :: i, j, k
-  integer                  :: ix, jx, kx
-  integer                  :: g
-  integer, dimension(3)    :: sz
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fsvx, fsvy, fsvz
-  real, dimension(1:3)    :: fsv
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux, uy, uz
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
-  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
-  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-  real                    :: rho
-  real                    :: mu
-  real                    :: dx, dt
-  real                    :: Uc
-  integer                  :: cidp
-  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
-  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
-  real                    :: d0, d1, d2, d3, d4, d5
-  real                    :: m0, m1, m2, m3, m4, m5
-  real                    :: uxp, uxw, uxe, uxs, uxn, uxb, uxt
-  real                    :: uyp, uyw, uye, uys, uyn, uyb, uyt
-  real                    :: uzp, uzw, uze, uzs, uzn, uzb, uzt
-  real                    :: fsx, fsy, fsz
-  ix = sz(1)
-  jx = sz(2)
-  kx = sz(3)
-  fsx = 0.0
-  fsy = 0.0
-  fsz = 0.0
-#ifdef _BLOCK_IS_LARGE_
-!$omp parallel private(i, j, k) &
-!$omp           private(cidp) &
-!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
-!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
-!$omp           private(d0, d1, d2, d3, d4, d5) &
-!$omp           private(m0, m1, m2, m3, m4, m5) &
-!$omp           private(uxp, uxw, uxe, uxs, uxn, uxb, uxt) &
-!$omp           private(uyp, uyw, uye, uys, uyn, uyb, uyt) &
-!$omp           private(uzp, uzw, uze, uzs, uzn, uzb, uzt) 
-!$omp do schedule(dynamic, 1), &
-!$omp     reduction(+:fsx, fsy, fsz)
-#else
-#endif
-  do k=1, kx
-  do j=1, jx
-!ocl nouxsimd
-  do i=1, ix
-    uxp = ux(i, j, k)
-    uxw = ux(i-1, j, k)
-    uxe = ux(i+1, j, k)
-    uxs = ux(i, j-1, k)
-    uxn = ux(i, j+1, k)
-    uxb = ux(i, j, k-1)
-    uxt = ux(i, j, k+1)
-
-    uyp = uy(i, j, k)
-    uyw = uy(i-1, j, k)
-    uye = uy(i+1, j, k)
-    uys = uy(i, j-1, k)
-    uyn = uy(i, j+1, k)
-    uyb = uy(i, j, k-1)
-    uyt = uy(i, j, k+1)
-
-    uzp = uz(i, j, k)
-    uzw = uz(i-1, j, k)
-    uze = uz(i+1, j, k)
-    uzs = uz(i, j-1, k)
-    uzn = uz(i, j+1, k)
-    uzb = uz(i, j, k-1)
-    uzt = uz(i, j, k+1)
-
-    m0 = 0.0d0
-    m1 = 0.0d0
-    m2 = 0.0d0
-    m3 = 0.0d0
-    m4 = 0.0d0
-    m5 = 0.0d0
-
-    d0 = c0(i, j, k)
-    d1 = c1(i, j, k)
-    d2 = c2(i, j, k)
-    d3 = c3(i, j, k)
-    d4 = c4(i, j, k)
-    d5 = c5(i, j, k)
-
-    cidp0 = cid0(i, j, k)
-    cidp1 = cid1(i, j, k)
-    cidp2 = cid2(i, j, k)
-    cidp3 = cid3(i, j, k)
-    cidp4 = cid4(i, j, k)
-    cidp5 = cid5(i, j, k)
-
-    pidp = pid(i, j, k)
-
-    if( cidp0 /= 0 ) then
-      uxw  = (1.0d0 - 1.0d0/d0)*uxp 
-      uyw  = (1.0d0 - 1.0d0/d0)*uyp 
-      uzw  = (1.0d0 - 1.0d0/d0)*uzp 
-      m0 = 1.0d0
-    endif
-    if( cidp1 /= 0 ) then
-      uxe  = (1.0d0 - 1.0d0/d1)*uxp
-      uye  = (1.0d0 - 1.0d0/d1)*uyp
-      uze  = (1.0d0 - 1.0d0/d1)*uzp
-      m1 = 1.0d0
-    endif
-    if( cidp2 /= 0 ) then
-      uxs  = (1.0d0 - 1.0d0/d2)*uxp 
-      uys  = (1.0d0 - 1.0d0/d2)*uyp 
-      uzs  = (1.0d0 - 1.0d0/d2)*uzp 
-      m2 = 1.0d0
-    endif
-    if( cidp3 /= 0 ) then
-      uxn  = (1.0d0 - 1.0d0/d3)*uxp
-      uyn  = (1.0d0 - 1.0d0/d3)*uyp
-      uzn  = (1.0d0 - 1.0d0/d3)*uzp
-      m3 = 1.0d0
-    endif
-    if( cidp4 /= 0 ) then
-      uxb  = (1.0d0 - 1.0d0/d4)*uxp
-      uyb  = (1.0d0 - 1.0d0/d4)*uyp
-      uzb  = (1.0d0 - 1.0d0/d4)*uzp
-      m4 = 1.0d0
-    endif
-    if( cidp5 /= 0 ) then
-      uxt  = (1.0d0 - 1.0d0/d5)*uxp
-      uyt  = (1.0d0 - 1.0d0/d5)*uyp
-      uzt  = (1.0d0 - 1.0d0/d5)*uzp
-      m5 = 1.0d0
-    endif
-
-    if( pidp /= 1 ) then
-      m0 = 0.0d0
-      m1 = 0.0d0
-      m2 = 0.0d0
-      m3 = 0.0d0
-      m4 = 0.0d0
-      m5 = 0.0d0
-    endif
-
-    fsvx(i, j, k) = + mu*((uxp - uxw))/dx*m0*2.0 &
-                    - mu*((uxe - uxp))/dx*m1*2.0 &
-                    + mu*((uxp - uxs) + (uye - uyw)*0.5)/dx*m2 &
-                    - mu*((uxn - uxp) + (uye - uyw)*0.5)/dx*m3 &
-                    + mu*((uxp - uxb) + (uze - uzw)*0.5)/dx*m4 &
-                    - mu*((uxt - uxp) + (uze - uzw)*0.5)/dx*m5
-    fsvy(i, j, k) = + mu*((uyp - uyw) + (uxn - uxs)*0.5)/dx*m0 &
-                    - mu*((uye - uyp) + (uxn - uxs)*0.5)/dx*m1 &
-                    + mu*((uyp - uys))/dx*m2*2.0 &
-                    - mu*((uyn - uyp))/dx*m3*2.0 &
-                    + mu*((uyp - uyb) + (uzn - uzs)*0.5)/dx*m4 &
-                    - mu*((uyt - uyp) + (uzn - uzs)*0.5)/dx*m5
-    fsvz(i, j, k) = + mu*((uzp - uzw) + (uxt - uxb)*0.5)/dx*m0 &
-                    - mu*((uze - uzp) + (uxt - uxb)*0.5)/dx*m1 &
-                    + mu*((uzp - uzs) + (uyt - uyb)*0.5)/dx*m2 &
-                    - mu*((uzn - uzp) + (uyt - uyb)*0.5)/dx*m3 &
-                    + mu*((uzp - uzb))/dx*m4*2.0 &
-                    - mu*((uzt - uzp))/dx*m5*2.0
-
-    fsx = fsx + fsvx(i, j, k)*dx*dx
-    fsy = fsy + fsvy(i, j, k)*dx*dx
-    fsz = fsz + fsvz(i, j, k)*dx*dx
-  end do
-  end do
-  end do
-#ifdef _BLOCK_IS_LARGE_
-!$omp end do
-!$omp end parallel
-#else
-#endif
-  fsv(1) = fsx
-  fsv(2) = fsy
-  fsv(3) = fsz
-end subroutine bcut_calc_f_v_0
-
 subroutine bcut_calc_f_p( &
                 fspx, &
                 fspy, &
                 fspz, &
                 fsp, &
-								cid_target, &
+                cid_target, &
                 p, &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
@@ -4418,7 +3946,7 @@ subroutine bcut_calc_f_p( &
   integer, dimension(3)    :: sz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fspx, fspy, fspz
   real, dimension(1:3)    :: fsp
-	integer									:: cid_target
+  integer                  :: cid_target
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: p
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
@@ -4578,7 +4106,7 @@ subroutine bcut_calc_f_v( &
                 fsvy, &
                 fsvz, &
                 fsv, &
-								cid_target, &
+                cid_target, &
                 ux, &
                 uy, &
                 uz, &
@@ -4597,7 +4125,7 @@ subroutine bcut_calc_f_v( &
   integer, dimension(3)    :: sz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fsvx, fsvy, fsvz
   real, dimension(1:3)    :: fsv
-	integer									:: cid_target
+  integer                  :: cid_target
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux, uy, uz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
@@ -4778,9 +4306,9 @@ subroutine bcut_calc_q( &
                 c0, c1, c2, c3, c4, c5, &
                 cid0, cid1, cid2, cid3, cid4, cid5, &
                 pid, &
-								nnum, &
-								nx_, ny_, nz_, &
-								nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+                nnum, &
+                nx_, ny_, nz_, &
+                nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
                 rhof, rhos, &
                 cpf, cps, &
                 kf, ks, &
@@ -4803,8 +4331,8 @@ subroutine bcut_calc_q( &
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
-	integer									 :: nnum
-	real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer                   :: nnum
+  real, dimension(0:nnum-1) :: nx_, ny_, nz_
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
   integer                  :: cidp
   integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
@@ -4923,7 +4451,7 @@ subroutine bcut_calc_q( &
 
     if( cidp0 == cid_target ) then
       if( bc_type(cidp0) == 0 ) then
-				nx = nx_( nidx0(i, j, k) )
+        nx = nx_( nidx0(i, j, k) )
 
         k0 = kf/d0*2.0/(d0 + d1)
         k1 = kf/d1*2.0/(d0 + d1)
@@ -4934,7 +4462,7 @@ subroutine bcut_calc_q( &
         qxt = qxt + qx0*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp0) == 1 ) then
- 				nx = nx_( nidx0(i, j, k) )
+         nx = nx_( nidx0(i, j, k) )
 
         k0 = 0.0
         k1 = kf/(d0 + 0.5)
@@ -4953,7 +4481,7 @@ subroutine bcut_calc_q( &
 
     if( cidp1 == cid_target ) then
       if( bc_type(cidp1) == 0 ) then
-				nx = nx_( nidx1(i, j, k) )
+        nx = nx_( nidx1(i, j, k) )
 
         k0 = kf/d0*2.0/(d0 + d1)
         k1 = kf/d1*2.0/(d0 + d1)
@@ -4964,7 +4492,7 @@ subroutine bcut_calc_q( &
         qxt = qxt - qx0*dx*dx
         sa = sa + abs(nx)*dx*dx
       else if( bc_type(cidp1) == 1 ) then
-				nx = nx_( nidx1(i, j, k) )
+        nx = nx_( nidx1(i, j, k) )
 
         k0 = kf/(d1 + 0.5)
         k1 = 0.0
@@ -4983,7 +4511,7 @@ subroutine bcut_calc_q( &
 
     if( cidp2 == cid_target ) then
       if( bc_type(cidp2) == 0 ) then
-				ny = ny_( nidx2(i, j, k) )
+        ny = ny_( nidx2(i, j, k) )
 
         k2 = kf/d2*2.0/(d2 + d3)
         k3 = kf/d3*2.0/(d2 + d3)
@@ -4994,7 +4522,7 @@ subroutine bcut_calc_q( &
         qyt = qyt + qy0*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp2) == 1 ) then
-				ny = ny_( nidx2(i, j, k) )
+        ny = ny_( nidx2(i, j, k) )
 
         k2 = 0.0
         k3 = kf/(d2 + 0.5)
@@ -5013,7 +4541,7 @@ subroutine bcut_calc_q( &
 
     if( cidp3 == cid_target ) then
       if( bc_type(cidp3) == 0 ) then
-				ny = ny_( nidx3(i, j, k) )
+        ny = ny_( nidx3(i, j, k) )
 
         k2 = kf/d2*2.0/(d2 + d3)
         k3 = kf/d3*2.0/(d2 + d3)
@@ -5024,7 +4552,7 @@ subroutine bcut_calc_q( &
         qyt = qyt - qy0*dx*dx
         sa = sa + abs(ny)*dx*dx
       else if( bc_type(cidp3) == 1 ) then
-				ny = ny_( nidx3(i, j, k) )
+        ny = ny_( nidx3(i, j, k) )
 
         k2 = kf/(d3 + 0.5)
         k3 = 0.0
@@ -5032,8 +4560,8 @@ subroutine bcut_calc_q( &
         b3 = + ny*bc_value(cidp3)*dx/(d3 + 0.5)
         t3 = tp + ny*bc_value(cidp3)*d3*dx
         t3 = tp + abs(ny)*bc_value(cidp3)*d3*dx
-				qy0 = 1.0/t3
-				qy0 = t3
+        qy0 = 1.0/t3
+        qy0 = t3
 
         qy(i, j, k) = qy0
         qyt = qyt + qy0*abs(ny)*dx*dx
@@ -5043,7 +4571,7 @@ subroutine bcut_calc_q( &
 
     if( cidp4 == cid_target ) then
       if( bc_type(cidp4) == 0 ) then
-				nz = nz_( nidx4(i, j, k) )
+        nz = nz_( nidx4(i, j, k) )
 
         k4 = kf/d4*2.0/(d4 + d5)
         k5 = kf/d5*2.0/(d4 + d5)
@@ -5054,7 +4582,7 @@ subroutine bcut_calc_q( &
         qzt = qzt + qz0*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp4) == 1 ) then
-				nz = nz_( nidx4(i, j, k) )
+        nz = nz_( nidx4(i, j, k) )
 
         k4 = 0.0
         k5 = kf/(d4 + 0.5)
@@ -5073,7 +4601,7 @@ subroutine bcut_calc_q( &
 
     if( cidp5 == cid_target ) then
       if( bc_type(cidp5) == 0 ) then
-				nz = nz_( nidx5(i, j, k) )
+        nz = nz_( nidx5(i, j, k) )
 
         k4 = kf/d4*2.0/(d4 + d5)
         k5 = kf/d5*2.0/(d4 + d5)
@@ -5084,7 +4612,7 @@ subroutine bcut_calc_q( &
         qzt = qzt - qz0*dx*dx
         sa = sa + abs(nz)*dx*dx
       else if( bc_type(cidp5) == 1 ) then
-				nz = nz_( nidx5(i, j, k) )
+        nz = nz_( nidx5(i, j, k) )
 
         k4 = kf/(d5 + 0.5)
         k5 = 0.0
@@ -5157,10 +4685,6 @@ subroutine bcut_set_fluidseed( &
         (y0 <= ys .and. ys <= y1) .and. &
         (z0 <= zs .and. zs <= z1) ) then
       pid(i, j, k) = 1
-!      write(*, *) i, j, k
-!      write(*, *) x0, xs, x1
-!      write(*, *) y0, ys, y1
-!      write(*, *) z0, zs, z1
     endif
   end do
   end do
@@ -5225,27 +4749,27 @@ subroutine bcut_set_reference_value( &
       b (i, j, k) = pr
 
       Ap(i+1, j, k) = Ap(i+1, j, k) - Aw(i+1, j, k)
-			b (i+1, j, k) = b (i+1, j, k) - Aw(i+1, j, k)*pr*2.0
+      b (i+1, j, k) = b (i+1, j, k) - Aw(i+1, j, k)*pr*2.0
       Aw(i+1, j, k) = 0.0d0
 
       Ap(i-1, j, k) = Ap(i-1, j, k) - Ae(i+1, j, k)
-			b (i-1, j, k) = b (i-1, j, k) - Ae(i-1, j, k)*pr*2.0
+      b (i-1, j, k) = b (i-1, j, k) - Ae(i-1, j, k)*pr*2.0
       Ae(i-1, j, k) = 0.0d0
 
       Ap(i, j+1, k) = Ap(i, j+1, k) - As(i, j+1, k)
-			b (i, j+1, k) = b (i, j+1, k) - As(i, j+1, k)*pr*2.0
+      b (i, j+1, k) = b (i, j+1, k) - As(i, j+1, k)*pr*2.0
       As(i, j+1, k) = 0.0d0
 
       Ap(i, j-1, k) = Ap(i, j-1, k) - An(i, j-1, k)
-			b (i, j-1, k) = b (i, j-1, k) - An(i, j-1, k)*pr*2.0
+      b (i, j-1, k) = b (i, j-1, k) - An(i, j-1, k)*pr*2.0
       An(i, j-1, k) = 0.0d0
 
       Ap(i, j, k+1) = Ap(i, j, k+1) - Ab(i, j, k+1)
-			b (i, j, k+1) = b (i, j, k+1) - Ab(i, j, k+1)*pr*2.0
+      b (i, j, k+1) = b (i, j, k+1) - Ab(i, j, k+1)*pr*2.0
       Ab(i, j, k+1) = 0.0d0
 
       Ap(i, j, k-1) = Ap(i, j, k-1) - At(i, j, k-1)
-			b (i, j, k-1) = b (i, j, k-1) - At(i, j, k-1)*pr*2.0
+      b (i, j, k-1) = b (i, j, k-1) - At(i, j, k-1)*pr*2.0
       At(i, j, k-1) = 0.0d0
     endif
   end do

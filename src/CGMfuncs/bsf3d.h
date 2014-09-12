@@ -1,3 +1,6 @@
+/// @file  bsf3d.h
+/// @brief Basic subprograms for 3D scalar fields for Cartesian grid data structure
+
 #ifndef BSF3D_H
 #define BSF3D_H
 

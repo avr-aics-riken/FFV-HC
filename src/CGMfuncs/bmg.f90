@@ -1,6 +1,6 @@
 !>  @file  bmg.f90
-!!  @brief Basic subprograms for the multigrid method (BMG) for Cartesian grid data structure
-!< 
+!!  @brief Basic subprograms for the multigrid method for Cartesian grid data structure
+!<
 
 function mg_geth(phi)
 	implicit none
@@ -698,7 +698,7 @@ subroutine mg_restriction_1_2(bc, r, sz, g)
 	jx = sz(2)
 	kx = sz(3)
 !$omp parallel private(i, j, k)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1,kx
 	do j=1,jx
 	do i=1,ix
@@ -724,7 +724,7 @@ subroutine mg_prolongation_1_2(x, xc, sz, g)
 	kx = sz(3)
 	a = 4.0
 !$omp parallel private(i, j, k)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1,kx
 	do j=1,jx
 	do i=1,ix

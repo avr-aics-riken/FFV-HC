@@ -32,266 +32,266 @@ typedef struct _PPS {
 }PPS;
 
 class FFVConfig {
-public:
-	FFVConfig();
-	~FFVConfig();
+	public:
+		FFVConfig();
+		~FFVConfig();
 
-private:
-	TextParser* tp;
+	private:
+		TextParser* tp;
 
-public:
-//ApplicationContorl
-	bool					CheckParameter;
-	std::string   OperatorName;
-	Vec3d					FillingOrigin;
-	std::string		FillingMedium;
-	std::string		OperationMode;
+	public:
+		//ApplicationContorl
+		bool					CheckParameter;
+		std::string   OperatorName;
+		Vec3d					FillingOrigin;
+		std::string		FillingMedium;
+		std::string		OperationMode;
 
-//ConvectionTerm
-	std::string		ConvectionTermScheme;
+		//ConvectionTerm
+		std::string		ConvectionTermScheme;
 
-//DomainInfo
-	Vec3d         RootBlockOrigin;
-	Vec3i         RootBlockGrid;
-	double        RootBlockLength;
-	bool          RootBlockPeriodicX;
-	bool          RootBlockPeriodicY;
-	bool          RootBlockPeriodicZ;
-	int           LeafBlockNumberOfCells;
-	int           LeafBlockNumberOfVirtualCells;
-	int           LeafBlockNumberOfMarginalCells;
-	std::string		TreeType;
-	int           TreeMinLevel;
-	int           TreeMaxLevel;
-	std::vector<PolygonGroupSpec>
-								PolygonGroupList;
-	std::vector<BoundingBoxSpec>
-								BoundingBoxList;
-	std::vector<BoundingBoxSpec>
-								SphericalBoxList;
-	Vec3d         TreeDividerCenter;
-	double        TreeDividerRadius;
-	double        TreeDividerDeltaR;
-	Vec3d         TreeDividerBBOrigin;
-	Vec3d         TreeDividerBBEnd;
-	bool          TreeDividerHollow;
+		//DomainInfo
+		Vec3d         RootBlockOrigin;
+		Vec3i         RootBlockGrid;
+		double        RootBlockLength;
+		bool          RootBlockPeriodicX;
+		bool          RootBlockPeriodicY;
+		bool          RootBlockPeriodicZ;
+		int           LeafBlockNumberOfCells;
+		int           LeafBlockNumberOfVirtualCells;
+		int           LeafBlockNumberOfMarginalCells;
+		std::string		TreeType;
+		int           TreeMinLevel;
+		int           TreeMaxLevel;
+		std::vector<PolygonGroupSpec>
+			PolygonGroupList;
+		std::vector<BoundingBoxSpec>
+			BoundingBoxList;
+		std::vector<BoundingBoxSpec>
+			SphericalBoxList;
+		Vec3d         TreeDividerCenter;
+		double        TreeDividerRadius;
+		double        TreeDividerDeltaR;
+		Vec3d         TreeDividerBBOrigin;
+		Vec3d         TreeDividerBBEnd;
+		bool          TreeDividerHollow;
 
-//GeometryModel
-	std::string		PolylibConfig;
+		//GeometryModel
+		std::string		PolylibConfig;
 
-//Iteration
-	std::string		IterationSolverP;
-	int						IterationMaxCountP;
-	double				IterationEpsilonP;
-	double				IterationOmegaP;
-	int						IterationPreCountP;
+		//Iteration
+		std::string		IterationSolverP;
+		int						IterationMaxCountP;
+		double				IterationEpsilonP;
+		double				IterationOmegaP;
+		int						IterationPreCountP;
 
-	std::string		IterationSolverU;
-	int						IterationMaxCountU;
-	double				IterationEpsilonU;
-	double				IterationOmegaU;
-	int						IterationPreCountU;
+		std::string		IterationSolverU;
+		int						IterationMaxCountU;
+		double				IterationEpsilonU;
+		double				IterationOmegaU;
+		int						IterationPreCountU;
 
-	std::string		IterationSolverT;
-	int						IterationMaxCountT;
-	double				IterationEpsilonT;
-	double				IterationOmegaT;
-	int						IterationPreCountT;
+		std::string		IterationSolverT;
+		int						IterationMaxCountT;
+		double				IterationEpsilonT;
+		double				IterationOmegaT;
+		int						IterationPreCountT;
 
-	bool					IterationReferencePressureActive;
-	Vec3d					IterationReferencePressurePoint;
-	double				IterationReferencePressureValue;
+		bool					IterationReferencePressureActive;
+		Vec3d					IterationReferencePressurePoint;
+		double				IterationReferencePressureValue;
 
-	bool					IterationReferenceTemperatureActive;
-	Vec3d					IterationReferenceTemperaturePoint;
-	double				IterationReferenceTemperatureValue;
+		bool					IterationReferenceTemperatureActive;
+		Vec3d					IterationReferenceTemperaturePoint;
+		double				IterationReferenceTemperatureValue;
 
-//MediumTable
-	std::vector<PPF> MediumTableFluid;
-	std::vector<PPS> MediumTableSolid;
+		//MediumTable
+		std::vector<PPF> MediumTableFluid;
+		std::vector<PPS> MediumTableSolid;
 
-//Output
-	bool					OutputLogBase;
-	bool					OutputLogBlock;
-	bool					OutputLogLaptime;
-	bool					OutputLogIteration;
-	bool					OutputLogProfiling;
-	bool					OutputLogStatistics;
-	bool					OutputLogForce;
-	bool					OutputLogHeatFlux;
-	int						OutputLogHeatFluxTargetID;
-	std::string		OutputLogFilenameBase;
-	std::string		OutputLogFilenameProfiling;
-	std::string		OutputLogFilenameLaptime;
-	std::string		OutputLogFilenameIteration;
-	std::string		OutputLogFilenameBlock;
-	std::string		OutputLogFilenameStatistics;
-	std::string		OutputLogFileIntervalType;
-	int						OutputLogFileIntervalI;
-	double				OutputLogFileIntervalD;
+		//Output
+		bool					OutputLogBase;
+		bool					OutputLogBlock;
+		bool					OutputLogLaptime;
+		bool					OutputLogIteration;
+		bool					OutputLogProfiling;
+		bool					OutputLogStatistics;
+		bool					OutputLogForce;
+		bool					OutputLogHeatFlux;
+		int						OutputLogHeatFluxTargetID;
+		std::string		OutputLogFilenameBase;
+		std::string		OutputLogFilenameProfiling;
+		std::string		OutputLogFilenameLaptime;
+		std::string		OutputLogFilenameIteration;
+		std::string		OutputLogFilenameBlock;
+		std::string		OutputLogFilenameStatistics;
+		std::string		OutputLogFileIntervalType;
+		int						OutputLogFileIntervalI;
+		double				OutputLogFileIntervalD;
 
-	int						OutputLogFileIntervalBase;
-	int						OutputLogFileIntervalBlock;
-	int						OutputLogFileIntervalLaptime;
-	int						OutputLogFileIntervalIteration;
-	int						OutputLogFileIntervalProfiling;
-	int						OutputLogFileIntervalStatistics;
-	int						OutputLogFileIntervalForce;
-	int						OutputLogFileIntervalHeatFlux;
+		int						OutputLogFileIntervalBase;
+		int						OutputLogFileIntervalBlock;
+		int						OutputLogFileIntervalLaptime;
+		int						OutputLogFileIntervalIteration;
+		int						OutputLogFileIntervalProfiling;
+		int						OutputLogFileIntervalStatistics;
+		int						OutputLogFileIntervalForce;
+		int						OutputLogFileIntervalHeatFlux;
 
-	std::string		OutputLogConsoleIntervalType;
-	int						OutputLogConsoleIntervalI;
-	double				OutputLogConsoleIntervalD;
-	std::string		OutputDataBasicVariablesFormat;
-	std::string		OutputDataBasicVariablesTemporalType;
-	int						OutputDataBasicVariablesIntervalI;
-	double				OutputDataBasicVariablesIntervalD;
-	std::string		OutputDataDerivedVariablesFormat;
-	std::string		OutputDataDerivedVariablesTemporalType;
-	int						OutputDataDerivedVariablesIntervalI;
-	double				OutputDataDerivedVariablesIntervalD;
-	bool					OutputDataDerivedVariablesVorticity;
-	bool					OutputDataDerivedVariablesHelicity;
-	bool					OutputDataDerivedVariablesQcriterion;
-	bool					OutputDataDerivedVariablesForce;
-	bool					OutputDataDerivedVariablesHeatFlux;
-	std::string		OutputDataFormatOptionPLOT3DPath;
-	std::string		OutputDataFormatOptionPLOT3DPrefix;
-	std::string		OutputDataFormatOptionVTKPath;
-	std::string		OutputDataFormatOptionVTKPrefix;
+		std::string		OutputLogConsoleIntervalType;
+		int						OutputLogConsoleIntervalI;
+		double				OutputLogConsoleIntervalD;
+		std::string		OutputDataBasicVariablesFormat;
+		std::string		OutputDataBasicVariablesTemporalType;
+		int						OutputDataBasicVariablesIntervalI;
+		double				OutputDataBasicVariablesIntervalD;
+		std::string		OutputDataDerivedVariablesFormat;
+		std::string		OutputDataDerivedVariablesTemporalType;
+		int						OutputDataDerivedVariablesIntervalI;
+		double				OutputDataDerivedVariablesIntervalD;
+		bool					OutputDataDerivedVariablesVorticity;
+		bool					OutputDataDerivedVariablesHelicity;
+		bool					OutputDataDerivedVariablesQcriterion;
+		bool					OutputDataDerivedVariablesForce;
+		bool					OutputDataDerivedVariablesHeatFlux;
+		std::string		OutputDataFormatOptionPLOT3DPath;
+		std::string		OutputDataFormatOptionPLOT3DPrefix;
+		std::string		OutputDataFormatOptionVTKPath;
+		std::string		OutputDataFormatOptionVTKPrefix;
 
-	bool					OutputDataBasicVariablesFormatVTK;
-	bool					OutputDataDerivedVariablesFormatVTK;
-	bool					OutputDataBasicVariablesFormatPLOT3D;
-	bool					OutputDataDerivedVariablesFormatPLOT3D;
-	bool					OutputDataBasicVariablesFormatBCM;
-	bool					OutputDataDerivedVariablesFormatBCM;
-	bool					OutputDataBasicVariablesFormatSILO;
-	bool					OutputDataDerivedVariablesFormatSILO;
+		bool					OutputDataBasicVariablesFormatVTK;
+		bool					OutputDataDerivedVariablesFormatVTK;
+		bool					OutputDataBasicVariablesFormatPLOT3D;
+		bool					OutputDataDerivedVariablesFormatPLOT3D;
+		bool					OutputDataBasicVariablesFormatBCM;
+		bool					OutputDataDerivedVariablesFormatBCM;
+		bool					OutputDataBasicVariablesFormatSILO;
+		bool					OutputDataDerivedVariablesFormatSILO;
 
-//PhysicalParameter
-	double				GravityX;
-	double				GravityY;
-	double				GravityZ;
-	double				BetaG;
-	double				Tref;
+		//PhysicalParameter
+		double				GravityX;
+		double				GravityY;
+		double				GravityZ;
+		double				BetaG;
+		double				Tref;
 
-//ShapeApproximation
-	std::string		ShapeApproximationMethod;
-	double				ShapeApproximationCutoff;
-	bool					ShapeApproximationVoxelization;
-	bool					ShapeApproximationSymmetrization;
+		//ShapeApproximation
+		std::string		ShapeApproximationMethod;
+		double				ShapeApproximationCutoff;
+		bool					ShapeApproximationVoxelization;
+		bool					ShapeApproximationSymmetrization;
 
-//SolvingMethod
-	std::string		TimeIntegrationMethodForFlow;
+		//SolvingMethod
+		std::string		TimeIntegrationMethodForFlow;
 
-//StartCondition
-	std::string		RestartInputPath;
-	std::string		RestartOutputPath;
-	std::string		RestartPrefix;
-	int						RestartInterval;
-	double				InitialValueP;
-	Vec3d					InitialValueU;
-	double				InitialValueT;
-	double				InitialValueDP;
-	Vec3d					InitialValueDU;
-	double				InitialValueDT;
+		//StartCondition
+		std::string		RestartInputPath;
+		std::string		RestartOutputPath;
+		std::string		RestartPrefix;
+		int						RestartInterval;
+		double				InitialValueP;
+		Vec3d					InitialValueU;
+		double				InitialValueT;
+		double				InitialValueDP;
+		Vec3d					InitialValueDU;
+		double				InitialValueDT;
 
-//TimeControl
-	std::string		TimeControlAccelerationTemporalType;
-	int						TimeControlAccelerationAcceleratingTimeI;
-	double				TimeControlAccelerationAcceleratingTimeD;
-	std::string		TimeControlTimeStepMode;
-	double				TimeControlTimeStepDeltaT;
-	std::string		TimeControlSessionTemporalType;
-	int						TimeControlSessionStartI;
-	int						TimeControlSessionEndI;
-	double				TimeControlSessionStartD;
-	double				TimeControlSessionEndD;
+		//TimeControl
+		std::string		TimeControlAccelerationTemporalType;
+		int						TimeControlAccelerationAcceleratingTimeI;
+		double				TimeControlAccelerationAcceleratingTimeD;
+		std::string		TimeControlTimeStepMode;
+		double				TimeControlTimeStepDeltaT;
+		std::string		TimeControlSessionTemporalType;
+		int						TimeControlSessionStartI;
+		int						TimeControlSessionEndI;
+		double				TimeControlSessionStartD;
+		double				TimeControlSessionEndD;
 
-//GridGeneration
-	bool					GridGenerationHoleFilling;
-	bool					GridGenerationHoleFilling2;
-	bool					GridGenerationHoleFilling3;
-	bool					GridGenerationOutputSTL;
+		//GridGeneration
+		bool					GridGenerationHoleFilling;
+		bool					GridGenerationHoleFilling2;
+		bool					GridGenerationHoleFilling3;
+		bool					GridGenerationOutputSTL;
 
-//Tuning
-	bool					TuningMasking;
-	std::string   TuningBlockOrdering;
-	std::string   TuningVCUpdate;
+		//Tuning
+		bool					TuningMasking;
+		std::string   TuningBlockOrdering;
+		std::string   TuningVCUpdate;
 
-//BC
-	std::string		BCOuterBoundaryFaceBCXminus;
-	std::string		BCOuterBoundaryFaceBCXplus;
-	std::string		BCOuterBoundaryFaceBCYminus;
-	std::string		BCOuterBoundaryFaceBCYplus;
-	std::string		BCOuterBoundaryFaceBCZminus;
-	std::string		BCOuterBoundaryFaceBCZplus;
+		//BC
+		std::string		BCOuterBoundaryFaceBCXminus;
+		std::string		BCOuterBoundaryFaceBCXplus;
+		std::string		BCOuterBoundaryFaceBCYminus;
+		std::string		BCOuterBoundaryFaceBCYplus;
+		std::string		BCOuterBoundaryFaceBCZminus;
+		std::string		BCOuterBoundaryFaceBCZplus;
 
-	std::vector<OBC> OuterBCP;
-	std::vector<OBC> OuterBCUX;
-	std::vector<OBC> OuterBCUY;
-	std::vector<OBC> OuterBCUZ;
-	std::vector<OBC> OuterBCT;
+		std::vector<OBC> OuterBCP;
+		std::vector<OBC> OuterBCUX;
+		std::vector<OBC> OuterBCUY;
+		std::vector<OBC> OuterBCUZ;
+		std::vector<OBC> OuterBCT;
 
-	void GetOuterBoundary(std::string FaceId, OBC& obcP, OBC& obcUX, OBC& obcUY, OBC& obcUZ, OBC& obcT);
+		void GetOuterBoundary(std::string FaceId, OBC& obcP, OBC& obcUX, OBC& obcUY, OBC& obcUZ, OBC& obcT);
 
-	int    BCInternalBoundaryType[32];
-	double BCInternalBoundaryValue[32];
-	
-public:
-	void Load(std::string filename);
-	void Check();
+		int    BCInternalBoundaryType[32];
+		double BCInternalBoundaryValue[32];
 
-private:
-	int GetNumOfNodes(const std::string& label) {
-		tp->changeNode(label);
+	public:
+		void Load(std::string filename);
+		void Check();
 
-		std::vector<std::string> nodes;
-		tp->getNodes(nodes);
+	private:
+		int GetNumOfNodes(const std::string& label) {
+			tp->changeNode(label);
 
-		return nodes.size();
-	}
+			std::vector<std::string> nodes;
+			tp->getNodes(nodes);
 
-	int GetNumOfLabels(const std::string& label) {
-		tp->changeNode(label);
-
-		std::vector<std::string> labels;
-		tp->getLabels(labels);
-
-		return labels.size();
-	}
-
-	template<class T>
-	T convertToT(const std::string& value);
-
-	template<class T>
-	T Read(const std::string& label) {
-		if( tp->chkLabel(label) != true ) {
-			std::cout << "Label not found: ";
-			std::cout << label << std::endl;
-			Exit(EX_FAILURE);
+			return nodes.size();
 		}
-		std::string value;
-		TextParserError error = tp->getValue(label, value);
-		if( error != 0 ) {
-			Exit(EX_FAILURE);
-		}
-		return convertToT<T>(value);
-	}
 
-	template<class T>
-	T Read(const std::string& label, const T& default_value) {
-		if( tp->chkLabel(label) != true ) {
-			return default_value;
+		int GetNumOfLabels(const std::string& label) {
+			tp->changeNode(label);
+
+			std::vector<std::string> labels;
+			tp->getLabels(labels);
+
+			return labels.size();
 		}
-		std::string value;
-		TextParserError error = tp->getValue(label, value);
-		if( error != 0 ) {
-			Exit(EX_FAILURE);
-		}
-		return convertToT<T>(value);
-	}
+
+		template<class T>
+			T convertToT(const std::string& value);
+
+		template<class T>
+			T Read(const std::string& label) {
+				if( tp->chkLabel(label) != true ) {
+					std::cout << "Label not found: ";
+					std::cout << label << std::endl;
+					Exit(EX_FAILURE);
+				}
+				std::string value;
+				TextParserError error = tp->getValue(label, value);
+				if( error != 0 ) {
+					Exit(EX_FAILURE);
+				}
+				return convertToT<T>(value);
+			}
+
+		template<class T>
+			T Read(const std::string& label, const T& default_value) {
+				if( tp->chkLabel(label) != true ) {
+					return default_value;
+				}
+				std::string value;
+				TextParserError error = tp->getValue(label, value);
+				if( error != 0 ) {
+					Exit(EX_FAILURE);
+				}
+				return convertToT<T>(value);
+			}
 };
 
 template<class T>
