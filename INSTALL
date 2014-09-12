@@ -52,6 +52,7 @@ HOW TO BUILD
       PMLIB       := $(FFV_HOME)/PMlib
       BCM_DIR     := $(FFV_HOME)/BCMTools
       HDMLIB      := $(FFV_HOME)/HDMlib
+			CGM_FUNCS   := ../CGMfuncs
 
 1.2 Select the compiler to use.
 

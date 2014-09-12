@@ -26,6 +26,7 @@ CUTLIB      := $(FFV_HOME)/Catlib
 PMLIB       := $(FFV_HOME)/PMlib
 BCM_DIR     := $(FFV_HOME)/BCMTools
 HDMLIB      := $(FFV_HOME)/HDMlib
+CGM_FUNCS   := ../CGMfuncs
 
 #POLYLIB     := $(FFV_HOME)/Polylib-float
 #CUTLIB      := $(FFV_HOME)/Cutlib-float
@@ -41,8 +42,6 @@ FFV_REAL    := double
 
 FFV_THREAD  := IJK
 FFV_THREAD  := BLOCK
-
-CGM_FUNCS   := ../CGMfuncs
 
 ifeq ($(FFV_COMP),gnu)
   CXX         := g++
