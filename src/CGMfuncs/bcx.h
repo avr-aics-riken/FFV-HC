@@ -1,3 +1,6 @@
+/// @file  bcx.h
+/// @brief Functions to compute the right-hand side values at the outer boundaries of the simulation box for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+
 #ifndef BCX_H
 #define BCX_H
 

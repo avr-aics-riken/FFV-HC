@@ -13,8 +13,8 @@
 
 MPI_DIR     := /usr/local
 MPI_DIR     := 
-MPI_DIR     := /usr/lib/openmpi
 MPI_DIR     := /opt/openmpi
+MPI_DIR     := /usr/lib/openmpi
 
 FFV_HOME    := ../../lib
 FFV_HOME    := $(HOME)/FFV

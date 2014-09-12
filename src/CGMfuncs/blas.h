@@ -1,3 +1,6 @@
+/// @file  blas.h
+/// @brief Basic subprograms for linear algebra for Cartesian grid data structure (for symmetric/asymmetric 7-band matrices)
+
 #ifndef BLAS_H
 #define BLAS_H
 

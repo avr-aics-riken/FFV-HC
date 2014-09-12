@@ -1,5 +1,5 @@
 /// @file  blsm.h
-/// @brief Basic subprograms for the level-set method (BLSM) for Cartesian grid data structure
+/// @brief Basic subprograms for the level-set method for Cartesian grid data structure
 
 #ifndef BLSM_H
 #define BLSM_H

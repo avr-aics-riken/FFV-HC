@@ -1,5 +1,5 @@
 /// @file  comm.h
-/// @brief Wrapper functions for inter-process communications (COMM) for Cartesian grid data structure
+/// @brief Wrapper functions for inter-process communications for Cartesian grid data structure
 
 #ifndef COMM_H
 #define COMM_H
