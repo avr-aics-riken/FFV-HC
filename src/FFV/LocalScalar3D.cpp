@@ -27,7 +27,7 @@ void LocalScalar3D<real>::CalcStats(BlockManager& blockManager) {
 		int sz[3]		= {size.x, size.y, size.z};
 		int g[1]		= {vc};
 		real dx			= cellSize.x;
-	
+
 		real* pData = GetBlockData(block);
 		real sum_b = 0.0;
 		real max_b = 0.0;
@@ -35,13 +35,13 @@ void LocalScalar3D<real>::CalcStats(BlockManager& blockManager) {
 		real absmax_b = 0.0;
 		real absmin_b = 0.0;
 		sf3d_calc_stats_(
-					&sum_b,
-					&max_b,
-					&min_b,
-					&absmax_b,
-					&absmin_b,
-					pData,
-					sz, g);
+				&sum_b,
+				&max_b,
+				&min_b,
+				&absmax_b,
+				&absmin_b,
+				pData,
+				sz, g);
 
 		sum_l += sum_b;
 		if( max_b > max_l ) {

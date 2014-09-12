@@ -230,7 +230,7 @@ subroutine sim_calc_c( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -410,7 +410,7 @@ subroutine sim_calc_c_u( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -633,7 +633,7 @@ subroutine sim_calc_c_u_u1( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -868,7 +868,7 @@ subroutine sim_calc_c_u_quick( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -1149,7 +1149,7 @@ subroutine sim_calc_c_u_test( &
 !$omp          ,private(dpsi1, dpsi2, dpsi3, dpsi4, dpsi5, dpsi6) &
 !$omp					 ,private(x, y, z, xi, yi, zi) &
 !$omp          ,private(Uw) 
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -1422,7 +1422,7 @@ subroutine sim_calc_abd_u( &
 !$omp					,private(duxdz1, duxdz3, duydz2, duydz4, duzdz5, duzdz6) &
 !$omp					,private(Uw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -2425,7 +2425,7 @@ subroutine sim_calc_abd_t( &
 !$omp					,private(t0, t1, t3, t2, t4, t5, t6) &
 !$omp					,private(Tw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -2831,7 +2831,7 @@ subroutine sim_calc_ab_p( &
 !$omp          ,private(divv) &
 !$omp          ,private(Uw, Vw, Ww) &
 !$omp					 ,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
   do i=1, ix
@@ -3328,7 +3328,7 @@ subroutine sim_corr_u( &
 !$omp          ,private(cdpx, cdpy, cdpz) &
 !$omp          ,private(Uw, Vw, Ww) &
 !$omp					 ,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
   do k=1, kx
   do j=1, jx
 !ocl nouxsimd
@@ -3636,7 +3636,7 @@ subroutine sim_set_ic_u( &
 !$omp					,private(duxdz1, duxdz3, duydz2, duydz4, duzdz5, duzdz6) &
 !$omp					,private(Uw) &
 !$omp					,private(x, y, z, r2, rl, xi, yi, zi, theta)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd

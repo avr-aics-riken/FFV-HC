@@ -13,1327 +13,1327 @@
 #include "comm.h"
 
 class FFVILS {
-public:
-	FFVILS() {
-	}
-
-	~FFVILS() {
-	}
-
-private:
-	bool IsConverged(
-						BlockManager& blockManager,
-						real& residual,
-						real& rr,
-						real& bb,
-						real& epsilon,
-						int count,
-						int countMax) {
-		residual = (fabs(bb)>FLT_MIN) ? fabs(rr)/fabs(bb) : fabs(rr);
-		if( residual <= epsilon*epsilon ) {
-			return true;
+	public:
+		FFVILS() {
 		}
-		if( isnan(residual) ) {
-			std::cout << bb << " " << rr << std::endl;
-			Exit(0);
-		}
-		if( isinf(residual) ) {
-			std::cout << bb << " " << rr << std::endl;
-			Exit(0);
-		}
-		if( count == countMax ) {
-		}
-		return false;
-	}
 
-	void Jacobi_Smoother(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						real omega) {
-		int vc = plsx->GetVC();
+		~FFVILS() {
+		}
 
-		int NB							= blockManager.getNumBlock();
-		BlockBase* block0		= blockManager.getBlock(0);
-		Vec3i size					= block0->getSize();
-		int NX							= size.x;
-		int NY							= size.y;
-		int NZ							= size.z;
-		int sz[3]						= {NX, NY, NZ};
+	private:
+		bool IsConverged(
+				BlockManager& blockManager,
+				real& residual,
+				real& rr,
+				real& bb,
+				real& epsilon,
+				int count,
+				int countMax) {
+			residual = (fabs(bb)>FLT_MIN) ? fabs(rr)/fabs(bb) : fabs(rr);
+			if( residual <= epsilon*epsilon ) {
+				return true;
+			}
+			if( isnan(residual) ) {
+				std::cout << bb << " " << rr << std::endl;
+				Exit(0);
+			}
+			if( isinf(residual) ) {
+				std::cout << bb << " " << rr << std::endl;
+				Exit(0);
+			}
+			if( count == countMax ) {
+			}
+			return false;
+		}
+
+		void Jacobi_Smoother(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				real omega) {
+			int vc = plsx->GetVC();
+
+			int NB							= blockManager.getNumBlock();
+			BlockBase* block0		= blockManager.getBlock(0);
+			Vec3i size					= block0->getSize();
+			int NX							= size.x;
+			int NY							= size.y;
+			int NZ							= size.z;
+			int sz[3]						= {NX, NY, NZ};
 
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<NB; ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			real* x  = plsx ->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* b  = plsb ->GetBlockData(block);
-			real* x0 = plsx0->GetBlockData(block);
-			real pomega = omega;
+			for (int n=0; n<NB; ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x  = plsx ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
+				real* x0 = plsx0->GetBlockData(block);
+				real pomega = omega;
 
-			jacobi_smoother_(
-							x0, x,
-							Ap, Aw, Ae, As, An, Ab, At,
-							b,
-							&pomega,
-							sz, &vc);
+				jacobi_smoother_(
+						x0, x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						&pomega,
+						sz, &vc);
+			}
+
+			LSSwap(*plsx, *plsx0);
+
+			plsx->ImposeBoundaryCondition(blockManager);
+
 		}
 
-		LSSwap(*plsx, *plsx0);
+		void RBGS_Smoother(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				real omega) {
+			int vc = plsx->GetVC();
 
-		plsx->ImposeBoundaryCondition(blockManager);
-
-	}
-
-	void RBGS_Smoother(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						real omega) {
-		int vc = plsx->GetVC();
-
-		int NB							= blockManager.getNumBlock();
-		BlockBase* block0		= blockManager.getBlock(0);
-		Vec3i size					= block0->getSize();
-		int NX							= size.x;
-		int NY							= size.y;
-		int NZ							= size.z;
-		int sz[3]						= {NX, NY, NZ};
+			int NB							= blockManager.getNumBlock();
+			BlockBase* block0		= blockManager.getBlock(0);
+			Vec3i size					= block0->getSize();
+			int NX							= size.x;
+			int NY							= size.y;
+			int NZ							= size.z;
+			int sz[3]						= {NX, NY, NZ};
 
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<NB; ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			real* x  = plsx ->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* b  = plsb ->GetBlockData(block);
-			real pomega = omega;
+			for (int n=0; n<NB; ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x  = plsx ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
+				real pomega = omega;
 
-			int offset = 0;
-			int color = 0;
-			rbgs_smoother_(
-							x,
-							Ap, Aw, Ae, As, An, Ab, At,
-							b,
-							&pomega,
-							&color, &offset,
-							sz, &vc);
-			color = 1;
-			rbgs_smoother_(
-							x,
-							Ap, Aw, Ae, As, An, Ab, At,
-							b,
-							&pomega,
-							&color, &offset,
-							sz, &vc);
+				int offset = 0;
+				int color = 0;
+				rbgs_smoother_(
+						x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						&pomega,
+						&color, &offset,
+						sz, &vc);
+				color = 1;
+				rbgs_smoother_(
+						x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						&pomega,
+						&color, &offset,
+						sz, &vc);
+			}
+
+			plsx->ImposeBoundaryCondition(blockManager);
+
 		}
 
-		plsx->ImposeBoundaryCondition(blockManager);
-
-	}
-
-	void CalcAx(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsAx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsx) {
-		int vc = plsx->GetVC();
+		void CalcAx(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsAx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsx) {
+			int vc = plsx->GetVC();
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-			real* Ax = plsAx->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* x  = plsx ->GetBlockData(block);
+				real* Ax = plsAx->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* x  = plsx ->GetBlockData(block);
 
-			calc_ax_(
-							Ax,
-							Ap, Aw, Ae, As, An, Ab, At,
-							x,
-							sz, &vc);
+				calc_ax_(
+						Ax,
+						Ap, Aw, Ae, As, An, Ab, At,
+						x,
+						sz, &vc);
+			}
 		}
-	}
 
-	void CalcR(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsr,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsb) {
-		int vc = plsx->GetVC();
+		void CalcR(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsr,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsb) {
+			int vc = plsx->GetVC();
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-			real* r  = plsr ->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* x  = plsx ->GetBlockData(block);
-			real* b  = plsb ->GetBlockData(block);
+				real* r  = plsr ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* x  = plsx ->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
 
-			calc_r_(
-							r,
-							Ap, Aw, Ae, As, An, Ab, At,
-							x,
-							b,
-							sz, &vc);
+				calc_r_(
+						r,
+						Ap, Aw, Ae, As, An, Ab, At,
+						x,
+						b,
+						sz, &vc);
+			}
 		}
-	}
 
-	void CalcR2(
-						BlockManager& blockManager,
-						real& rr,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsb) {
-		int vc = plsx->GetVC();
-		double rr_local = 0.0;
+		void CalcR2(
+				BlockManager& blockManager,
+				real& rr,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsb) {
+			int vc = plsx->GetVC();
+			double rr_local = 0.0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+: rr_local)
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* x  = plsx ->GetBlockData(block);
-			real* b  = plsb ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* x  = plsx ->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
 
-			real rr_block = 0.0;
-			calc_r2_(
-							&rr_block,
-							Ap, Aw, Ae, As, An, Ab, At,
-							x,
-							b,
-							sz, &vc);
+				real rr_block = 0.0;
+				calc_r2_(
+						&rr_block,
+						Ap, Aw, Ae, As, An, Ab, At,
+						x,
+						b,
+						sz, &vc);
 
-			rr_local += rr_block;
+				rr_local += rr_block;
+			}
+
+			double rr_global = 0.0;
+			comm_sum_(&rr_global, &rr_local);
+
+			rr = rr_global;
 		}
 
-		double rr_global = 0.0;
-		comm_sum_(&rr_global, &rr_local);
-
-		rr = rr_global;
-	}
-
-	void DOT(
-						BlockManager& blockManager,
-						real& xy,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsy) {
-		int vc = plsx->GetVC();
-		double xy_local = 0.0;
+		void DOT(
+				BlockManager& blockManager,
+				real& xy,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsy) {
+			int vc = plsx->GetVC();
+			double xy_local = 0.0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+: xy_local)
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-			real* x = plsx->GetBlockData(block);
-			real* y = plsy->GetBlockData(block);
+				real* x = plsx->GetBlockData(block);
+				real* y = plsy->GetBlockData(block);
 
-			real xy_block = 0.0;
-			dot_(&xy_block, x, y, sz, &vc);
+				real xy_block = 0.0;
+				dot_(&xy_block, x, y, sz, &vc);
 
-			xy_local += xy_block;
-		}
-
-		double xy_global = 0.0;
-		comm_sum_(&xy_global, &xy_local);
-
-		xy = xy_global;
-	}
-
-	void AXPY(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsy,
-						LocalScalar3D<real>* plsx,
-						real a) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* y = plsy->GetBlockData(block);
-			real* x = plsx->GetBlockData(block);
-
-			axpy_(y, x, &a, sz, &vc);
-		}
-	}
-	void XPAY(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsy,
-						LocalScalar3D<real>* plsx,
-						real a) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* y = plsy->GetBlockData(block);
-			real* x = plsx->GetBlockData(block);
-
-			xpay_(y, x, &a, sz, &vc);
-		}
-	}
-	void AXPYZ(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsz,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsy,
-						real a) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* z = plsz->GetBlockData(block);
-			real* x = plsx->GetBlockData(block);
-			real* y = plsy->GetBlockData(block);
-
-			axpyz_(z, x, y, &a, sz, &vc);
-		}
-	}
-	void AXPBYPZ(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsz,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsy,
-						real a,
-						real b) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* z = plsz->GetBlockData(block);
-			real* x = plsx->GetBlockData(block);
-			real* y = plsy->GetBlockData(block);
-
-			axpbypz_(z, x, y, &a, &b, sz, &vc);
-		}
-	}
-
-public:
-	void Fill(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						real value) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* x = plsx->GetBlockData(block);
-
-			real v = value;
-			fill_(x, &v, sz, &vc);
-		}
-	}
-	
-	void Copy(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsy,
-						LocalScalar3D<real>* plsx) {
-		int vc = plsx->GetVC();
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
-
-			real* x = plsx->GetBlockData(block);
-			real* y = plsy->GetBlockData(block);
-
-			copy_(y, x, sz, &vc);
-		}
-	}
-
-	void Jacobi_PreConditioner(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						real omega,
-						int countPreConditioner ) {
-		for(int count=0; count<countPreConditioner; count++) {
-			Jacobi_Smoother(
-							blockManager,
-							plsx,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsb,
-							plsx0,
-							omega);
-		}
-	}
-
-	void Jacobi(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						real omega,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-		real bb = 0.0;
-		DOT(blockManager, bb, plsb, plsb);
-
-		for(count=1; count<=countMax; ++count) {
-			Jacobi_Smoother(
-							blockManager,
-							plsx, 
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsb,
-							plsx0,
-							omega);
-
-			real rr = 0.0;
-			CalcR2(
-							blockManager,
-							rr,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsx,
-							plsb);
-
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
+				xy_local += xy_block;
 			}
 
+			double xy_global = 0.0;
+			comm_sum_(&xy_global, &xy_local);
+
+			xy = xy_global;
 		}
-		plsx->ImposeBoundaryCondition(blockManager);
-	}
 
-	void RBGS(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						real omega,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-		real bb = 0.0;
-		DOT(blockManager, bb, plsb, plsb);
+		void AXPY(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsy,
+				LocalScalar3D<real>* plsx,
+				real a) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-		for(count=1; count<=countMax; ++count) {
-			RBGS_Smoother(
-							blockManager,
-							plsx, 
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsb,
-							omega);
+				real* y = plsy->GetBlockData(block);
+				real* x = plsx->GetBlockData(block);
 
-			real rr = 0.0;
-			CalcR2(
-							blockManager,
-							rr,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsx,
-							plsb);
-
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
+				axpy_(y, x, &a, sz, &vc);
 			}
-
 		}
-//		plsx->ImposeBoundaryCondition(blockManager);
-	}
+		void XPAY(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsy,
+				LocalScalar3D<real>* plsx,
+				real a) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-	void CG(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsr,
-						LocalScalar3D<real>* plsp,
-						LocalScalar3D<real>* plsq,
-						LocalScalar3D<real>* plsz,
-						LocalScalar3D<real>* plsx0,
-						real omega,
-						int countPreConditioner,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-		real bb = 0.0;
-		DOT(blockManager, bb, plsb, plsb);
+				real* y = plsy->GetBlockData(block);
+				real* x = plsx->GetBlockData(block);
 
-		if( fabs(bb) < FLT_MIN ) {
-			residual = 0.0;
-			count = 0;
-			return;
+				xpay_(y, x, &a, sz, &vc);
+			}
+		}
+		void AXPYZ(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsz,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsy,
+				real a) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+
+				real* z = plsz->GetBlockData(block);
+				real* x = plsx->GetBlockData(block);
+				real* y = plsy->GetBlockData(block);
+
+				axpyz_(z, x, y, &a, sz, &vc);
+			}
+		}
+		void AXPBYPZ(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsz,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsy,
+				real a,
+				real b) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+
+				real* z = plsz->GetBlockData(block);
+				real* x = plsx->GetBlockData(block);
+				real* y = plsy->GetBlockData(block);
+
+				axpbypz_(z, x, y, &a, &b, sz, &vc);
+			}
 		}
 
-		CalcR(
+	public:
+		void Fill(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				real value) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+
+				real* x = plsx->GetBlockData(block);
+
+				real v = value;
+				fill_(x, &v, sz, &vc);
+			}
+		}
+
+		void Copy(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsy,
+				LocalScalar3D<real>* plsx) {
+			int vc = plsx->GetVC();
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+
+				real* x = plsx->GetBlockData(block);
+				real* y = plsy->GetBlockData(block);
+
+				copy_(y, x, sz, &vc);
+			}
+		}
+
+		void Jacobi_PreConditioner(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				real omega,
+				int countPreConditioner ) {
+			for(int count=0; count<countPreConditioner; count++) {
+				Jacobi_Smoother(
 						blockManager,
-						plsr,
-						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
 						plsx,
-						plsb);
-		plsr->ImposeBoundaryCondition(blockManager);
-
-		real rr0 = 1.0;
-		real rr1 = 0.0;
-		for(count=1; count<=countMax; ++count) {
-			Fill(blockManager, plsz, 0.0);
-			Jacobi_PreConditioner(
-							blockManager,
-							plsz,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsr,
-							plsx0,
-							omega,
-							countPreConditioner);
-
-			rr1 = 0.0;
-			DOT(
-							blockManager,
-							rr1,
-							plsr,
-							plsz);
-
-			if( fabs(rr1) < FLT_MIN ) {
-				residual = rr1;
-				count = 0;
-				break;
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						plsx0,
+						omega);
 			}
-
-			real beta = rr1/rr0;
-
-			if( count==1 ) {
-				Copy(
-							blockManager,
-							plsp,
-							plsz);
-			} else {
-				XPAY(
-							blockManager,
-							plsp,
-							plsz,
-							beta);
-			}
-			plsp->ImposeBoundaryCondition(blockManager);
-
-			CalcAx(
-							blockManager,
-							plsq,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsp);
-
-			real qp = 0.0;
-			DOT(
-							blockManager,
-							qp,
-							plsq,
-							plsp);
-
-			real alpha = rr1/qp;
-
-			AXPY(
-							blockManager,
-							plsx,
-							plsp,
-							alpha);
-			AXPY(
-							blockManager,
-							plsr,
-							plsq,
-							-alpha);
-			plsr->ImposeBoundaryCondition(blockManager);
-
-			real rr = 0.0;
-			DOT(
-							blockManager,
-							rr,
-							plsr,
-							plsr);
-
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
-			}
-
-			rr0 = rr1;
-		}
-		plsx->ImposeBoundaryCondition(blockManager);
-	}
-
-	void BiCGSTAB(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsr,
-						LocalScalar3D<real>* plsr0,
-						LocalScalar3D<real>* plsp,
-						LocalScalar3D<real>* plsp_,
-						LocalScalar3D<real>* plsq_,
-						LocalScalar3D<real>* plss,
-						LocalScalar3D<real>* plss_,
-						LocalScalar3D<real>* plst_,
-						LocalScalar3D<real>* plsx0,
-						real omega,
-						int countPreConditioner,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-		real bb = 0.0;
-		DOT(blockManager, bb, plsb, plsb);
-
-		if( fabs(bb) < FLT_MIN ) {
-			residual = 0.0;
-			count = 0;
-			return;
 		}
 
-		CalcR(
+		void Jacobi(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				real omega,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+			real bb = 0.0;
+			DOT(blockManager, bb, plsb, plsb);
+
+			for(count=1; count<=countMax; ++count) {
+				Jacobi_Smoother(
 						blockManager,
-						plsr,
+						plsx, 
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						plsx0,
+						omega);
+
+				real rr = 0.0;
+				CalcR2(
+						blockManager,
+						rr,
 						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
 						plsx,
 						plsb);
 
-		Copy(
+				bool bResult = IsConverged(
 						blockManager,
-						plsr0,
-						plsr);
+						residual,
+						rr,
+						bb,
+						epsilon,
+						count,
+						countMax);
+				if( bResult == true ) {
+					break;
+				}
 
-		real rr0 = 1.0;
-		real alpha = 0.0;
-		real gamma = 1.0;
-		for(count=1; count<=countMax; ++count) {
-			real rr1 = 0.0;
-			DOT(blockManager, rr1, plsr, plsr0);
-
-			if( fabs(rr1) < FLT_MIN ) {
-				residual = rr1;
-				count = 0;
-				break;
 			}
-
-			if( count == 1 ) {
-				Copy(
-							blockManager,
-							plsp,
-							plsr);
-			} else {
-				real beta = rr1/rr0*alpha/gamma;
-				AXPY(
-							blockManager,
-							plsp,
-							plsq_,
-							-gamma);
-				XPAY(
-							blockManager,
-							plsp,
-							plsr,
-							beta);
-			}
-			plsp->ImposeBoundaryCondition(blockManager);
-
-			Fill(blockManager, plsp_, 0.0);
-			Jacobi_PreConditioner(
-							blockManager,
-							plsp_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsp,
-							plsx0,
-							omega,
-							countPreConditioner);
-
-			CalcAx(
-							blockManager,
-							plsq_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsp_);
-
-			real q_r0 = 0.0;
-			DOT(
-							blockManager,
-							q_r0,
-							plsq_,
-							plsr0);
-
-			alpha = rr1/q_r0;
-
-			AXPYZ(
-							blockManager,
-							plss,
-							plsq_,
-							plsr,
-							-alpha);
-			plss->ImposeBoundaryCondition(blockManager);
-
-			Fill(blockManager, plss_, 0.0);
-			Jacobi_PreConditioner(
-							blockManager,
-							plss_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plss,
-							plsx0,
-							omega,
-							countPreConditioner);
-
-			CalcAx(
-							blockManager,
-							plst_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plss_);
-
-			real t_s = 0.0;
-			DOT(
-							blockManager,
-							t_s,
-							plst_,
-							plss);
-
-			real t_t_ = 0.0;
-			DOT(
-							blockManager,
-							t_t_,
-							plst_,
-							plst_);
-
-			gamma = t_s/t_t_;
-
-			AXPBYPZ(
-							blockManager,
-							plsx,
-							plsp_,
-							plss_,
-							alpha,
-							gamma);
-			AXPYZ(
-							blockManager,
-							plsr,
-							plst_,
-							plss,
-							-gamma);
-
-			real rr = 0.0;
-			DOT(
-							blockManager,
-							rr,
-							plsr,
-							plsr);
-
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
-			}
-
-			rr0 = rr1;
-		}
-		plsx->ImposeBoundaryCondition(blockManager);
-	}
-
-	void Jacobi_Mask(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						LocalScalar3D<int>* plsMaskId,
-						real omega,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-		real bb = 0.0;
-		DOT(blockManager, bb, plsb, plsb);
-
-		for(count=1; count<=countMax; ++count) {
-			Jacobi_Smoother_Mask(
-							blockManager,
-							plsx, 
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsb,
-							plsx0,
-							plsMaskId,
-							omega);
-
-			real rr = 0.0;
-			CalcR2(
-							blockManager,
-							rr,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsx,
-							plsb);
-
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
-			}
-
-		}
-		plsx->ImposeBoundaryCondition(blockManager);
-	}
-
-	void BiCGSTAB_Mask(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsr,
-						LocalScalar3D<real>* plsr0,
-						LocalScalar3D<real>* plsp,
-						LocalScalar3D<real>* plsp_,
-						LocalScalar3D<real>* plsq_,
-						LocalScalar3D<real>* plss,
-						LocalScalar3D<real>* plss_,
-						LocalScalar3D<real>* plst_,
-						LocalScalar3D<real>* plsx0,
-						LocalScalar3D<int>* plsMaskId,
-						real omega,
-						int countPreConditioner,
-						int countMax,
-						real epsilon,
-						int& count,
-						real& residual) {
-
-		real bb = 0.0;
-		DOT_Mask(blockManager, bb, plsb, plsb, plsMaskId);
-
-		if( fabs(bb) < FLT_MIN ) {
-			residual = 0.0;
-			count = 0;
-			return;
+			plsx->ImposeBoundaryCondition(blockManager);
 		}
 
-		CalcR(
+		void RBGS(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				real omega,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+			real bb = 0.0;
+			DOT(blockManager, bb, plsb, plsb);
+
+			for(count=1; count<=countMax; ++count) {
+				RBGS_Smoother(
 						blockManager,
-						plsr,
+						plsx, 
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						omega);
+
+				real rr = 0.0;
+				CalcR2(
+						blockManager,
+						rr,
 						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
 						plsx,
 						plsb);
 
-		Copy(
+				bool bResult = IsConverged(
 						blockManager,
-						plsr0,
-						plsr);
+						residual,
+						rr,
+						bb,
+						epsilon,
+						count,
+						countMax);
+				if( bResult == true ) {
+					break;
+				}
 
-		real rr0 = 1.0;
-		real alpha = 0.0;
-		real gamma = 1.0;
-		for(count=1; count<=countMax; ++count) {
-			real rr1 = 0.0;
-			DOT_Mask(blockManager, rr1, plsr, plsr0, plsMaskId);
-
-			if( fabs(rr1) < FLT_MIN ) {
-				residual = rr1;
-				count = 0;
-				break;
 			}
+			//		plsx->ImposeBoundaryCondition(blockManager);
+		}
 
-			if( count == 1 ) {
-				Copy(
+		void CG(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsr,
+				LocalScalar3D<real>* plsp,
+				LocalScalar3D<real>* plsq,
+				LocalScalar3D<real>* plsz,
+				LocalScalar3D<real>* plsx0,
+				real omega,
+				int countPreConditioner,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+					real bb = 0.0;
+					DOT(blockManager, bb, plsb, plsb);
+
+					if( fabs(bb) < FLT_MIN ) {
+						residual = 0.0;
+						count = 0;
+						return;
+					}
+
+					CalcR(
 							blockManager,
-							plsp,
-							plsr);
-			} else {
-				real beta = rr1/rr0*alpha/gamma;
-				AXPY(
-							blockManager,
-							plsp,
-							plsq_,
-							-gamma);
-				XPAY(
-							blockManager,
-							plsp,
 							plsr,
-							beta);
-			}
-			plsp->ImposeBoundaryCondition(blockManager);
-
-			Fill(blockManager, plsp_, 0.0);
-
-			Jacobi_PreConditioner_Mask(
-							blockManager,
-							plsp_,
 							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsp,
-							plsx0,
-							plsMaskId,
-							omega,
-							countPreConditioner);
+							plsx,
+							plsb);
+					plsr->ImposeBoundaryCondition(blockManager);
 
-			CalcAx_Mask(
+					real rr0 = 1.0;
+					real rr1 = 0.0;
+					for(count=1; count<=countMax; ++count) {
+						Fill(blockManager, plsz, 0.0);
+						Jacobi_PreConditioner(
+								blockManager,
+								plsz,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsr,
+								plsx0,
+								omega,
+								countPreConditioner);
+
+						rr1 = 0.0;
+						DOT(
+								blockManager,
+								rr1,
+								plsr,
+								plsz);
+
+						if( fabs(rr1) < FLT_MIN ) {
+							residual = rr1;
+							count = 0;
+							break;
+						}
+
+						real beta = rr1/rr0;
+
+						if( count==1 ) {
+							Copy(
+									blockManager,
+									plsp,
+									plsz);
+						} else {
+							XPAY(
+									blockManager,
+									plsp,
+									plsz,
+									beta);
+						}
+						plsp->ImposeBoundaryCondition(blockManager);
+
+						CalcAx(
+								blockManager,
+								plsq,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsp);
+
+						real qp = 0.0;
+						DOT(
+								blockManager,
+								qp,
+								plsq,
+								plsp);
+
+						real alpha = rr1/qp;
+
+						AXPY(
+								blockManager,
+								plsx,
+								plsp,
+								alpha);
+						AXPY(
+								blockManager,
+								plsr,
+								plsq,
+								-alpha);
+						plsr->ImposeBoundaryCondition(blockManager);
+
+						real rr = 0.0;
+						DOT(
+								blockManager,
+								rr,
+								plsr,
+								plsr);
+
+						bool bResult = IsConverged(
+								blockManager,
+								residual,
+								rr,
+								bb,
+								epsilon,
+								count,
+								countMax);
+						if( bResult == true ) {
+							break;
+						}
+
+						rr0 = rr1;
+					}
+					plsx->ImposeBoundaryCondition(blockManager);
+				}
+
+		void BiCGSTAB(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsr,
+				LocalScalar3D<real>* plsr0,
+				LocalScalar3D<real>* plsp,
+				LocalScalar3D<real>* plsp_,
+				LocalScalar3D<real>* plsq_,
+				LocalScalar3D<real>* plss,
+				LocalScalar3D<real>* plss_,
+				LocalScalar3D<real>* plst_,
+				LocalScalar3D<real>* plsx0,
+				real omega,
+				int countPreConditioner,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+					real bb = 0.0;
+					DOT(blockManager, bb, plsb, plsb);
+
+					if( fabs(bb) < FLT_MIN ) {
+						residual = 0.0;
+						count = 0;
+						return;
+					}
+
+					CalcR(
 							blockManager,
-							plsq_,
+							plsr,
 							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsp_,
-							plsMaskId);
+							plsx,
+							plsb);
 
-			real q_r0 = 0.0;
-			DOT_Mask(
+					Copy(
 							blockManager,
-							q_r0,
-							plsq_,
 							plsr0,
-							plsMaskId);
+							plsr);
 
-			alpha = rr1/q_r0;
+					real rr0 = 1.0;
+					real alpha = 0.0;
+					real gamma = 1.0;
+					for(count=1; count<=countMax; ++count) {
+						real rr1 = 0.0;
+						DOT(blockManager, rr1, plsr, plsr0);
 
-			AXPYZ(
-							blockManager,
-							plss,
-							plsq_,
-							plsr,
-							-alpha);
+						if( fabs(rr1) < FLT_MIN ) {
+							residual = rr1;
+							count = 0;
+							break;
+						}
 
-			plss->ImposeBoundaryCondition(blockManager);
+						if( count == 1 ) {
+							Copy(
+									blockManager,
+									plsp,
+									plsr);
+						} else {
+							real beta = rr1/rr0*alpha/gamma;
+							AXPY(
+									blockManager,
+									plsp,
+									plsq_,
+									-gamma);
+							XPAY(
+									blockManager,
+									plsp,
+									plsr,
+									beta);
+						}
+						plsp->ImposeBoundaryCondition(blockManager);
 
-			Fill(blockManager, plss_, 0.0);
+						Fill(blockManager, plsp_, 0.0);
+						Jacobi_PreConditioner(
+								blockManager,
+								plsp_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsp,
+								plsx0,
+								omega,
+								countPreConditioner);
 
-			Jacobi_PreConditioner_Mask(
-							blockManager,
-							plss_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plss,
-							plsx0,
-							plsMaskId,
-							omega,
-							countPreConditioner);
+						CalcAx(
+								blockManager,
+								plsq_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsp_);
 
-			CalcAx_Mask(
-							blockManager,
-							plst_,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plss_,
-							plsMaskId);
+						real q_r0 = 0.0;
+						DOT(
+								blockManager,
+								q_r0,
+								plsq_,
+								plsr0);
 
-			real t_s = 0.0;
-			DOT_Mask(
-							blockManager,
-							t_s,
-							plst_,
-							plss,
-							plsMaskId);
+						alpha = rr1/q_r0;
 
-			real t_t_ = 0.0;
-			DOT_Mask(
-							blockManager,
-							t_t_,
-							plst_,
-							plst_,
-							plsMaskId);
+						AXPYZ(
+								blockManager,
+								plss,
+								plsq_,
+								plsr,
+								-alpha);
+						plss->ImposeBoundaryCondition(blockManager);
 
-			gamma = t_s/t_t_;
+						Fill(blockManager, plss_, 0.0);
+						Jacobi_PreConditioner(
+								blockManager,
+								plss_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plss,
+								plsx0,
+								omega,
+								countPreConditioner);
 
-			AXPBYPZ(
-							blockManager,
-							plsx,
-							plsp_,
-							plss_,
-							alpha,
-							gamma);
-			AXPYZ(
-							blockManager,
-							plsr,
-							plst_,
-							plss,
-							-gamma);
+						CalcAx(
+								blockManager,
+								plst_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plss_);
 
-			real rr = 0.0;
-			DOT_Mask(
-							blockManager,
-							rr,
-							plsr,
-							plsr,
-							plsMaskId);
+						real t_s = 0.0;
+						DOT(
+								blockManager,
+								t_s,
+								plst_,
+								plss);
 
-			bool bResult = IsConverged(
-							blockManager,
-							residual,
-							rr,
-							bb,
-							epsilon,
-							count,
-							countMax);
-			if( bResult == true ) {
-				break;
+						real t_t_ = 0.0;
+						DOT(
+								blockManager,
+								t_t_,
+								plst_,
+								plst_);
+
+						gamma = t_s/t_t_;
+
+						AXPBYPZ(
+								blockManager,
+								plsx,
+								plsp_,
+								plss_,
+								alpha,
+								gamma);
+						AXPYZ(
+								blockManager,
+								plsr,
+								plst_,
+								plss,
+								-gamma);
+
+						real rr = 0.0;
+						DOT(
+								blockManager,
+								rr,
+								plsr,
+								plsr);
+
+						bool bResult = IsConverged(
+								blockManager,
+								residual,
+								rr,
+								bb,
+								epsilon,
+								count,
+								countMax);
+						if( bResult == true ) {
+							break;
+						}
+
+						rr0 = rr1;
+					}
+					plsx->ImposeBoundaryCondition(blockManager);
+				}
+
+		void Jacobi_Mask(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				LocalScalar3D<int>* plsMaskId,
+				real omega,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+			real bb = 0.0;
+			DOT(blockManager, bb, plsb, plsb);
+
+			for(count=1; count<=countMax; ++count) {
+				Jacobi_Smoother_Mask(
+						blockManager,
+						plsx, 
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						plsx0,
+						plsMaskId,
+						omega);
+
+				real rr = 0.0;
+				CalcR2(
+						blockManager,
+						rr,
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsx,
+						plsb);
+
+				bool bResult = IsConverged(
+						blockManager,
+						residual,
+						rr,
+						bb,
+						epsilon,
+						count,
+						countMax);
+				if( bResult == true ) {
+					break;
+				}
+
 			}
-
-			rr0 = rr1;
+			plsx->ImposeBoundaryCondition(blockManager);
 		}
 
-		plsx->ImposeBoundaryCondition(blockManager);
+		void BiCGSTAB_Mask(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsr,
+				LocalScalar3D<real>* plsr0,
+				LocalScalar3D<real>* plsp,
+				LocalScalar3D<real>* plsp_,
+				LocalScalar3D<real>* plsq_,
+				LocalScalar3D<real>* plss,
+				LocalScalar3D<real>* plss_,
+				LocalScalar3D<real>* plst_,
+				LocalScalar3D<real>* plsx0,
+				LocalScalar3D<int>* plsMaskId,
+				real omega,
+				int countPreConditioner,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
 
-	}
+					real bb = 0.0;
+					DOT_Mask(blockManager, bb, plsb, plsb, plsMaskId);
 
-	void DOT_Mask(
-						BlockManager& blockManager,
-						real& xy,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsy,
-						LocalScalar3D<int>* plsMaskId) {
+					if( fabs(bb) < FLT_MIN ) {
+						residual = 0.0;
+						count = 0;
+						return;
+					}
 
-		int vc = plsx->GetVC();
-		double xy_local = 0.0;
+					CalcR(
+							blockManager,
+							plsr,
+							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+							plsx,
+							plsb);
 
-		int NB = blockManager.getNumBlock();
-		BlockBase* block0 = blockManager.getBlock(0);
-		Vec3i size = block0->getSize();
-		int NX = size.x;
-		int NY = size.y;
-		int NZ = size.z;
-		int sz[3] = {size.x, size.y, size.z};
+					Copy(
+							blockManager,
+							plsr0,
+							plsr);
+
+					real rr0 = 1.0;
+					real alpha = 0.0;
+					real gamma = 1.0;
+					for(count=1; count<=countMax; ++count) {
+						real rr1 = 0.0;
+						DOT_Mask(blockManager, rr1, plsr, plsr0, plsMaskId);
+
+						if( fabs(rr1) < FLT_MIN ) {
+							residual = rr1;
+							count = 0;
+							break;
+						}
+
+						if( count == 1 ) {
+							Copy(
+									blockManager,
+									plsp,
+									plsr);
+						} else {
+							real beta = rr1/rr0*alpha/gamma;
+							AXPY(
+									blockManager,
+									plsp,
+									plsq_,
+									-gamma);
+							XPAY(
+									blockManager,
+									plsp,
+									plsr,
+									beta);
+						}
+						plsp->ImposeBoundaryCondition(blockManager);
+
+						Fill(blockManager, plsp_, 0.0);
+
+						Jacobi_PreConditioner_Mask(
+								blockManager,
+								plsp_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsp,
+								plsx0,
+								plsMaskId,
+								omega,
+								countPreConditioner);
+
+						CalcAx_Mask(
+								blockManager,
+								plsq_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plsp_,
+								plsMaskId);
+
+						real q_r0 = 0.0;
+						DOT_Mask(
+								blockManager,
+								q_r0,
+								plsq_,
+								plsr0,
+								plsMaskId);
+
+						alpha = rr1/q_r0;
+
+						AXPYZ(
+								blockManager,
+								plss,
+								plsq_,
+								plsr,
+								-alpha);
+
+						plss->ImposeBoundaryCondition(blockManager);
+
+						Fill(blockManager, plss_, 0.0);
+
+						Jacobi_PreConditioner_Mask(
+								blockManager,
+								plss_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plss,
+								plsx0,
+								plsMaskId,
+								omega,
+								countPreConditioner);
+
+						CalcAx_Mask(
+								blockManager,
+								plst_,
+								plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+								plss_,
+								plsMaskId);
+
+						real t_s = 0.0;
+						DOT_Mask(
+								blockManager,
+								t_s,
+								plst_,
+								plss,
+								plsMaskId);
+
+						real t_t_ = 0.0;
+						DOT_Mask(
+								blockManager,
+								t_t_,
+								plst_,
+								plst_,
+								plsMaskId);
+
+						gamma = t_s/t_t_;
+
+						AXPBYPZ(
+								blockManager,
+								plsx,
+								plsp_,
+								plss_,
+								alpha,
+								gamma);
+						AXPYZ(
+								blockManager,
+								plsr,
+								plst_,
+								plss,
+								-gamma);
+
+						real rr = 0.0;
+						DOT_Mask(
+								blockManager,
+								rr,
+								plsr,
+								plsr,
+								plsMaskId);
+
+						bool bResult = IsConverged(
+								blockManager,
+								residual,
+								rr,
+								bb,
+								epsilon,
+								count,
+								countMax);
+						if( bResult == true ) {
+							break;
+						}
+
+						rr0 = rr1;
+					}
+
+					plsx->ImposeBoundaryCondition(blockManager);
+
+				}
+
+		void DOT_Mask(
+				BlockManager& blockManager,
+				real& xy,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsy,
+				LocalScalar3D<int>* plsMaskId) {
+
+			int vc = plsx->GetVC();
+			double xy_local = 0.0;
+
+			int NB = blockManager.getNumBlock();
+			BlockBase* block0 = blockManager.getBlock(0);
+			Vec3i size = block0->getSize();
+			int NX = size.x;
+			int NY = size.y;
+			int NZ = size.z;
+			int sz[3] = {size.x, size.y, size.z};
 
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+: xy_local)
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			real* x = plsx->GetBlockData(block);
-			real* y = plsy->GetBlockData(block);
-			int* mask = plsMaskId->GetBlockData(block);
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x = plsx->GetBlockData(block);
+				real* y = plsy->GetBlockData(block);
+				int* mask = plsMaskId->GetBlockData(block);
 
-			real xy_block = 0.0;
-			dot_mask_(&xy_block, x, y, mask, sz, &vc);
+				real xy_block = 0.0;
+				dot_mask_(&xy_block, x, y, mask, sz, &vc);
 
-			xy_local += xy_block;
+				xy_local += xy_block;
+			}
+
+			double xy_global = 0.0;
+
+			comm_sum_(&xy_global, &xy_local);
+
+			xy = xy_global;
+
 		}
 
-		double xy_global = 0.0;
-
-		comm_sum_(&xy_global, &xy_local);
-
-		xy = xy_global;
-
-	}
-
-	void Jacobi_PreConditioner_Mask(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						LocalScalar3D<int>* plsMaskId,
-						real omega,
-						int countPreConditioner ) {
-		for(int count=0; count<countPreConditioner; count++) {
-			Jacobi_Smoother_Mask(
-							blockManager,
-							plsx,
-							plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
-							plsb,
-							plsx0,
-							plsMaskId,
-							omega);
+		void Jacobi_PreConditioner_Mask(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				LocalScalar3D<int>* plsMaskId,
+				real omega,
+				int countPreConditioner ) {
+			for(int count=0; count<countPreConditioner; count++) {
+				Jacobi_Smoother_Mask(
+						blockManager,
+						plsx,
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						plsx0,
+						plsMaskId,
+						omega);
+			}
 		}
-	}
 
-	void Jacobi_Smoother_Mask(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsb,
-						LocalScalar3D<real>* plsx0,
-						LocalScalar3D<int>* plsMaskId,
-						real omega) {
-		int vc = plsx->GetVC();
+		void Jacobi_Smoother_Mask(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				LocalScalar3D<real>* plsx0,
+				LocalScalar3D<int>* plsMaskId,
+				real omega) {
+			int vc = plsx->GetVC();
 
-		int NB = blockManager.getNumBlock();
-		BlockBase* block0 = blockManager.getBlock(0);
-		Vec3i size = block0->getSize();
-		int NX = size.x;
-		int NY = size.y;
-		int NZ = size.z;
-		int sz[3] = {size.x, size.y, size.z};
+			int NB = blockManager.getNumBlock();
+			BlockBase* block0 = blockManager.getBlock(0);
+			Vec3i size = block0->getSize();
+			int NX = size.x;
+			int NY = size.y;
+			int NZ = size.z;
+			int sz[3] = {size.x, size.y, size.z};
 
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			real* x  = plsx ->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* b  = plsb ->GetBlockData(block);
-			real* x0 = plsx0->GetBlockData(block);
-			int* mask = plsMaskId->GetBlockData(block);
-			real pomega = omega;
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x  = plsx ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
+				real* x0 = plsx0->GetBlockData(block);
+				int* mask = plsMaskId->GetBlockData(block);
+				real pomega = omega;
 
-			jacobi_smoother_mask_(
-							x0, x,
-							Ap, Aw, Ae, As, An, Ab, At,
-							b,
-							mask,
-							&pomega,
-							sz, &vc);
+				jacobi_smoother_mask_(
+						x0, x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						mask,
+						&pomega,
+						sz, &vc);
+			}
+
+			LSSwap(*plsx, *plsx0);
+
+			plsx->ImposeBoundaryCondition(blockManager);
+
 		}
 
-		LSSwap(*plsx, *plsx0);
-
-		plsx->ImposeBoundaryCondition(blockManager);
-
-	}
-
-	void CalcAx_Mask(
-						BlockManager& blockManager,
-						LocalScalar3D<real>* plsAx,
-						LocalScalar3D<real>* plsAp,
-						LocalScalar3D<real>* plsAw,
-						LocalScalar3D<real>* plsAe,
-						LocalScalar3D<real>* plsAs,
-						LocalScalar3D<real>* plsAn,
-						LocalScalar3D<real>* plsAb,
-						LocalScalar3D<real>* plsAt,
-						LocalScalar3D<real>* plsx,
-						LocalScalar3D<int>* plsMaskId) {
-		int vc = plsx->GetVC();
+		void CalcAx_Mask(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsAx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<int>* plsMaskId) {
+			int vc = plsx->GetVC();
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block	= blockManager.getBlock(n);
-			Vec3i blockSize		= block->getSize();
-			Vec3r cellSize		= block->getCellSize();
-			int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block	= blockManager.getBlock(n);
+				Vec3i blockSize		= block->getSize();
+				Vec3r cellSize		= block->getCellSize();
+				int sz[3]					= {blockSize.x, blockSize.y, blockSize.z};
 
-			real* Ax = plsAx->GetBlockData(block);
-			real* Ap = plsAp->GetBlockData(block);
-			real* Aw = plsAw->GetBlockData(block);
-			real* Ae = plsAe->GetBlockData(block);
-			real* As = plsAs->GetBlockData(block);
-			real* An = plsAn->GetBlockData(block);
-			real* Ab = plsAb->GetBlockData(block);
-			real* At = plsAt->GetBlockData(block);
-			real* x  = plsx ->GetBlockData(block);
-			int* mask = plsMaskId->GetBlockData(block);
+				real* Ax = plsAx->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* x  = plsx ->GetBlockData(block);
+				int* mask = plsMaskId->GetBlockData(block);
 
-			calc_ax_mask_(
-							Ax,
-							Ap, Aw, Ae, As, An, Ab, At,
-							x,
-							mask,
-							sz, &vc);
+				calc_ax_mask_(
+						Ax,
+						Ap, Aw, Ae, As, An, Ab, At,
+						x,
+						mask,
+						sz, &vc);
+			}
 		}
-	}
 
 };
 

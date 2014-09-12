@@ -168,7 +168,7 @@ subroutine lsm_calc_n(nx, ny, nz, divn, phi, sz, g)
 !$omp					,private(dpl_c, dp2_c) &
 !$omp					,private(dpxx_c, dpyy_c, dpzz_c) &
 !$omp					,private(dpxy_c, dpyz_c, dpzx_c)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -395,7 +395,7 @@ subroutine lsm_update_phi_v(phi1_, phi0_, v0_, psi_, sz, g)
 !$omp					,private(psi0, psi1, psi3, psi2, psi4, psi5, psi6) &
 !$omp					,private(dpsi0, dpsi1, dpsi3, dpsi2, dpsi4, dpsi5, dpsi6) &
 !$omp					,private(q1, q3, q2, q4, q5, q6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -538,7 +538,7 @@ subroutine lsm_update_phi_v_2(phi1_, phi0_, v0_, psi, sz, g)
 !$omp					,private(phi1p, phi3p, phi2p, phi4p, phi5p, phi6p) &
 !$omp					,private(phi1n, phi3n, phi2n, phi4n, phi5n, phi6n) &
 !$omp					,private(phi0, phi1, phi3, phi2, phi4, phi5, phi6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -617,7 +617,7 @@ subroutine lsm_update_phi_v_quick(phi1_, phi0_, v0_, psi_, sz, g)
 !$omp					,private(phi0, phi1, phi3, phi2, phi4, phi5, phi6) &
 !$omp					,private(psi0, psi1, psi3, psi2, psi4, psi5, psi6) &
 !$omp					,private(dpsi0, dpsi1, dpsi3, dpsi2, dpsi4, dpsi5, dpsi6)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -729,7 +729,7 @@ subroutine lsm_update_phi_v_weno3(phi1_, phi0_, v0_, sz, g)
 !$omp					,private(dpx_p, dpy_p, dpz_p) &
 !$omp					,private(dpx_n, dpy_n, dpz_n) &
 !$omp					,private(vx, vy, vz)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -806,7 +806,7 @@ subroutine lsm_update_phi_f(phi1_, phi0_, phif, sz, g)
 !$omp					,private(dpx_p2, dpy_p2, dpz_p2) &
 !$omp					,private(dpx_n2, dpy_n2, dpz_n2) &
 !$omp					,private(dp_p, dp_n)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -895,7 +895,7 @@ subroutine lsm_update_phi_f_2(phi1_, phi0_, phif, psi, sz, g)
 !$omp					,private(dpx_p2, dpy_p2, dpz_p2) &
 !$omp					,private(dpx_n2, dpy_n2, dpz_n2) &
 !$omp					,private(dp_p, dp_n)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -992,7 +992,7 @@ subroutine lsm_calc_signeddistance(d, phi, sz, g)
 !$omp					,private(dpx_c, dpy_c, dpz_c) &
 !$omp					,private(dpx_n, dpy_n, dpz_n) &
 !$omp					,private(dphi1, dphi2, dphi3, dphi4, dphi5, dphi6, dphi7, dphi)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 !ocl nouxsimd
@@ -1231,7 +1231,7 @@ subroutine lsm_reinit_core(phi1_, phi0_, dtau, phii_, phid_, psi, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1454,7 +1454,7 @@ subroutine lsm_reinit_core_0(phi1_, phi0_, dtau, phii_, phid_, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix
@@ -1556,7 +1556,7 @@ subroutine lsm_smooth_core(phi1_, phi0_, dtau, sz, g)
 !$omp					,private(dp_p, dp_n) &
 !$omp					,private(dpl) &
 !$omp					,private(phis)
-!$omp do schedule(dynamic, 1)
+!$omp do schedule(static, 1)
 	do k=1, kx
 	do j=1, jx
 	do i=1, ix

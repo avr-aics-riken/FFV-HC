@@ -7,7 +7,7 @@
 
 FFVConfig::FFVConfig() :
 	tp( TextParser::get_instance_singleton() ) {
-}
+	}
 
 FFVConfig::~FFVConfig() {
 }
@@ -18,7 +18,7 @@ void FFVConfig::Load(std::string filename) {
 		Exit(EX_READ_CONFIG);
 	}
 
-//ApplicationContorl
+	//ApplicationContorl
 	CheckParameter					= Read<bool>					("/ApplicationControl/CheckParameter");
 	OperatorName						= Read<std::string>		("/ApplicationControl/Operator");
 	FillingMedium						= Read<std::string>		("/ApplicationControl/Filling/Medium");
@@ -29,10 +29,10 @@ void FFVConfig::Load(std::string filename) {
 		OperationMode					= "CheckParameter";
 	}
 
-//ConvectionTerm
+	//ConvectionTerm
 	ConvectionTermScheme		= Read<std::string>		("/ConvectionTerm/Scheme");
 
-//DomainInfo
+	//DomainInfo
 	RootBlockOrigin					= Read<Vec3d>					("/DomainInfo/RootBlock/Origin");
 	RootBlockGrid						= Read<Vec3i>					("/DomainInfo/RootBlock/Grid");
 	RootBlockLength					= Read<double>				("/DomainInfo/RootBlock/Length");
@@ -41,9 +41,9 @@ void FFVConfig::Load(std::string filename) {
 	RootBlockPeriodicZ			= Read<bool>					("/DomainInfo/RootBlock/PeriodicZ");
 	LeafBlockNumberOfCells	= Read<int>						("/DomainInfo/LeafBlock/NumberOfCells");
 	LeafBlockNumberOfVirtualCells
-													= Read<int>						("/DomainInfo/LeafBlock/NumberOfVirtualCells", 2);
+		= Read<int>						("/DomainInfo/LeafBlock/NumberOfVirtualCells", 2);
 	LeafBlockNumberOfMarginalCells
-													= Read<int>						("/DomainInfo/LeafBlock/NumberOfMarginalCells", LeafBlockNumberOfVirtualCells);
+		= Read<int>						("/DomainInfo/LeafBlock/NumberOfMarginalCells", LeafBlockNumberOfVirtualCells);
 	TreeType								= Read<std::string>		("/DomainInfo/Tree/Type");
 	TreeMinLevel						= Read<int>						("/DomainInfo/Tree/MinLevel");
 	TreeMaxLevel						= Read<int>						("/DomainInfo/Tree/MaxLevel");
@@ -126,10 +126,10 @@ void FFVConfig::Load(std::string filename) {
 	} else {
 	}
 
-//GeometryModel
+	//GeometryModel
 	PolylibConfig						= Read<std::string>		("/GeometryModel/PolylibFile");
 
-//Iteration
+	//Iteration
 	std::string lsp					= Read<std::string>		("/Iteration/Pressure");
 	std::string lsu					= Read<std::string>		("/Iteration/Velocity");
 	std::string lst					= Read<std::string>		("/Iteration/Temperature");
@@ -162,27 +162,27 @@ void FFVConfig::Load(std::string filename) {
 	}
 
 	IterationReferencePressureActive
-													= Read<bool>					("/Iteration/ReferencePressure/Active", false);
+		= Read<bool>					("/Iteration/ReferencePressure/Active", false);
 	if( IterationReferencePressureActive == true ) {
 		IterationReferencePressurePoint
-													= Read<Vec3d>					("/Iteration/ReferencePressure/Point");
+			= Read<Vec3d>					("/Iteration/ReferencePressure/Point");
 		IterationReferencePressureValue
-													= Read<double>				("/Iteration/ReferencePressure/Value");
+			= Read<double>				("/Iteration/ReferencePressure/Value");
 	}
 
 	IterationReferenceTemperatureActive
-													= Read<bool>					("/Iteration/ReferenceTemperature/Active", false);
+		= Read<bool>					("/Iteration/ReferenceTemperature/Active", false);
 	if( IterationReferenceTemperatureActive == true ) {
 		IterationReferenceTemperaturePoint
-													= Read<Vec3d>					("/Iteration/ReferenceTemperature/Point");
+			= Read<Vec3d>					("/Iteration/ReferenceTemperature/Point");
 		IterationReferenceTemperatureValue
-													= Read<double>				("/Iteration/ReferenceTemperature/Value");
+			= Read<double>				("/Iteration/ReferenceTemperature/Value");
 	}
 
 
-//MediumTable
+	//MediumTable
 	std::string FillingMediumState
-													= Read<std::string>		("/MediumTable/" + FillingMedium + "/State");
+		= Read<std::string>		("/MediumTable/" + FillingMedium + "/State");
 	if( !strcasecmp(FillingMediumState.c_str(), "fluid") ) {
 		PPF ppf0;
 		ppf0.rho							= Read<double>				("/MediumTable/" + FillingMedium + "/MassDensity");
@@ -194,7 +194,7 @@ void FFVConfig::Load(std::string filename) {
 		MediumTableFluid.push_back(ppf0);
 	}
 
-//Output
+	//Output
 	OutputLogBase						= Read<bool>					("/Output/Log/Base");
 	OutputLogLaptime				= Read<bool>					("/Output/Log/Laptime");
 	OutputLogIteration			= Read<bool>					("/Output/Log/Iteration");
@@ -202,179 +202,179 @@ void FFVConfig::Load(std::string filename) {
 	OutputLogForce					= Read<bool>					("/Output/Log/Force", false);
 	OutputLogHeatFlux				= Read<bool>					("/Output/Log/HeatFlux", false);
 	OutputLogHeatFluxTargetID
-													= Read<int>						("/Output/Log/HeatFluxTargetID", -1);
+		= Read<int>						("/Output/Log/HeatFluxTargetID", -1);
 	OutputLogBlock					= Read<bool>					("/Output/Log/Block");
 	OutputLogProfiling			= Read<bool>					("/Output/Log/Profiling");
 
 	OutputLogFilenameBase		= Read<std::string>		("/Output/Log/FilenameBase");
 	OutputLogFilenameProfiling
-													= Read<std::string>		("/Output/Log/FilenameProfiling");
+		= Read<std::string>		("/Output/Log/FilenameProfiling");
 	OutputLogFilenameLaptime
-													= Read<std::string>		("/Output/Log/FilenameLaptime");
+		= Read<std::string>		("/Output/Log/FilenameLaptime");
 	OutputLogFilenameIteration
-													= Read<std::string>		("/Output/Log/FilenameIteration");
+		= Read<std::string>		("/Output/Log/FilenameIteration");
 	OutputLogFilenameBlock	= Read<std::string>		("/Output/Log/FilenameBlock");
 	OutputLogFilenameStatistics
-													= Read<std::string>		("/Output/Log/FilenameStatistics");
+		= Read<std::string>		("/Output/Log/FilenameStatistics");
 	OutputLogFileIntervalType
-													= Read<std::string>		("/Output/Log/History/TemporalType");
+		= Read<std::string>		("/Output/Log/History/TemporalType");
 	if( !strcasecmp(OutputLogFileIntervalType.c_str(), "time") ) {
 		OutputLogFileIntervalD
-													= Read<double>				("/Output/Log/History/Interval");
+			= Read<double>				("/Output/Log/History/Interval");
 	} else {
 		OutputLogFileIntervalI
-													= Read<int>						("/Output/Log/History/Interval");
+			= Read<int>						("/Output/Log/History/Interval");
 	}
 	OutputLogConsoleIntervalType
-													= Read<std::string>		("/Output/Log/Console/TemporalType");
+		= Read<std::string>		("/Output/Log/Console/TemporalType");
 	if( !strcasecmp(OutputLogConsoleIntervalType.c_str(), "time") ) {
 		OutputLogConsoleIntervalD
-													= Read<double>				("/Output/Log/Console/Interval");
+			= Read<double>				("/Output/Log/Console/Interval");
 	} else {
 		OutputLogConsoleIntervalI
-													= Read<int>						("/Output/Log/Console/Interval");
+			= Read<int>						("/Output/Log/Console/Interval");
 	}
 
 	OutputLogFileIntervalBase
-													= Read<int>						("/Output/Log/Interval/Base", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Base", OutputLogFileIntervalI);
 	OutputLogFileIntervalProfiling
-													= Read<int>						("/Output/Log/Interval/Profiling", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Profiling", OutputLogFileIntervalI);
 	OutputLogFileIntervalLaptime
-													= Read<int>						("/Output/Log/Interval/Laptime", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Laptime", OutputLogFileIntervalI);
 	OutputLogFileIntervalIteration
-													= Read<int>						("/Output/Log/Interval/Iteration", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Iteration", OutputLogFileIntervalI);
 	OutputLogFileIntervalBlock
-													= Read<int>						("/Output/Log/Interval/Block", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Block", OutputLogFileIntervalI);
 	OutputLogFileIntervalStatistics
-													= Read<int>						("/Output/Log/Interval/Statistics", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Statistics", OutputLogFileIntervalI);
 	OutputLogFileIntervalForce
-													= Read<int>						("/Output/Log/Interval/Force", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/Force", OutputLogFileIntervalI);
 	OutputLogFileIntervalHeatFlux
-													= Read<int>						("/Output/Log/Interval/HeatFlux", OutputLogFileIntervalI);
+		= Read<int>						("/Output/Log/Interval/HeatFlux", OutputLogFileIntervalI);
 
 	OutputDataBasicVariablesFormat
-													= Read<std::string>		("/Output/Data/BasicVariables/Format");
+		= Read<std::string>		("/Output/Data/BasicVariables/Format");
 	OutputDataBasicVariablesTemporalType
-													= Read<std::string>		("/Output/Data/BasicVariables/TemporalType");
+		= Read<std::string>		("/Output/Data/BasicVariables/TemporalType");
 	if( !strcasecmp(OutputDataBasicVariablesTemporalType.c_str(), "time") ) {
 		OutputDataBasicVariablesIntervalD
-													= Read<double>				("/Output/Data/BasicVariables/Interval");
+			= Read<double>				("/Output/Data/BasicVariables/Interval");
 	} else {
 		OutputDataBasicVariablesIntervalI
-													= Read<int>						("/Output/Data/BasicVariables/Interval");
+			= Read<int>						("/Output/Data/BasicVariables/Interval");
 	}
 
 	OutputDataDerivedVariablesFormat
-													= Read<std::string>		("/Output/Data/DerivedVariables/Format");
+		= Read<std::string>		("/Output/Data/DerivedVariables/Format");
 	OutputDataDerivedVariablesTemporalType
-													= Read<std::string>		("/Output/Data/DerivedVariables/TemporalType");
+		= Read<std::string>		("/Output/Data/DerivedVariables/TemporalType");
 	if( !strcasecmp(OutputDataDerivedVariablesTemporalType.c_str(), "time") ) {
 		OutputDataDerivedVariablesIntervalD
-													= Read<double>				("/Output/Data/DerivedVariables/Interval");
+			= Read<double>				("/Output/Data/DerivedVariables/Interval");
 	} else {
 		OutputDataDerivedVariablesIntervalI
-													= Read<int>						("/Output/Data/DerivedVariables/Interval");
+			= Read<int>						("/Output/Data/DerivedVariables/Interval");
 	}
 	OutputDataDerivedVariablesVorticity
-													= Read<bool>					("/Output/Data/DerivedVariables/Vorticity");
+		= Read<bool>					("/Output/Data/DerivedVariables/Vorticity");
 	OutputDataDerivedVariablesHelicity
-													= Read<bool>					("/Output/Data/DerivedVariables/Helicity");
+		= Read<bool>					("/Output/Data/DerivedVariables/Helicity");
 	OutputDataDerivedVariablesQcriterion
-													= Read<bool>					("/Output/Data/DerivedVariables/Qcriterion");
+		= Read<bool>					("/Output/Data/DerivedVariables/Qcriterion");
 	OutputDataDerivedVariablesForce
-													= Read<bool>					("/Output/Data/DerivedVariables/Force");
+		= Read<bool>					("/Output/Data/DerivedVariables/Force");
 	OutputDataDerivedVariablesHeatFlux
-													= Read<bool>					("/Output/Data/DerivedVariables/HeatFlux", false);
+		= Read<bool>					("/Output/Data/DerivedVariables/HeatFlux", false);
 
 	OutputDataBasicVariablesFormatVTK
-													= false;
+		= false;
 	OutputDataBasicVariablesFormatPLOT3D
-													= false;
+		= false;
 	OutputDataBasicVariablesFormatBCM
-													= false;
+		= false;
 	OutputDataBasicVariablesFormatSILO
-													= false;
+		= false;
 	if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "VTK") ) {
 		OutputDataBasicVariablesFormatVTK
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "PLOT3D") ) {
 		OutputDataBasicVariablesFormatPLOT3D
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "BCM") ) {
 		OutputDataBasicVariablesFormatBCM
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataBasicVariablesFormat.c_str()  , "SILO") ) {
 		OutputDataBasicVariablesFormatSILO
-													= true;
+			= true;
 	}
 
 	OutputDataDerivedVariablesFormatVTK
-													= false;
+		= false;
 	OutputDataDerivedVariablesFormatPLOT3D
-													= false;
+		= false;
 	OutputDataDerivedVariablesFormatBCM
-													= false;
+		= false;
 	OutputDataDerivedVariablesFormatSILO
-													= false;
+		= false;
 	if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "VTK") ) {
 		OutputDataDerivedVariablesFormatVTK
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "PLOT3D") ) {
 		OutputDataDerivedVariablesFormatPLOT3D
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "BCM") ) {
 		OutputDataDerivedVariablesFormatBCM
-													= true;
+			= true;
 	} else if( !strcasecmp(OutputDataDerivedVariablesFormat.c_str()  , "SILO") ) {
 		OutputDataDerivedVariablesFormatSILO
-													= true;
+			= true;
 	}
 
 	if( OutputDataBasicVariablesFormatVTK || OutputDataDerivedVariablesFormatVTK ) {
 		OutputDataFormatOptionVTKPath
-														= Read<std::string>		("/Output/Data/FormatOption/VTK/Path");
+			= Read<std::string>		("/Output/Data/FormatOption/VTK/Path");
 		OutputDataFormatOptionVTKPrefix
-														= Read<std::string>		("/Output/Data/FormatOption/VTK/Prefix");
+			= Read<std::string>		("/Output/Data/FormatOption/VTK/Prefix");
 	} else if( OutputDataBasicVariablesFormatPLOT3D || OutputDataDerivedVariablesFormatPLOT3D ) {
 		OutputDataFormatOptionPLOT3DPath
-														= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Path");
+			= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Path");
 		OutputDataFormatOptionPLOT3DPrefix
-														= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Prefix");
+			= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Prefix");
 	} else if( OutputDataBasicVariablesFormatBCM || OutputDataDerivedVariablesFormatBCM ) {
 	} else if( OutputDataBasicVariablesFormatSILO || OutputDataDerivedVariablesFormatSILO ) {
 	}
 
-//PhysicalParameter
+	//PhysicalParameter
 	GravityX								= Read<double>					("/PhysicalParameter/GravityX", 0.0);
 	GravityY								= Read<double>					("/PhysicalParameter/GravityY", 0.0);
 	GravityZ								= Read<double>					("/PhysicalParameter/GravityZ", 0.0);
 	BetaG										= Read<double>					("/PhysicalParameter/BetaG", 0.0);
 	Tref										= Read<double>					("/PhysicalParameter/Tr", 0.0);
 
-//ShapeApproximation
+	//ShapeApproximation
 	ShapeApproximationMethod
-													= Read<std::string>		("/ShapeApproximation/Method");
+		= Read<std::string>		("/ShapeApproximation/Method");
 	if( !strcasecmp(ShapeApproximationMethod.c_str(), "voxel") ) {
 		ShapeApproximationVoxelization
-													= true;
+			= true;
 		ShapeApproximationSymmetrization
-													= false;
+			= false;
 		ShapeApproximationCutoff
-													= 0.0;
+			= 0.0;
 	} else {
 		ShapeApproximationVoxelization
-													= Read<bool>					("/ShapeApproximation/Voxelization", false);
+			= Read<bool>					("/ShapeApproximation/Voxelization", false);
 		ShapeApproximationSymmetrization
-													= Read<bool>					("/ShapeApproximation/Symmetrization", false);
+			= Read<bool>					("/ShapeApproximation/Symmetrization", false);
 		ShapeApproximationCutoff
-													= Read<double>				("/ShapeApproximation/Cutoff");
+			= Read<double>				("/ShapeApproximation/Cutoff");
 	}
 
-//SolvingMethod
+	//SolvingMethod
 	TimeIntegrationMethodForFlow
-													= Read<std::string>		("/SolvingMethod/Flow");
+		= Read<std::string>		("/SolvingMethod/Flow");
 
-//StartCondition
+	//StartCondition
 	InitialValueP						= Read<double>				("/StartCondition/InitialState/Pressure");
 	InitialValueU						= Read<Vec3d>					("/StartCondition/InitialState/Velocity");
 	InitialValueT						= Read<double>				("/StartCondition/InitialState/Temperature");
@@ -386,49 +386,49 @@ void FFVConfig::Load(std::string filename) {
 	RestartPrefix						= Read<std::string>		("/StartCondition/Restart/Prefix");
 	RestartInterval					= Read<int>						("/StartCondition/Restart/Interval");
 
-//TimeControl
+	//TimeControl
 	TimeControlAccelerationTemporalType
-													= Read<std::string>		("/TimeControl/Acceleration/TemporalType");
+		= Read<std::string>		("/TimeControl/Acceleration/TemporalType");
 	if( !strcasecmp(TimeControlAccelerationTemporalType.c_str(), "time") ) {
 		TimeControlAccelerationAcceleratingTimeD
-													= Read<double>				("/TimeControl/Acceleration/AcceleratingTime");
+			= Read<double>				("/TimeControl/Acceleration/AcceleratingTime");
 	} else {
 		TimeControlAccelerationAcceleratingTimeI
-													= Read<int>						("/TimeControl/Acceleration/AcceleratingTime");
+			= Read<int>						("/TimeControl/Acceleration/AcceleratingTime");
 	}
 	TimeControlTimeStepMode	= Read<std::string>		("/TimeControl/TimeStep/Mode");
 	TimeControlTimeStepDeltaT
-													= Read<double>				("/TimeControl/TimeStep/DeltaT");
+		= Read<double>				("/TimeControl/TimeStep/DeltaT");
 	TimeControlSessionTemporalType
-													= Read<std::string>		("/TimeControl/Session/TemporalType");
+		= Read<std::string>		("/TimeControl/Session/TemporalType");
 	if( !strcasecmp(TimeControlSessionTemporalType.c_str(), "time") ) {
 		TimeControlSessionStartD
-													= Read<double>				("/TimeControl/Session/Start");
+			= Read<double>				("/TimeControl/Session/Start");
 		TimeControlSessionEndD
-													= Read<double>				("/TimeControl/Session/End");
+			= Read<double>				("/TimeControl/Session/End");
 	} else {
 		TimeControlSessionStartI
-													= Read<int>						("/TimeControl/Session/Start");
+			= Read<int>						("/TimeControl/Session/Start");
 		TimeControlSessionEndI
-													= Read<int>						("/TimeControl/Session/End");
+			= Read<int>						("/TimeControl/Session/End");
 	}
 
-//GridGeneration
+	//GridGeneration
 	GridGenerationHoleFilling
-													= Read<bool>					("/GridGeneration/HoleFilling", true);
+		= Read<bool>					("/GridGeneration/HoleFilling", true);
 	GridGenerationHoleFilling2
-													= Read<bool>					("/GridGeneration/HoleFilling2", true);
+		= Read<bool>					("/GridGeneration/HoleFilling2", true);
 	GridGenerationHoleFilling3
-													= Read<bool>					("/GridGeneration/HoleFilling3", false);
+		= Read<bool>					("/GridGeneration/HoleFilling3", false);
 	GridGenerationOutputSTL	= Read<bool>					("/GridGeneration/OutputSTL", false);
 
 
-//Tuning
+	//Tuning
 	TuningMasking						= Read<bool>					("/Tuning/Masking", true);
 	TuningBlockOrdering			= Read<std::string>		("/Tuning/BlockOrdering", "Hilbert");
 	TuningVCUpdate					= Read<std::string>		("/Tuning/VCUpdate", "AtOnce");
 
-//BC
+	//BC
 	OuterBCP.clear();
 	OuterBCUX.clear();
 	OuterBCUY.clear();
@@ -490,7 +490,7 @@ void FFVConfig::Load(std::string filename) {
 		bcid << n;
 		BCInternalBoundaryType[n]  = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/Type", -1);
 		BCInternalBoundaryValue[n] = Read<double>("/BCTable/LocalBoundary/ID" + bcid.str() + "/Value", 0.0);
-//		std::cout << n << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
+		//		std::cout << n << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
 	}
 }
 
