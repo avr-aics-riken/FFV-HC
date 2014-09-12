@@ -37,7 +37,7 @@ FFV_LIBS        := -lHDM -lBCM -lCUT -lPOLYmpi -lPM -lTPmpi -lcgmfuncs -lmpi -lm
 PROGRAM = ffv
 
 FFV_SOLVERNAME	:= "FrontFlow/violet-HC (alpha)"
-FFV_VERSION			:= "0.9.8"
+FFV_VERSION			:= "0.9.9"
 CXXFLAGS				+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CFLAGS					+= -DFFV_SOLVERNAME=\"$(FFV_SOLVERNAME)\"
 CXXFLAGS				+= -DFFV_VERSION=\"$(FFV_VERSION)\"
