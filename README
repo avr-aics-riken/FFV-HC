@@ -22,12 +22,11 @@ is employed to organize Cartesian grids. Thanks to this data structure, it is po
 to share basic algorithms for the computation of fluid dynamics with FFV-C, and thus
 the key features are still retained - high performance on massively parallel computers.
 
+
 CAUTION
 =======
 
-This is a prototype version of FFV-HC.
-Compared with FFV-C, less functions are implemented and available for use.
-A regular version with full functionality, and less bugs, will be released in April 2014.
+This is a prototype version of FFV-HC Version 2.
 
 
 INGREDIENTS
