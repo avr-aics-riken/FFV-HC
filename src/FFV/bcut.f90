@@ -1348,6 +1348,31 @@ subroutine bcut_calc_c_u_quick( &
     pidp = pid(i, j, k)
 
     if( cidp0 /= 0 ) then
+      fw  = fp
+      fww = fp
+    endif
+    if( cidp1 /= 0 ) then
+      fe  = fp
+      fee = fp
+    endif
+    if( cidp2 /= 0 ) then
+      fs  = fp
+      fss = fp
+    endif
+    if( cidp3 /= 0 ) then
+      fn  = fp
+      fnn = fp
+    endif
+    if( cidp4 /= 0 ) then
+      fb  = fp
+      fbb = fp
+    endif
+    if( cidp5 /= 0 ) then
+      ft  = fp
+      ftt = fp
+    endif
+
+    if( cidp0 /= 0 ) then
       fw  = 0.0
       fww = 0.0
     endif
@@ -1389,56 +1414,6 @@ subroutine bcut_calc_c_u_quick( &
     endif
     if( cidt5 /= 0 ) then
       ftt = ft
-    endif
-
-    if( cidp0 /= 0 ) then
-      fw  = (1.0d0 - 1.0d0/d0)*fp + (1.0d0/d0)*fi
-      fww = (1.0d0 - 2.0d0/d0)*fp + (2.0d0/d0)*fi
-      m0 = 1.0d0
-    endif
-    if( cidp1 /= 0 ) then
-      fe  = (1.0d0 - 1.0d0/d1)*fp + (1.0d0/d1)*fi
-      fee = (1.0d0 - 2.0d0/d1)*fp + (2.0d0/d1)*fi
-      m1 = 1.0d0
-    endif
-    if( cidp2 /= 0 ) then
-      fs  = (1.0d0 - 1.0d0/d2)*fp + (1.0d0/d2)*fi
-      fss = (1.0d0 - 2.0d0/d2)*fp + (2.0d0/d2)*fi
-      m2 = 1.0d0
-    endif
-    if( cidp3 /= 0 ) then
-      fn  = (1.0d0 - 1.0d0/d3)*fp + (1.0d0/d3)*fi
-      fnn = (1.0d0 - 2.0d0/d3)*fp + (2.0d0/d3)*fi
-      m3 = 1.0d0
-    endif
-    if( cidp4 /= 0 ) then
-      fb  = (1.0d0 - 1.0d0/d4)*fp + (1.0d0/d4)*fi
-      fbb = (1.0d0 - 2.0d0/d4)*fp + (2.0d0/d4)*fi
-      m4 = 1.0d0
-    endif
-    if( cidp5 /= 0 ) then
-      ft  = (1.0d0 - 1.0d0/d5)*fp + (1.0d0/d5)*fi
-      ftt = (1.0d0 - 2.0d0/d5)*fp + (2.0d0/d5)*fi
-      m5 = 1.0d0
-    endif
-
-    if( cidw0 /= 0 ) then
-      fww = fi
-    endif
-    if( cide1 /= 0 ) then
-      fee = fi
-    endif
-    if( cids2 /= 0 ) then
-      fss = fi
-    endif
-    if( cidn3 /= 0 ) then
-      fnn = fi
-    endif
-    if( cidb4 /= 0 ) then
-      fbb = fi
-    endif
-    if( cidt5 /= 0 ) then
-      ftt = fi
     endif
 
     f0 = bcut_getupwind(vx0, 0.125*(3.0*fp + 6.0*fw - fww), 0.125*(6.0*fp + 3.0*fw - fe) )
