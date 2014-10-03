@@ -268,8 +268,8 @@ ShapeApproximation
 }
 
 SolvingMethod {
-//	Flow									= "implicit"
-	Flow									= "explicit"
+//	U									= "explicit"
+	U									= "implicit"
 }
 
 StartCondition
