@@ -597,6 +597,9 @@ subroutine bcut_calc_abd_t( &
   real, dimension(3)      :: org
   real                    :: d0, d1, d2, d3, d4, d5
   real                    :: k0, k1, k2, k3, k4, k5
+	real										:: k_p, k_w, k_e, k_s, k_n, k_b, k_t
+	real										:: rho_p
+	real										:: cp_p
   real                    :: m0, m1, m2, m3, m4, m5
   real                    :: l0, l1, l2, l3, l4, l5
   real                    :: bp, b0, b1, b2, b3, b4, b5
@@ -613,6 +616,8 @@ subroutine bcut_calc_abd_t( &
 !$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
 !$omp           private(d0, d1, d2, d3, d4, d5) &
 !$omp           private(k0, k1, k2, k3, k4, k5) &
+!$omp						private(k_p, k_w, k_e, k_s, k_n, k_b, k_t) &
+!$omp						private(rho_p, cp_p) &
 !$omp           private(m0, m1, m2, m3, m4, m5) &
 !$omp           private(l0, l1, l2, l3, l4, l5) &
 !$omp           private(bp, b0, b1, b2, b3, b4, b5) &
@@ -667,12 +672,45 @@ subroutine bcut_calc_abd_t( &
       m5 = 1.0
     endif
 
-    k0 = kf
-    k1 = kf
-    k2 = kf
-    k3 = kf
-    k4 = kf
-    k5 = kf
+		rho_p = rhof
+		cp_p  = cpf
+		k_p   = kf
+		k_w   = kf
+		k_e   = kf
+		k_s   = kf
+		k_n   = kf
+		k_b   = kf
+		k_t   = kf
+		if( pid(i, j, k) /= 1 ) then
+			rho_p = rhos
+			cp_p  = cps
+			k_p   = ks
+		end if
+		if( pid(i-1, j, k) /= 1 ) then
+			k_w   = ks
+		end if
+		if( pid(i+1, j, k) /= 1 ) then
+			k_e   = ks
+		end if
+		if( pid(i, j-1, k) /= 1 ) then
+			k_s   = ks
+		end if
+		if( pid(i, j+1, k) /= 1 ) then
+			k_n   = ks
+		end if
+		if( pid(i, j, k-1) /= 1 ) then
+			k_b   = ks
+		end if
+		if( pid(i, j, k+1) /= 1 ) then
+			k_t   = ks
+		end if
+
+    k0 = k_p
+    k1 = k_p
+    k2 = k_p
+    k3 = k_p
+    k4 = k_p
+    k5 = k_p
     tp = t0_(i, j, k)
     t0 = t0_(i-1, j, k) 
     t1 = t0_(i+1, j, k) 
@@ -687,95 +725,113 @@ subroutine bcut_calc_abd_t( &
     b4 = 0.0
     b5 = 0.0
     if( bc_type(cidp0) == 0 ) then
-      k0 = kf/d0*2.0/(d0 + d1)
-      k1 = kf/d1*2.0/(d0 + d1)
+      k0 = k_p/d0*2.0/(d0 + d1)
+      k1 = k_p/d1*2.0/(d0 + d1)
       t0 = bc_value(cidp0)
     else if( bc_type(cidp0) == 1 ) then
       nx = nx_( nidx0(i, j, k) )
 
       k0 = 0.0
-      k1 = kf/(d0 + 0.5)
+      k1 = k_p/(d0 + 0.5)
       t0 = 0.0
       b0 = + abs(nx)*bc_value(cidp0)*dx/(d0 + 0.5)
+    else if( bc_type(cidp0) == 2 ) then
+      k0 = k_p*k_w/(k_p*(1.0 - d0) + k_w*d0)
+			m0 = 0.0
     else if( bc_type(cidp0) == 9 ) then
     endif
 
     if( bc_type(cidp1) == 0 ) then
-      k0 = kf/d0*2.0/(d0 + d1)
-      k1 = kf/d1*2.0/(d0 + d1)
+      k0 = k_p/d0*2.0/(d0 + d1)
+      k1 = k_p/d1*2.0/(d0 + d1)
       t1 = bc_value(cidp1)
     else if( bc_type(cidp1) == 1 ) then
       nx = nx_( nidx1(i, j, k) )
 
-      k0 = kf/(d1 + 0.5)
+      k0 = k_p/(d1 + 0.5)
       k1 = 0.0
       t1 = 0.0
       b1 = + abs(nx)*bc_value(cidp1)*dx/(d1 + 0.5)
+    else if( bc_type(cidp1) == 2 ) then
+      k1 = k_p*k_e/(k_p*(1.0 - d1) + k_e*d1)
+			m1 = 0.0
     else if( bc_type(cidp1) == 9 ) then
     endif
 
     if( bc_type(cidp2) == 0 ) then
-      k2 = kf/d2*2.0/(d2 + d3)
-      k3 = kf/d3*2.0/(d2 + d3)
+      k2 = k_p/d2*2.0/(d2 + d3)
+      k3 = k_p/d3*2.0/(d2 + d3)
       t2 = bc_value(cidp2)
     else if( bc_type(cidp2) == 1 ) then
       ny = ny_( nidx2(i, j, k) )
 
       k2 = 0.0
-      k3 = kf/(d2 + 0.5)
+      k3 = k_p/(d2 + 0.5)
       t2 = 0.0
       b2 = + abs(ny)*bc_value(cidp2)*dx/(d2 + 0.5)
+    else if( bc_type(cidp2) == 2 ) then
+      k2 = k_p*k_s/(k_p*(1.0 - d2) + k_s*d2)
+			m2 = 0.0
     else if( bc_type(cidp2) == 9 ) then
     endif
 
     if( bc_type(cidp3) == 0 ) then
-      k2 = kf/d2*2.0/(d2 + d3)
-      k3 = kf/d3*2.0/(d2 + d3)
+      k2 = k_p/d2*2.0/(d2 + d3)
+      k3 = k_p/d3*2.0/(d2 + d3)
       t3 = bc_value(cidp3)
     else if( bc_type(cidp3) == 1 ) then
       ny = ny_( nidx3(i, j, k) )
 
-      k2 = kf/(d3 + 0.5)
+      k2 = k_p/(d3 + 0.5)
       k3 = 0.0
       t3 = 0.0
       b3 = + abs(ny)*bc_value(cidp3)*dx/(d3 + 0.5)
+    else if( bc_type(cidp3) == 2 ) then
+      k3 = k_p*k_n/(k_p*(1.0 - d3) + k_n*d3)
+			m3 = 0.0
     else if( bc_type(cidp3) == 9 ) then
     endif
 
     if( bc_type(cidp4) == 0 ) then
-      k4 = kf/d4*2.0/(d4 + d5)
-      k5 = kf/d5*2.0/(d4 + d5)
+      k4 = k_p/d4*2.0/(d4 + d5)
+      k5 = k_p/d5*2.0/(d4 + d5)
       t4 = bc_value(cidp4)
     else if( bc_type(cidp4) == 1 ) then
       nz = nz_( nidx4(i, j, k) )
 
       k4 = 0.0
-      k5 = kf/(d4 + 0.5)
+      k5 = k_p/(d4 + 0.5)
       t4 = 0.0
       b4 = + abs(nz)*bc_value(cidp4)*dx/(d4 + 0.5)
+    else if( bc_type(cidp4) == 2 ) then
+      k4 = k_p*k_b/(k_p*(1.0 - d4) + k_b*d4)
+			m4 = 0.0
     else if( bc_type(cidp4) == 9 ) then
     endif
 
     if( bc_type(cidp5) == 0 ) then
-      k4 = kf/d4*2.0/(d4 + d5)
-      k5 = kf/d5*2.0/(d4 + d5)
+      k4 = k_p/d4*2.0/(d4 + d5)
+      k5 = k_p/d5*2.0/(d4 + d5)
       t5 = bc_value(cidp5)
     else if( bc_type(cidp5) == 1 ) then
       nz = nz_( nidx5(i, j, k) )
 
-      k4 = kf/(d5 + 0.5)
+      k4 = k_p/(d5 + 0.5)
       k5 = 0.0
       t5 = 0.0
       b5 = + abs(nz)*bc_value(cidp5)*dx/(d5 + 0.5)
+    else if( bc_type(cidp5) == 2 ) then
+      k5 = k_p*k_t/(k_p*(1.0 - d5) + k_t*d5)
+			m5 = 0.0
     else if( bc_type(cidp5) == 9 ) then
     endif
 
-    l0 = k0/(rhof*cpf)/(dx*dx)*dt
-    l1 = k1/(rhof*cpf)/(dx*dx)*dt
-    l2 = k2/(rhof*cpf)/(dx*dx)*dt
-    l3 = k3/(rhof*cpf)/(dx*dx)*dt
-    l4 = k4/(rhof*cpf)/(dx*dx)*dt
-    l5 = k5/(rhof*cpf)/(dx*dx)*dt
+    l0 = k0/(rho_p*cp_p)/(dx*dx)*dt
+    l1 = k1/(rho_p*cp_p)/(dx*dx)*dt
+    l2 = k2/(rho_p*cp_p)/(dx*dx)*dt
+    l3 = k3/(rho_p*cp_p)/(dx*dx)*dt
+    l4 = k4/(rho_p*cp_p)/(dx*dx)*dt
+    l5 = k5/(rho_p*cp_p)/(dx*dx)*dt
 
     td0_(i, j, k) = ( k1*(t1 - tp) &
                     - k0*(tp - t0) &
@@ -783,39 +839,43 @@ subroutine bcut_calc_abd_t( &
                     - k2*(tp - t2) &
                     + k5*(t5 - tp) &
                     - k4*(tp - t4) &
-                    )/(rhof*cpf)/(dx*dx)
-
-    bp = (b0 + b1 + b2 + b3 + b4 + b5)*kf/(rhof*cpf)/(dx*dx)
-
-    Ap(i, j, k) = 1.0d0 + 0.5d0*(l0 + l1) &
-                        + 0.5d0*(l2 + l3) &
-                        + 0.5d0*(l4 + l5)
-    Aw(i, j, k) = -0.5d0*l0*(1.0d0 - m0)
-    Ae(i, j, k) = -0.5d0*l1*(1.0d0 - m1)
-    As(i, j, k) = -0.5d0*l2*(1.0d0 - m2)
-    An(i, j, k) = -0.5d0*l3*(1.0d0 - m3)
-    Ab(i, j, k) = -0.5d0*l4*(1.0d0 - m4)
-    At(i, j, k) = -0.5d0*l5*(1.0d0 - m5)
-     b(i, j, k) = t0_(i, j, k) &
-                  - (1.5d0*tc0_(i, j, k) - 0.5d0*tcp_(i, j, k))*dt &
-                  + 0.5d0*td0_(i, j, k)*dt &
-                  + bp*dt &
-                  + 0.5d0*l0*t0*m0 &
-                  + 0.5d0*l1*t1*m1 &
-                  + 0.5d0*l2*t2*m2 &
-                  + 0.5d0*l3*t3*m3 &
-                  + 0.5d0*l4*t4*m4 &
-                  + 0.5d0*l5*t5*m5 
+                    )/(rho_p*cp_p)/(dx*dx)
 
     if( pidp /= 1 ) then
-      Ap(i, j, k) = 1.0
-      Aw(i, j, k) = 0.0
-      Ae(i, j, k) = 0.0
-      As(i, j, k) = 0.0
-      An(i, j, k) = 0.0
-      Ab(i, j, k) = 0.0
-      At(i, j, k) = 0.0
-      b (i, j, k) = 0.0
+			tc0_(i, j, k) = 0.0
+		end if
+
+    bp = (b0 + b1 + b2 + b3 + b4 + b5)*k_p/(rho_p*cp_p)/(dx*dx)
+
+    Ap(i, j, k) = 1.0d0 + alpha*(l0 + l1) &
+                        + alpha*(l2 + l3) &
+                        + alpha*(l4 + l5)
+    Aw(i, j, k) = -alpha*l0*(1.0d0 - m0)
+    Ae(i, j, k) = -alpha*l1*(1.0d0 - m1)
+    As(i, j, k) = -alpha*l2*(1.0d0 - m2)
+    An(i, j, k) = -alpha*l3*(1.0d0 - m3)
+    Ab(i, j, k) = -alpha*l4*(1.0d0 - m4)
+    At(i, j, k) = -alpha*l5*(1.0d0 - m5)
+     b(i, j, k) = t0_(i, j, k) &
+                  - (1.5d0*tc0_(i, j, k) - 0.5d0*tcp_(i, j, k))*dt &
+                  + (1.0 - alpha)*td0_(i, j, k)*dt &
+                  + bp*dt &
+                  + alpha*l0*t0*m0 &
+                  + alpha*l1*t1*m1 &
+                  + alpha*l2*t2*m2 &
+                  + alpha*l3*t3*m3 &
+                  + alpha*l4*t4*m4 &
+                  + alpha*l5*t5*m5 
+
+    if( pidp /= 1 ) then
+!      Ap(i, j, k) = 1.0
+!      Aw(i, j, k) = 0.0
+!      Ae(i, j, k) = 0.0
+!      As(i, j, k) = 0.0
+!      An(i, j, k) = 0.0
+!      Ab(i, j, k) = 0.0
+!      At(i, j, k) = 0.0
+!      b (i, j, k) = 0.0
     endif
 
   end do
