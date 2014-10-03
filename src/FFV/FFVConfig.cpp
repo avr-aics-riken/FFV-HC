@@ -371,8 +371,14 @@ void FFVConfig::Load(std::string filename) {
 	}
 
 	//SolvingMethod
-	TimeIntegrationMethodForFlow
-		= Read<std::string>		("/SolvingMethod/Flow");
+	TimeIntegrationMethodForU
+		= Read<std::string>		("/SolvingMethod/U", "implicit");
+	TimeIntegrationMethodForU_Alpha
+		= Read<double>				("/SolvingMethod/U_Alpha", 1.0);
+	TimeIntegrationMethodForT
+		= Read<std::string>		("/SolvingMethod/T", "implicit");
+	TimeIntegrationMethodForT_Alpha
+		= Read<double>				("/SolvingMethod/T_Alpha", 1.0);
 
 	//StartCondition
 	InitialValueP						= Read<double>				("/StartCondition/InitialState/Pressure");

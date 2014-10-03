@@ -2480,7 +2480,7 @@ int Solver::Update(int step) {
 	}
 
 	PM_Start(tm_UpdateT, 0, 0, true);
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForT.c_str(), "explicit") ) {
 		UpdateTe(step);
 	} else {
 		UpdateT(step);
@@ -2489,7 +2489,7 @@ int Solver::Update(int step) {
 	double t1 = GetTime();
 
 	PM_Start(tm_UpdateUX, 0, 0, true);
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		UpdateUXe(step);
 	} else {
 		UpdateUX(step);
@@ -2498,7 +2498,7 @@ int Solver::Update(int step) {
 	double t2 = GetTime();
 
 	PM_Start(tm_UpdateUY, 0, 0, true);
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		UpdateUYe(step);
 	} else {
 		UpdateUY(step);
@@ -2507,7 +2507,7 @@ int Solver::Update(int step) {
 	double t3 = GetTime();
 
 	PM_Start(tm_UpdateUZ, 0, 0, true);
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		UpdateUZe(step);
 	} else {
 		UpdateUZ(step);
@@ -3451,7 +3451,7 @@ void Solver::UpdateUX(int step) {
 				sz, g);
 
 		int axis=0;
-		real alpha = 1.0;
+		real alpha = g_pFFVConfig->TimeIntegrationMethodForU_Alpha;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
@@ -3705,7 +3705,7 @@ void Solver::UpdateUY(int step) {
 				sz, g);
 
 		int axis=1;
-		real alpha = 1.0;
+		real alpha = g_pFFVConfig->TimeIntegrationMethodForU_Alpha;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
@@ -3959,7 +3959,7 @@ void Solver::UpdateUZ(int step) {
 				sz, g);
 
 		int axis=2;
-		real alpha = 1.0;
+		real alpha = g_pFFVConfig->TimeIntegrationMethodForU_Alpha;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
@@ -4635,7 +4635,7 @@ void Solver::UpdateT(int step) {
 					sz, g);
 		}
 
-		real alpha = 1.0;
+		real alpha = g_pFFVConfig->TimeIntegrationMethodForT_Alpha;
 		bcut_calc_abd_t_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				t0,
@@ -5244,7 +5244,7 @@ void Solver::Dump(const int step) {
 	plsUZCP->Dump2(blockManager, step, "uzcp");
 	plsTCP->Dump2(blockManager, step, "tcp");
 
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		plsUXDP->Dump2(blockManager, step, "uxdp");
 		plsUYDP->Dump2(blockManager, step, "uydp");
 		plsUZDP->Dump2(blockManager, step, "uzdp");
@@ -5273,7 +5273,7 @@ void Solver::Load(const int step) {
 	plsUZCP->Load2(blockManager, step, "uzcp");
 	plsTCP->Load2(blockManager, step, "tcp");
 
-	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForFlow.c_str(), "explicit") ) {
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		plsUXDP->Load2(blockManager, step, "uxdp");
 		plsUYDP->Load2(blockManager, step, "uydp");
 		plsUZDP->Load2(blockManager, step, "uzdp");

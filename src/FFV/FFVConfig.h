@@ -183,7 +183,10 @@ class FFVConfig {
 		bool					ShapeApproximationSymmetrization;
 
 		//SolvingMethod
-		std::string		TimeIntegrationMethodForFlow;
+		std::string		TimeIntegrationMethodForU;
+		double				TimeIntegrationMethodForU_Alpha;
+		std::string		TimeIntegrationMethodForT;
+		double				TimeIntegrationMethodForT_Alpha;
 
 		//StartCondition
 		std::string		RestartInputPath;
