@@ -2592,7 +2592,18 @@ void Solver::UpdateUXe(int step) {
 		real* uy0  = plsUY0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uxc0,
 					ux0,
@@ -2781,7 +2792,18 @@ void Solver::UpdateUYe(int step) {
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uyc0,
 					uy0,
@@ -2969,7 +2991,18 @@ void Solver::UpdateUZe(int step) {
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uy0  = plsUY0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uzc0,
 					uz0,
@@ -3170,7 +3203,18 @@ void Solver::UpdateTe(int step) {
 
 		real Tc = 1.0;
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					tc0,
 					t0,
@@ -3368,7 +3412,18 @@ void Solver::UpdateUX(int step) {
 		real* uy0  = plsUY0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uxc0,
 					ux0,
@@ -3622,7 +3677,18 @@ void Solver::UpdateUY(int step) {
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uyc0,
 					uy0,
@@ -3876,7 +3942,18 @@ void Solver::UpdateUZ(int step) {
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uy0  = plsUY0->GetBlockData(block);
 
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					uzc0,
 					uz0,
@@ -4565,7 +4642,18 @@ void Solver::UpdateT(int step) {
 		}
 
 		real Tc = 1.0;
-		if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
+		if( g_pFFVConfig->ConvectionTermScheme == "U1" ) {
+			bcut_calc_c_f_u1_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "W3" ) {
 			bcut_calc_c_f_w3_(
 					tc0,
 					t0,
