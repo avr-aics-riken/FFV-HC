@@ -4,6 +4,56 @@
 #include "real.h"
 
 extern "C" {
+	void bcut_calc_abd_u_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
+			real* u0_,
+			real* uc0_, real* ucp_,
+			real* ud0_,
+			real* p0_,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			int* axis,
+			real* alpha,
+			real* rhof,
+			real* mu,
+			real* dx, real* dt,
+			real* Us,
+			real* gx, real* gy, real* gz,
+			int *sz, int *g);
+	void bcut_calc_ab_p_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
+			real* vw, real* ve, real* vs, real* vn, real* vb, real* vt,
+			real* p0_,
+			real* ux, real* uy, real* uz,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			real* rho,
+			real* dx, real* dt,
+			int *sz, int *g);
+	void bcut_calc_abd_t_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b, 
+			real* t0_,
+			real* tc0_, real* tcp_,
+			real* td0_,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			int* nnum,
+			real* nx, real* ny, real* nz,
+			int* nidx0, int* nidx1, int* nidx2, int* nidx3, int* nidx4, int* nidx5,
+			real* alpha,
+			real* rhof, real* rhos,
+			real* cpf, real* cps,
+			real* kf, real* ks,
+			int* bc_n,
+			int* bc_type,
+			real* bc_value,
+			real* org,
+			real* dx, real* dt,
+			int *sz, int *g);
+
 	void bcut_calc_c_f_u1_(
 			real* fc,
 			real* f,
@@ -87,90 +137,23 @@ extern "C" {
 			real* dx, real* dt,
 			real* Us,
 			int *sz, int *g);
-
-	void bcut_calc_nue_(
-			real *nue,
-			real *ux,
-			real *uy,
-			real *uz,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			real* rho,
-			real* mu,
-			real* dx, real* dt,
-			real* Uc, real* Vc, real* Wc,
-			int *sz, int *g);
-	void bcut_calc_d_u_e_(
-			real* ud0_,
-			real* u0_,
-			real* nue_,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			real* rho,
-			real* mu,
-			real* dx, real* dt,
-			real* Us,
-			int *sz, int *g);
-
-	void bcut_calc_abd_u_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
-			real* u0_,
-			real* uc0_, real* ucp_,
-			real* ud0_,
-			real* p0_,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			int* axis,
-			real* alpha,
-			real* rhof,
-			real* mu,
-			real* dx, real* dt,
-			real* Us,
-			real* gx, real* gy, real* gz,
-			int *sz, int *g);
-	void bcut_calc_ab_u_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
-			real* u0_,
-			real* uc0_, real* ucp_,
-			real* ud0_,
-			real* p0_,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			int* axis,
-			real* rhof,
-			real* mu,
-			real* dx, real* dt,
-			real* Us,
-			real* gx, real* gy, real* gz,
-			int *sz, int *g);
-	void bcut_calc_ab_p_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
-			real* vw, real* ve, real* vs, real* vn, real* vb, real* vt,
-			real* p0_,
-			real* ux, real* uy, real* uz,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			real* rho,
-			real* dx, real* dt,
-			int *sz, int *g);
-	void bcut_calc_ab_t_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b, 
-			real* t0_,
-			real* tc0_, real* tcp_,
+	void bcut_calc_d_t_(
 			real* td0_,
+			real* t0_,
 			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
 			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
 			int* pid,
+			int* nnum,
+			real* nx, real* ny, real* nz,
+			int* nidx0, int* nidx1, int* nidx2, int* nidx3, int* nidx4, int* nidx5,
 			real* rhof, real* rhos,
 			real* cpf, real* cps,
 			real* kf, real* ks,
+			int* bc_n,
+			int* bc_type,
+			real* bc_value,
+			real* org,
 			real* dx, real* dt,
-			real* Tc,
 			int *sz, int *g);
 
 	void bcut_add_g_(
@@ -260,63 +243,6 @@ extern "C" {
 			real* dx, real* dt,
 			real* Us,
 			int *sz, int *g);
-
-
-
-	void bcut_set_fluidseed_(
-			int* pid,
-			real* xs, real* ys, real *zs,
-			real* dx,
-			real* org,
-			int *sz, int *g);
-
-	void bcut_set_reference_value_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
-			real* xr, real* yr, real* zr,
-			real* vr,
-			real* dx, 
-			real* org,
-			int *sz, int *g);
-
-	void bcut_calc_abd_t_(
-			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b, 
-			real* t0_,
-			real* tc0_, real* tcp_,
-			real* td0_,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			int* nnum,
-			real* nx, real* ny, real* nz,
-			int* nidx0, int* nidx1, int* nidx2, int* nidx3, int* nidx4, int* nidx5,
-			real* alpha,
-			real* rhof, real* rhos,
-			real* cpf, real* cps,
-			real* kf, real* ks,
-			int* bc_n,
-			int* bc_type,
-			real* bc_value,
-			real* org,
-			real* dx, real* dt,
-			int *sz, int *g);
-	void bcut_calc_d_t_(
-			real* td0_,
-			real* t0_,
-			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
-			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
-			int* pid,
-			int* nnum,
-			real* nx, real* ny, real* nz,
-			int* nidx0, int* nidx1, int* nidx2, int* nidx3, int* nidx4, int* nidx5,
-			real* rhof, real* rhos,
-			real* cpf, real* cps,
-			real* kf, real* ks,
-			int* bc_n,
-			int* bc_type,
-			real* bc_value,
-			real* org,
-			real* dx, real* dt,
-			int *sz, int *g);
 	void bcut_calc_q_(
 			real* qx,
 			real* qy,
@@ -340,8 +266,36 @@ extern "C" {
 			real* org,
 			real* dx, real* dt,
 			int *sz, int *g);
+
+	void bcut_calc_nue_(
+			real *nue,
+			real *ux,
+			real *uy,
+			real *uz,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			real* rho,
+			real* mu,
+			real* dx, real* dt,
+			real* Uc, real* Vc, real* Wc,
+			int *sz, int *g);
+
+	void bcut_set_fluidseed_(
+			int* pid,
+			real* xs, real* ys, real *zs,
+			real* dx,
+			real* org,
+			int *sz, int *g);
+
+	void bcut_set_reference_value_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
+			real* xr, real* yr, real* zr,
+			real* vr,
+			real* dx, 
+			real* org,
+			int *sz, int *g);
 }
 
 #endif
-
 
