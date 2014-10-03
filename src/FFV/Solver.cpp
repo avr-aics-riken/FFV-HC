@@ -3451,10 +3451,11 @@ void Solver::UpdateUX(int step) {
 				sz, g);
 
 		int axis=0;
+		real alpha = 1.0;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		bcut_calc_ab_u_(
+		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
 				uxc0, uxcp,
@@ -3464,6 +3465,7 @@ void Solver::UpdateUX(int step) {
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
 				&axis,
+				&alpha,
 				&rhof,
 				&mu,
 				&dx, &dt,
@@ -3703,10 +3705,11 @@ void Solver::UpdateUY(int step) {
 				sz, g);
 
 		int axis=1;
+		real alpha = 1.0;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		bcut_calc_ab_u_(
+		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
 				uyc0, uycp,
@@ -3716,6 +3719,7 @@ void Solver::UpdateUY(int step) {
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
 				&axis,
+				&alpha,
 				&rhof,
 				&mu,
 				&dx, &dt,
@@ -3955,10 +3959,11 @@ void Solver::UpdateUZ(int step) {
 				sz, g);
 
 		int axis=2;
+		real alpha = 1.0;
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-		bcut_calc_ab_u_(
+		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
 				uzc0, uzcp,
@@ -3968,6 +3973,7 @@ void Solver::UpdateUZ(int step) {
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
 				&axis,
+				&alpha,
 				&rhof,
 				&mu,
 				&dx, &dt,
@@ -4629,6 +4635,7 @@ void Solver::UpdateT(int step) {
 					sz, g);
 		}
 
+		real alpha = 1.0;
 		bcut_calc_abd_t_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				t0,
@@ -4642,6 +4649,7 @@ void Solver::UpdateT(int step) {
 				pNormalY[n],
 				pNormalZ[n],
 				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
+				&alpha,
 				&rhof, &rhos,
 				&cpf, &cps,
 				&kf, &ks,

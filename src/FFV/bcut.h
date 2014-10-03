@@ -114,6 +114,23 @@ extern "C" {
 			real* Us,
 			int *sz, int *g);
 
+	void bcut_calc_abd_u_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
+			real* u0_,
+			real* uc0_, real* ucp_,
+			real* ud0_,
+			real* p0_,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			int* axis,
+			real* alpha,
+			real* rhof,
+			real* mu,
+			real* dx, real* dt,
+			real* Us,
+			real* gx, real* gy, real* gz,
+			int *sz, int *g);
 	void bcut_calc_ab_u_(
 			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
 			real* u0_,
@@ -272,6 +289,7 @@ extern "C" {
 			int* nnum,
 			real* nx, real* ny, real* nz,
 			int* nidx0, int* nidx1, int* nidx2, int* nidx3, int* nidx4, int* nidx5,
+			real* alpha,
 			real* rhof, real* rhos,
 			real* cpf, real* cps,
 			real* kf, real* ks,
