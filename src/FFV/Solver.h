@@ -11,6 +11,7 @@
 #include "FFVPlot3DWriter.h"
 #include "FFVGridWriter.h"
 #include "BCMFileSaver.h"
+#include "FFVMC.h"
 
 #include "real.h"
 
@@ -566,6 +567,17 @@ class Solver {
 				 g_pFFVConfig->RootBlockOrigin,
 				 g_pFFVConfig->RootBlockLength);
 			 */
+		}
+
+		void WriteLaplacianPInVTPFormat(
+				int step,
+				int difflevel,
+				RootGrid* rootGrid,
+				BCMOctree* tree,
+				Partition* partition) {
+			FFVMC* pMC = new FFVMC();
+
+			delete pMC;
 		}
 
 	private:
