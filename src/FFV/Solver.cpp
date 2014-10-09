@@ -1761,6 +1761,14 @@ void Solver::PrintData(int step) {
 			}
 		}
 	}
+
+	if( g_pFFVConfig->OutputDataContourIntervalI > 0 ) {
+		if( step%g_pFFVConfig->OutputDataContourIntervalI == 0 ) {
+			if( g_pFFVConfig->OutputDataContourQcriterion ) {
+				PrintContourQcriterion(step);
+			}
+		}
+	}
 }
 
 void Solver::PrintTime(int step) {
@@ -2326,6 +2334,10 @@ void Solver::PrintDerivedVariablesBCM(int step) {
 }
 
 void Solver::PrintDerivedVariablesSILO(int step) {
+}
+
+void Solver::PrintContourQcriterion(int step) {
+	WriteContourQriterion(step, maxLevel, minLevel, rootGrid, tree, partition);
 }
 
 void Solver::PrintLog(int level, const char* format, ...) {

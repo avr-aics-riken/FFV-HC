@@ -330,6 +330,22 @@ void FFVConfig::Load(std::string filename) {
 			= true;
 	}
 
+	OutputDataContourTemporalType
+		= Read<std::string>		("/Output/Data/Contour/TemporalType");
+	if( !strcasecmp(OutputDataContourTemporalType.c_str(), "time") ) {
+		OutputDataContourIntervalD
+			= Read<double>				("/Output/Data/Contour/Interval");
+	} else {
+		OutputDataContourIntervalI
+			= Read<int>						("/Output/Data/Contour/Interval");
+	}
+	OutputDataContourQcriterion
+		= Read<bool>					("/Output/Data/Contour/Qcriterion", false);
+	if( OutputDataContourQcriterion ) {
+		OutputDataContourQcriterionValue
+			= Read<double>				("/Output/Data/Contour/QcriterionValue");
+	}
+
 	if( OutputDataBasicVariablesFormatVTK || OutputDataDerivedVariablesFormatVTK ) {
 		OutputDataFormatOptionVTKPath
 			= Read<std::string>		("/Output/Data/FormatOption/VTK/Path");
@@ -342,6 +358,13 @@ void FFVConfig::Load(std::string filename) {
 			= Read<std::string>		("/Output/Data/FormatOption/PLOT3D/Prefix");
 	} else if( OutputDataBasicVariablesFormatBCM || OutputDataDerivedVariablesFormatBCM ) {
 	} else if( OutputDataBasicVariablesFormatSILO || OutputDataDerivedVariablesFormatSILO ) {
+	}
+
+	if( OutputDataContourQcriterion ) {
+		OutputDataFormatOptionVTPPath
+			= Read<std::string>		("/Output/Data/FormatOption/VTP/Path");
+		OutputDataFormatOptionVTPPrefix
+			= Read<std::string>		("/Output/Data/FormatOption/VTP/Prefix");
 	}
 
 	//PhysicalParameter
