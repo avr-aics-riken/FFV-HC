@@ -139,7 +139,7 @@ TimeControl
 	{
 		TemporalType				= "step"
 		Start								= 0
-		End									= 1000
+		End									= 10000
 	}
 }
 
@@ -247,6 +247,13 @@ Output
 			Qcriterion				= "true"
 			Force							= "false"
 		}
+		Contour
+		{
+			TemporalType			= "step"
+			Interval					= 100
+			Qcriterion				= "true"
+			QcriterionValue		= 5.0
+		}
 		FormatOption
 		{
 			PLOT3D {
@@ -255,6 +262,10 @@ Output
 			}
 			VTK {
 				Path						= "VTK"
+				Prefix					= "data-"
+			}
+			VTP {
+				Path						= "VTP"
 				Prefix					= "data-"
 			}
 		}

@@ -411,7 +411,7 @@ class Solver {
 				Partition* partition) {
 			FFVMC mc;
 			mc.writeContour<real>(
-					this->plsT0->GetID(),
+					this->plsLapP->GetID(),
 					this->vc,
 					g_pFFVConfig->OutputDataFormatOptionVTPPath,
 					g_pFFVConfig->OutputDataFormatOptionVTPPrefix,

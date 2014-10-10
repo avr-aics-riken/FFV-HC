@@ -16,6 +16,7 @@ typedef struct _Vertex {
 	double x;
 	double y;
 	double z;
+	double value;
 }Vertex;
 
 extern const int edgeTable[256];
@@ -133,6 +134,9 @@ template <typename T>
 		ofs << "<PPolyData GhostLevel=\"0\">" << std::endl;
 
 		ofs << "<PPointData>" << std::endl;
+		ofs << "<PDataArray type=\"Float32\" Name=\"";
+		ofs << name;
+		ofs << "\" format=\"ascii\"/>" << std::endl;
 		ofs << "</PPointData>" << std::endl;
 
 		ofs << "<PCellData>" << std::endl;
@@ -205,14 +209,17 @@ template <typename T>
 			double ox, double oy, double oz,
 			double dx)
 	{
-		AllocMemoryForPointData(NX, NY, NZ);
-		CalcPointData(pData, NX, NY, NZ, NV);
-
-		PrintVTP(path, prefix, name, step, rank, block);
+		InitPointData(pData, NX, NY, NZ, NV);
+		ClearTriangles();
+		DetectTriangles(threshold, ox, oy, oz, dx);
+		PrintVTP(path, prefix, name, step, rank, block, threshold);
 	}
 
-	void AllocMemoryForPointData(
-			int NX, int NY, int NZ)
+template <typename T>
+	void InitPointData(
+			T* pData,
+			int NX, int NY, int NZ,
+			int NV)
 	{
 		if( NX + 1 == PNX &&
 				NY + 1 == PNY &&
@@ -220,6 +227,9 @@ template <typename T>
 				return;
 		}
 
+		int CX = NX + 2*NV;
+		int CY = NY + 2*NV;
+		int CZ = NZ + 2*NV;
 		PNX = NX + 1;
 		PNY = NY + 1;
 		PNZ = NZ + 1;
@@ -230,17 +240,7 @@ template <typename T>
 		}
 
 		pPointData = new float [PNX*PNY*PNZ];
-	}
 
-template <typename T>
-	void CalcPointData(
-			T* pData,
-			int NX, int NY, int NZ,
-			int NV)
-	{
-		int CX = NX + 2*NV;
-		int CY = NY + 2*NV;
-		int CZ = NZ + 2*NV;
 #pragma omp parallel for
 		for(int k=0; k<PNZ; k++) {
 			for(int j=0; j<PNY; j++) {
@@ -272,12 +272,15 @@ template <typename T>
 		}
 	}
 
+	void ClearTriangles() {
+		vVertexList.clear();
+	}
+
 	void DetectTriangles(
 			double threshold,
 			double ox, double oy, double oz,
 			double dx)
 	{
-		vVertexList.clear();
 #pragma omp parallel for
 		for(int k=0; k<PNZ-1; k++) {
 			for(int j=0; j<PNY-1; j++) {
@@ -382,6 +385,10 @@ template <typename T>
 						u[11] = GetIntersection(v[3], v[7], p[3], p[7], threshold);
 					}
 
+					for(int n=0; n<12; n++) {
+						u[n].value = threshold;
+					}
+
 #pragma omp critical
 {
 					int nTriangle = 0;
@@ -402,7 +409,8 @@ template <typename T>
 			const std::string path,
 			const std::string prefix,
 			const std::string name,
-			int step, int rank, int block)
+			int step, int rank, int block,
+			double threshold)
 	{
 		std::ostringstream ossFileName2;
 		ossFileName2 << path;
@@ -485,6 +493,13 @@ template <typename T>
 		ofs << "</Strips>" << std::endl;
 
 		ofs << "<PointData>" << std::endl;
+		ofs << "<DataArray type=\"Float32\" Name=\"";
+		ofs << name;
+		ofs << "\" format=\"ascii\">" << std::endl;
+		for(int i=0; i<vVertexList.size(); i++) {
+			ofs << vVertexList[i].value << std::endl;
+		}
+		ofs << "</DataArray>" << std::endl;
 		ofs << "</PointData>" << std::endl;
 
 		ofs << "<CellData>" << std::endl;
@@ -508,14 +523,6 @@ private:
 
 	float *pPointData;
 	std::vector<Vertex> vVertexList;
-
-private:
-	void AllocMemoryForPointData(int dataClassID);
-	void CalcPointData(int dataClassID);
-	void DetectTriangles(int dataClassID, double threshold);
-
-	void PrintPVTP(int step, const char* label);
-	void PrintVTP(int step, const char* label);
 };
 
 #endif 
