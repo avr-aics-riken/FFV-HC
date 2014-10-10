@@ -1898,6 +1898,7 @@ void Solver::PrintStats(int step) {
 	plsUZ0->CalcStats(blockManager);
 	plsP0->CalcStats(blockManager);
 	plsT0->CalcStats(blockManager);
+	plsLapP->CalcStats(blockManager);
 
 	if( myrank == 0 ) {
 		std::string filename = "data-stats.txt";
@@ -1931,6 +1932,8 @@ void Solver::PrintStats(int step) {
 		ofs << plsUZ0->GetMin() << " ";
 		ofs << plsP0->GetMin() << " ";
 		ofs << plsT0->GetMin() << " ";
+		ofs << plsLapP->GetMax() << " ";
+/*
 		ofs << plsUX0->GetAbsMax() << " ";
 		ofs << plsUY0->GetAbsMax() << " ";
 		ofs << plsUZ0->GetAbsMax() << " ";
@@ -1941,6 +1944,7 @@ void Solver::PrintStats(int step) {
 		ofs << plsUZ0->GetAbsMin() << " ";
 		ofs << plsP0->GetAbsMin() << " ";
 		ofs << plsT0->GetAbsMin() << " ";
+*/
 		ofs << std::endl;
 		ofs.close();
 	}
