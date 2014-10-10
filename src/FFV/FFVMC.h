@@ -105,7 +105,7 @@ template <typename T>
 					path,
 					prefix,
 					name,
-					step, myrank, id - partition->getStart(myrank),
+					step, myrank, id,
 					nx, ny, nz,
 					nv,
 					ox, oy, oz,
