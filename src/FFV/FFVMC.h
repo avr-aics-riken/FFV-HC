@@ -224,22 +224,21 @@ template <typename T>
 		if( NX + 1 == PNX &&
 				NY + 1 == PNY &&
 				NZ + 1 == PNZ ) {
-				return;
+		} else {
+			PNX = NX + 1;
+			PNY = NY + 1;
+			PNZ = NZ + 1;
+
+			if( pPointData ) {
+				delete [] pPointData;
+				pPointData = 0;
+			}
+			pPointData = new float [PNX*PNY*PNZ];
 		}
 
 		int CX = NX + 2*NV;
 		int CY = NY + 2*NV;
 		int CZ = NZ + 2*NV;
-		PNX = NX + 1;
-		PNY = NY + 1;
-		PNZ = NZ + 1;
-
-		if( pPointData ) {
-			delete [] pPointData;
-			pPointData = 0;
-		}
-
-		pPointData = new float [PNX*PNY*PNZ];
 
 #pragma omp parallel for
 		for(int k=0; k<PNZ; k++) {
