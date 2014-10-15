@@ -34,7 +34,7 @@ FFV_LIB_PATH    += -L$(CGM_FUNCS)
 FFV_LIBS        := -lHDM -lbcm -lCUT -lMPIPOLY -lPM -lMPITP -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 FFV_LIBS        := -lHDM -lBCM -lCUT -lPOLYmpi -lPM -lTPmpi -lcgmfuncs -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
-PROGRAM = ffv.mc
+PROGRAM = ffv
 
 FFV_SOLVERNAME	:= "FrontFlow/violet-HC (alpha)"
 FFV_VERSION			:= "0.9.9"

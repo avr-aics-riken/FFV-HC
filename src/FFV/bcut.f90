@@ -1339,6 +1339,13 @@ subroutine bcut_calc_c_f_e3( &
     d4 = c4(i, j, k)
     d5 = c5(i, j, k)
 
+    m0 = 0.0d0
+    m1 = 0.0d0
+    m2 = 0.0d0
+    m3 = 0.0d0
+    m4 = 0.0d0
+    m5 = 0.0d0
+
     cidp0 = cid0(i, j, k)
     cidp1 = cid1(i, j, k)
     cidp2 = cid2(i, j, k)
@@ -1405,6 +1412,56 @@ subroutine bcut_calc_c_f_e3( &
       ftt = fi
     endif
 
+    if( cidp0 /= 0 ) then
+      fw  = fp
+      fww = fp
+      m0  = 1.0d0
+    endif
+    if( cidp1 /= 0 ) then
+      fe  = fp
+      fee = fp
+      m1  = 1.0d0
+    endif
+    if( cidp2 /= 0 ) then
+      fs  = fp
+      fss = fp
+      m2  = 1.0d0
+    endif
+    if( cidp3 /= 0 ) then
+      fn  = fp
+      fnn = fp
+      m3  = 1.0d0
+    endif
+    if( cidp4 /= 0 ) then
+      fb  = fp
+      fbb = fp
+      m4  = 1.0d0
+    endif
+    if( cidp5 /= 0 ) then
+      ft  = fp
+      ftt = fp
+      m5  = 1.0d0
+    endif
+
+    if( cidw0 /= 0 ) then
+      fww = fw
+    endif
+    if( cide1 /= 0 ) then
+      fee = fe
+    endif
+    if( cids2 /= 0 ) then
+      fss = fs
+    endif
+    if( cidn3 /= 0 ) then
+      fnn = fn
+    endif
+    if( cidb4 /= 0 ) then
+      fbb = fb
+    endif
+    if( cidt5 /= 0 ) then
+      ftt = ft
+    endif
+
     dfx_p = bcut_getminmod(fee-fe, fe-fp )
     dfx_c = bcut_getminmod(fe -fp, fp-fw )
     dfx_n = bcut_getminmod(fp -fw, fw-fww)
@@ -1428,13 +1485,6 @@ subroutine bcut_calc_c_f_e3( &
     q3 = vy3*f3
     q4 = vz4*f4
     q5 = vz5*f5
-
-    m0 = 0.0d0
-    m1 = 0.0d0
-    m2 = 0.0d0
-    m3 = 0.0d0
-    m4 = 0.0d0
-    m5 = 0.0d0
 
     if( cidp0 /= 0 ) then
       q0 = (d0 - 0.5d0)/(d0 + 0.5d0)*q1
@@ -2277,6 +2327,31 @@ subroutine bcut_calc_c_u_quick( &
     q3 = vy3*f3
     q4 = vz4*f4
     q5 = vz5*f5
+
+    if( cidp0 /= 0 ) then
+      q0 = (d0 - 0.5d0)/(d0 + 0.5d0)*q1
+      m0 = 1.0d0
+    endif
+    if( cidp1 /= 0 ) then
+      q1 = (d1 - 0.5d0)/(d1 + 0.5d0)*q0
+      m1 = 1.0d0
+    endif
+    if( cidp2 /= 0 ) then
+      q2 = (d2 - 0.5d0)/(d2 + 0.5d0)*q3
+      m2 = 1.0d0
+    endif
+    if( cidp3 /= 0 ) then
+      q3 = (d3 - 0.5d0)/(d3 + 0.5d0)*q2
+      m3 = 1.0d0
+    endif
+    if( cidp4 /= 0 ) then
+      q4 = (d4 - 0.5d0)/(d4 + 0.5d0)*q5
+      m4 = 1.0d0
+    endif
+    if( cidp5 /= 0 ) then
+      q5 = (d5 - 0.5d0)/(d5 + 0.5d0)*q4
+      m5 = 1.0d0
+    endif
 
     if( cidp0 /= 0 .and. cidp1 /= 0 ) then
       q0 = 0.0d0
