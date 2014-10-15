@@ -9,6 +9,7 @@
 #include "FFVILS.h"
 #include "FFVVTKWriter.h"
 #include "FFVPlot3DWriter.h"
+#include "FFVMC.h"
 #include "FFVGridWriter.h"
 #include "BCMFileSaver.h"
 
@@ -212,6 +213,7 @@ class Solver {
 		void PrintDerivedVariablesPLOT3D(int step);
 		void PrintDerivedVariablesBCM(int step);
 		void PrintDerivedVariablesSILO(int step);
+		void PrintContourQcriterion(int step);
 
 	private:
 		void Dump(const int step);
@@ -398,6 +400,31 @@ class Solver {
 					partition,
 					g_pFFVConfig->RootBlockOrigin,
 					g_pFFVConfig->RootBlockLength);
+		}
+
+		void WriteContourQriterion(
+				int step,
+				int maxLevel,
+				int minLevel,
+				RootGrid* rootGrid,
+				BCMOctree* tree,
+				Partition* partition) {
+			FFVMC mc;
+			mc.writeContour<real>(
+					this->plsLapP->GetID(),
+					this->vc,
+					g_pFFVConfig->OutputDataFormatOptionVTPPath,
+					g_pFFVConfig->OutputDataFormatOptionVTPPrefix,
+					string("Q"),
+					step,
+					maxLevel,
+					minLevel,
+					rootGrid,
+					tree,
+					partition,
+					g_pFFVConfig->RootBlockOrigin,
+					g_pFFVConfig->RootBlockLength,
+					g_pFFVConfig->OutputDataContourQcriterionValue);
 		}
 
 		BCMFileIO::BCMFileSaver *psaver;

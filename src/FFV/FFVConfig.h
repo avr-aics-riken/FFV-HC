@@ -159,6 +159,8 @@ class FFVConfig {
 		std::string		OutputDataFormatOptionPLOT3DPrefix;
 		std::string		OutputDataFormatOptionVTKPath;
 		std::string		OutputDataFormatOptionVTKPrefix;
+		std::string		OutputDataFormatOptionVTPPath;
+		std::string		OutputDataFormatOptionVTPPrefix;
 
 		bool					OutputDataBasicVariablesFormatVTK;
 		bool					OutputDataDerivedVariablesFormatVTK;
@@ -168,6 +170,12 @@ class FFVConfig {
 		bool					OutputDataDerivedVariablesFormatBCM;
 		bool					OutputDataBasicVariablesFormatSILO;
 		bool					OutputDataDerivedVariablesFormatSILO;
+
+		std::string		OutputDataContourTemporalType;
+		int						OutputDataContourIntervalI;
+		double				OutputDataContourIntervalD;
+		bool					OutputDataContourQcriterion;
+		double				OutputDataContourQcriterionValue;
 
 		//PhysicalParameter
 		double				GravityX;

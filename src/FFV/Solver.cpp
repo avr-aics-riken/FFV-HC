@@ -1761,6 +1761,14 @@ void Solver::PrintData(int step) {
 			}
 		}
 	}
+
+	if( g_pFFVConfig->OutputDataContourIntervalI > 0 ) {
+		if( step%g_pFFVConfig->OutputDataContourIntervalI == 0 ) {
+			if( g_pFFVConfig->OutputDataContourQcriterion ) {
+				PrintContourQcriterion(step);
+			}
+		}
+	}
 }
 
 void Solver::PrintTime(int step) {
@@ -1890,6 +1898,7 @@ void Solver::PrintStats(int step) {
 	plsUZ0->CalcStats(blockManager);
 	plsP0->CalcStats(blockManager);
 	plsT0->CalcStats(blockManager);
+	plsLapP->CalcStats(blockManager);
 
 	if( myrank == 0 ) {
 		std::string filename = "data-stats.txt";
@@ -1923,6 +1932,8 @@ void Solver::PrintStats(int step) {
 		ofs << plsUZ0->GetMin() << " ";
 		ofs << plsP0->GetMin() << " ";
 		ofs << plsT0->GetMin() << " ";
+		ofs << plsLapP->GetMax() << " ";
+/*
 		ofs << plsUX0->GetAbsMax() << " ";
 		ofs << plsUY0->GetAbsMax() << " ";
 		ofs << plsUZ0->GetAbsMax() << " ";
@@ -1933,6 +1944,7 @@ void Solver::PrintStats(int step) {
 		ofs << plsUZ0->GetAbsMin() << " ";
 		ofs << plsP0->GetAbsMin() << " ";
 		ofs << plsT0->GetAbsMin() << " ";
+*/
 		ofs << std::endl;
 		ofs.close();
 	}
@@ -2326,6 +2338,10 @@ void Solver::PrintDerivedVariablesBCM(int step) {
 }
 
 void Solver::PrintDerivedVariablesSILO(int step) {
+}
+
+void Solver::PrintContourQcriterion(int step) {
+	WriteContourQriterion(step, maxLevel, minLevel, rootGrid, tree, partition);
 }
 
 void Solver::PrintLog(int level, const char* format, ...) {
