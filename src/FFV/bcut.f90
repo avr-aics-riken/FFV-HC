@@ -418,6 +418,7 @@ subroutine bcut_calc_ab_p( &
       vx0 = 0.0d0
       vx0 = vx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       r1 = (1.0d0/rhof)/(d0 + 0.5d0)
+      r1 = (1.0d0/rhof)
       m0 = 1.0d0
     endif
 
@@ -426,6 +427,7 @@ subroutine bcut_calc_ab_p( &
       vx1 = 0.0d0
       vx1 = vx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       r0 = (1.0d0/rhof)/(d1 + 0.5d0)
+      r0 = (1.0d0/rhof)
       m1 = 1.0d0
     endif
 
@@ -434,6 +436,7 @@ subroutine bcut_calc_ab_p( &
       vy2 = 0.0d0
       vy2 = vy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       r3 = (1.0d0/rhof)/(d2 + 0.5d0)
+      r3 = (1.0d0/rhof)
       m2 = 1.0d0
     endif
 
@@ -442,6 +445,7 @@ subroutine bcut_calc_ab_p( &
       vy3 = 0.0d0
       vy3 = vy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       r2 = (1.0d0/rhof)/(d3 + 0.5d0)
+      r2 = (1.0d0/rhof)
       m3 = 1.0d0
     endif
 
@@ -450,6 +454,7 @@ subroutine bcut_calc_ab_p( &
       vz4 = 0.0d0
       vz4 = vz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       r5 = (1.0d0/rhof)/(d4 + 0.5d0)
+      r5 = (1.0d0/rhof)
       m4 = 1.0d0
     endif
 
@@ -458,6 +463,7 @@ subroutine bcut_calc_ab_p( &
       vz5 = 0.0d0
       vz5 = vz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       r4 = (1.0d0/rhof)/(d5 + 0.5d0)
+      r4 = (1.0d0/rhof)
       m5 = 1.0d0
     endif
 
@@ -2922,36 +2928,42 @@ subroutine bcut_remove_p( &
     if( cidp0 /= 0 ) then
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       dpx0 = dpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
+			dpx0 = 0.0
       m0 = 1.0d0
     endif
 
     if( cidp1 /= 0 ) then
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       dpx1 = dpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
+			dpx1 = 0.0
       m1 = 1.0d0
     endif
 
     if( cidp2 /= 0 ) then
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       dpy2 = dpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
+			dpy2 = 0.0
       m2 = 1.0d0
     endif
 
     if( cidp3 /= 0 ) then
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       dpy3 = dpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
+			dpy3 = 0.0
       m3 = 1.0d0
     endif
 
     if( cidp4 /= 0 ) then
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       dpz4 = dpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
+			dpz4 = 0.0
       m4 = 1.0d0
     endif
 
     if( cidp5 /= 0 ) then
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       dpz5 = dpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
+			dpz5 = 0.0
       m5 = 1.0d0
     endif
 
@@ -3108,55 +3120,55 @@ subroutine bcut_corr_u( &
     m5 = 0.0d0
     if( cidp0 /= 0 ) then
       rdpx0 = rdpx1
-      rdpx0 = 0.0d0
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
-      dpx0 = 0.0d0
+      rdpx0 = 0.0d0
       dpx0 = dpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
+      dpx0 = 0.0d0
       m0 = 1.0d0
     endif
 
     if( cidp1 /= 0 ) then
       rdpx1 = rdpx0
-      rdpx1 = 0.0d0
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
-      dpx1 = 0.0d0
+      rdpx1 = 0.0d0
       dpx1 = dpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
+      dpx1 = 0.0d0
       m1 = 1.0d0
     endif
 
     if( cidp2 /= 0 ) then
       rdpy2 = rdpy3
-      rdpy2 = 0.0d0
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
-      dpy2 = 0.0d0
+      rdpy2 = 0.0d0
       dpy2 = dpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
+      dpy2 = 0.0d0
       m2 = 1.0d0
     endif
 
     if( cidp3 /= 0 ) then
       rdpy3 = rdpy2
-      rdpy3 = 0.0d0
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
-      dpy3 = 0.0d0
+      rdpy3 = 0.0d0
       dpy3 = dpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
+      dpy3 = 0.0d0
       m3 = 1.0d0
     endif
 
     if( cidp4 /= 0 ) then
       rdpz4 = rdpz5
-      rdpz4 = 0.0d0
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
-      dpz4 = 0.0d0
+      rdpz4 = 0.0d0
       dpz4 = dpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
+      dpz4 = 0.0d0
       m4 = 1.0d0
     endif
 
     if( cidp5 /= 0 ) then
       rdpz5 = rdpz4
-      rdpz5 = 0.0d0
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
-      dpz5 = 0.0d0
+      rdpz5 = 0.0d0
       dpz5 = dpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
+      dpz5 = 0.0d0
       m5 = 1.0d0
     endif
 
