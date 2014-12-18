@@ -413,6 +413,7 @@ int Solver::Init(int argc, char** argv){
 	cpf		= g_pFFVConfig->MediumTableFluid[0].cp;
 	kf		= g_pFFVConfig->MediumTableFluid[0].k;
 	mu		= g_pFFVConfig->MediumTableFluid[0].mu;
+	csf   = g_pFFVConfig->MediumTableFluid[0].cs;
 
 	rhos	= g_pFFVConfig->MediumTableFluid[0].rho;
 	cps		= g_pFFVConfig->MediumTableFluid[0].cp;
@@ -4312,6 +4313,7 @@ void Solver::UpdateP(int step) {
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
+/*
 		bcut_calc_ab_p_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				vw, ve, vs, vn, vb, vt,
@@ -4321,6 +4323,20 @@ void Solver::UpdateP(int step) {
 				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
 				pPhaseId,
 				&rhof,
+				&dx, &dt,
+				sz, g);
+*/
+
+		bcut_calc_ab_p_pc_(
+				Ap, Aw, Ae, As, An, Ab, At, b,
+				vw, ve, vs, vn, vb, vt,
+				p0,
+				ux, uy, uz,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				&rhof,
+				&csf,
 				&dx, &dt,
 				sz, g);
 	}

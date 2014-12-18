@@ -188,6 +188,7 @@ void FFVConfig::Load(std::string filename) {
 		ppf0.rho							= Read<double>				("/MediumTable/" + FillingMedium + "/MassDensity");
 		ppf0.cp								= Read<double>				("/MediumTable/" + FillingMedium + "/SpecificHeat");
 		ppf0.k								= Read<double>				("/MediumTable/" + FillingMedium + "/ThermalConductivity");
+		ppf0.cs								= Read<double>				("/MediumTable/" + FillingMedium + "/SpeedOfSound");
 		ppf0.mu								= Read<double>				("/MediumTable/" + FillingMedium + "/Viscosity");
 		ppf0.color						= Read<std::string>		("/MediumTable/" + FillingMedium + "/Color");
 		MediumTableFluid.clear();
