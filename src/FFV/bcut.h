@@ -32,6 +32,18 @@ extern "C" {
 			real* rho,
 			real* dx, real* dt,
 			int *sz, int *g);
+	void bcut_calc_ab_p_pc_(
+			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b,
+			real* vw, real* ve, real* vs, real* vn, real* vb, real* vt,
+			real* p0_,
+			real* ux, real* uy, real* uz,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			real* rho,
+			real* cs,
+			real* dx, real* dt,
+			int *sz, int *g);
 	void bcut_calc_abd_t_(
 			real* Ap, real* Aw, real* Ae, real* As, real* An, real* Ab, real* At, real* b, 
 			real* t0_,

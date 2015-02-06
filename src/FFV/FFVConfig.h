@@ -19,6 +19,7 @@ typedef struct _PPF {
 	double rho;
 	double cp;
 	double k;
+	double cs;
 	double mu;
 	std::string color;
 }PPF;
@@ -28,6 +29,7 @@ typedef struct _PPS {
 	double rho;
 	double cp;
 	double k;
+	double cs;
 	std::string color;
 }PPS;
 

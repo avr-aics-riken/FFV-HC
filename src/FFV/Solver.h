@@ -45,6 +45,7 @@ class Solver {
 		real kf;
 		real ks;
 		real mu;
+		real csf;
 
 	private:
 		LocalScalar3D<real> *plsUX0;
