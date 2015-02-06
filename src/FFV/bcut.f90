@@ -368,7 +368,7 @@ subroutine bcut_calc_ab_p( &
 !$omp           private(r0, r1, r2, r3, r4, r5) &
 !$omp           private(m0, m1, m2, m3, m4, m5) &
 !$omp           private(l0, l1, l2, l3, l4, l5) &
-!$omp           private(divv) 
+!$omp           private(divv)
 !$omp do schedule(static, 1)
 #else
 #endif
@@ -503,7 +503,7 @@ subroutine bcut_calc_ab_p( &
 
     divv = (vx1 - vx0 + vy3 - vy2 + vz5 - vz4)/dx
 
-    Ap(i, j, k) = - (l0 + l1) - (l2 + l3) - (l4 + l5) 
+    Ap(i, j, k) = - (l0 + l1) - (l2 + l3) - (l4 + l5)
     Aw(i, j, k) = l0
     Ae(i, j, k) = l1
     As(i, j, k) = l2
@@ -511,7 +511,7 @@ subroutine bcut_calc_ab_p( &
     Ab(i, j, k) = l4
     At(i, j, k) = l5
 
-     b(i, j, k) = divv/dt 
+     b(i, j, k) = divv/dt
 
     vw(i, j, k) = vx0
     ve(i, j, k) = vx1
