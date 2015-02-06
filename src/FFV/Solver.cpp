@@ -4313,32 +4313,32 @@ void Solver::UpdateP(int step) {
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
-/*
-		bcut_calc_ab_p_(
-				Ap, Aw, Ae, As, An, Ab, At, b,
-				vw, ve, vs, vn, vb, vt,
-				p0,
-				ux, uy, uz,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof,
-				&dx, &dt,
-				sz, g);
-*/
-
-		bcut_calc_ab_p_pc_(
-				Ap, Aw, Ae, As, An, Ab, At, b,
-				vw, ve, vs, vn, vb, vt,
-				p0,
-				ux, uy, uz,
-				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
-				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
-				pPhaseId,
-				&rhof,
-				&csf,
-				&dx, &dt,
-				sz, g);
+		if( csf > 0 ) {
+			bcut_calc_ab_p_pc_(
+					Ap, Aw, Ae, As, An, Ab, At, b,
+					vw, ve, vs, vn, vb, vt,
+					p0,
+					ux, uy, uz,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&rhof,
+					&csf,
+					&dx, &dt,
+					sz, g);
+		} else {
+			bcut_calc_ab_p_(
+					Ap, Aw, Ae, As, An, Ab, At, b,
+					vw, ve, vs, vn, vb, vt,
+					p0,
+					ux, uy, uz,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&rhof,
+					&dx, &dt,
+					sz, g);
+		}
 	}
 	PM_Stop(tm_UpdateP03);
 	/////////////////////////////////////////////
