@@ -85,6 +85,7 @@ class Solver {
 		LocalScalar3D<real> *plsTDP;
 
 		LocalScalar3D<int> *plsPhaseId;
+		LocalScalar3D<int> *plsRegionId;
 		LocalScalar3D<real> *plsCut0;
 		LocalScalar3D<real> *plsCut1;
 		LocalScalar3D<real> *plsCut2;

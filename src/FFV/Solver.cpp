@@ -102,6 +102,7 @@ int Solver::Init(int argc, char** argv){
 	g_pPM->setProperties(tm_Init_CalcCutInfo05,"CalcCutInfo05",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_CalcCutInfo06,"CalcCutInfo06",pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_Filling,      "Filling",      pm_lib::PerfMonitor::CALC, true);
+	g_pPM->setProperties(tm_Init_PartitioningRegions,   "PartitionRegions"     ,  pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_GeometricalProperties, "GeometricalProperties",  pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Init_InitVars,     "InitVars",     pm_lib::PerfMonitor::CALC, true);
 	g_pPM->setProperties(tm_Update,     "Update",    pm_lib::PerfMonitor::CALC, false);
@@ -468,6 +469,9 @@ int Solver::Init(int argc, char** argv){
 
 	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
 	plsPhaseId->Fill(blockManager, -1);
+
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsRegionId->Fill(blockManager, -1);
 
 	pNormalN = new int   [blockManager.getNumBlock()];
 	pNormalX = new real* [blockManager.getNumBlock()];
@@ -1134,6 +1138,20 @@ int Solver::Init(int argc, char** argv){
 		PrintLog(1, "Printing STL files for cut info");
 		PrintCut(1);
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
+	PrintLog(2, "Completed");
+	/* ---------------------------------------------------------- */
+
+
+	/* ---------------------------------------------------------- */
+	/* Partitioning region                                        */
+	/* ---------------------------------------------------------- */
+	PrintLog(1, "Partitioning regions");
+	/* ---------------------------------------------------------- */
+	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
+
+	PM_Stop(tm_Init_PartitioningRegions);
+	/* ---------------------------------------------------------- */
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
 	/* ---------------------------------------------------------- */
