@@ -968,29 +968,10 @@ int Solver::Init(int argc, char** argv){
 	}
 
 
-	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
-	plsPhaseId->Fill(blockManager, -1);
 	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
 	plsRegionId->Fill(blockManager, -1);
-
-//	/* ---------------------------------------------------------- */
-//	/* Filling                                                    */
-//	/* ---------------------------------------------------------- */
-//	PrintLog(1, "Filling fluid");
-//	/* ---------------------------------------------------------- */
-//	PM_Start(tm_Init_Filling, 0, 0, true);
-//	int ids = 1;
-//	real xs = g_pFFVConfig->FillingOrigin.x;
-//	real ys = g_pFFVConfig->FillingOrigin.y;
-//	real zs = g_pFFVConfig->FillingOrigin.z;
-//	PrintLog(2, "%-20s : %f %f %f", "Seed for FLUID", xs, ys, zs);
-//	int countF = FillRegion(plsPhaseId, ids, xs, ys, zs);
-//	PM_Stop(tm_Init_Filling);
-//	/* ---------------------------------------------------------- */
-//	MPI_Barrier(MPI_COMM_WORLD);
-//	PrintLog(2, "Completed");
-//	/* ---------------------------------------------------------- */
-
+	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsPhaseId->Fill(blockManager, -1);
 
 	/* ---------------------------------------------------------- */
 	/* Partitioning region                                        */
