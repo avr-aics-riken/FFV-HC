@@ -975,164 +975,20 @@ int Solver::Init(int argc, char** argv){
 	PrintLog(1, "Filling fluid");
 	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_Filling, 0, 0, true);
-
+	int ids = 1;
 	real xs = g_pFFVConfig->FillingOrigin.x;
 	real ys = g_pFFVConfig->FillingOrigin.y;
 	real zs = g_pFFVConfig->FillingOrigin.z;
+	int count = FillRegion(plsPhaseId, ids, xs, ys, zs);
+	int nBlocks = blockManager.getNumBlock();
+	int nCellsPerBlock = size.x*size.y*size.z;
+	int countAll = nBlocks*nCellsPerBlock;
+	int countS = countAll - count;
 	PrintLog(2, "%-20s : %f %f %f", "Seed for FLUID", xs, ys, zs);
-
-#ifdef _BLOCK_IS_LARGE_
-#else
-#endif
-	for (int n=0; n<blockManager.getNumBlock(); ++n) {
-		BlockBase* block = blockManager.getBlock(n);
-		Vec3i size = block->getSize();
-		Vec3r origin = block->getOrigin();
-		Vec3r blockSize = block->getBlockSize();
-		Vec3r cellSize = block->getCellSize();
-
-		int sz[3] = {size.x, size.y, size.z};
-		int g[1] = {vc};
-		real dx = cellSize.x;
-		real org[3] = {origin.x, origin.y, origin.z};
-
-		int* pPhaseId = plsPhaseId->GetBlockData(block);
-		int ids = 1;
-		bcut_set_seed_(
-				pPhaseId,
-				&ids,
-				&xs, &ys, &zs,
-				&dx,
-				org,
-				sz, g);
-
-	}
-	plsPhaseId->ImposeBoundaryCondition(blockManager);
-
-	{
-		int nIterationCount = 0;
-		long int nCellsChanged = 0;
-		do {
-			nCellsChanged = 0;
-#ifdef _BLOCK_IS_LARGE_
-#else
-			//#pragma omp parallel for reduction(+: nCellsChanged)
-#endif
-			for (int n=0; n<blockManager.getNumBlock(); ++n) {
-				BlockBase* block = blockManager.getBlock(n);
-				Vec3i size = block->getSize();
-				Vec3r origin = block->getOrigin();
-				Vec3r blockSize = block->getBlockSize();
-				Vec3r cellSize = block->getCellSize();
-
-				int sz[3] = {size.x, size.y, size.z};
-				int g[1] = {vc};
-				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
-
-				real* pCut0 = plsCut0->GetBlockData(block);
-				real* pCut1 = plsCut1->GetBlockData(block);
-				real* pCut2 = plsCut2->GetBlockData(block);
-				real* pCut3 = plsCut3->GetBlockData(block);
-				real* pCut4 = plsCut4->GetBlockData(block);
-				real* pCut5 = plsCut5->GetBlockData(block);
-				int* pCutId0 = plsCutId0->GetBlockData(block);
-				int* pCutId1 = plsCutId1->GetBlockData(block);
-				int* pCutId2 = plsCutId2->GetBlockData(block);
-				int* pCutId3 = plsCutId3->GetBlockData(block);
-				int* pCutId4 = plsCutId4->GetBlockData(block);
-				int* pCutId5 = plsCutId5->GetBlockData(block);
-
-				int* pPhaseId = plsPhaseId->GetBlockData(block);
-#ifdef _BLOCK_IS_LARGE_
-				//#pragma omp parallel for reduction(+: nCellsChanged)
-#else
-#endif
-				for(int k=vc; k<=size.z+vc-1; k++) {
-					for(int j=vc; j<=size.y+vc-1; j++) {
-						for(int i=vc; i<=size.x+vc-1; i++) {
-							int mp = i + nc[0]*( j + nc[1]*k );
-							int mw = i-1 + nc[0]*( j + nc[1]*k );
-							int me = i+1 + nc[0]*( j + nc[1]*k );
-							int ms = i + nc[0]*( j-1 + nc[1]*k );
-							int mn = i + nc[0]*( j+1 + nc[1]*k );
-							int mb = i + nc[0]*( j + nc[1]*(k-1) );
-							int mt = i + nc[0]*( j + nc[1]*(k+1) );
-
-							int cidp0 = pCutId0[mp];
-							int cidp1 = pCutId1[mp];
-							int cidp2 = pCutId2[mp];
-							int cidp3 = pCutId3[mp];
-							int cidp4 = pCutId4[mp];
-							int cidp5 = pCutId5[mp];
-
-							if( pPhaseId[mp] > 0 ) {
-								continue;
-							}
-
-							if( (pPhaseId[mw] == 1 && cidp0 == 0) ||
-									(pPhaseId[me] == 1 && cidp1 == 0) ||
-									(pPhaseId[ms] == 1 && cidp2 == 0) ||
-									(pPhaseId[mn] == 1 && cidp3 == 0) ||
-									(pPhaseId[mb] == 1 && cidp4 == 0) ||
-									(pPhaseId[mt] == 1 && cidp5 == 0) ) {
-								pPhaseId[mp] = 1;
-								nCellsChanged++;
-							}
-						}
-					}
-				}
-			}
-			plsPhaseId->ImposeBoundaryCondition(blockManager);
-
-			long int nCellsChangedTmp = nCellsChanged;
-			MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-			nIterationCount++;
-		}while(nCellsChanged>0);
-
-		long int count = 0;
-		long int countS = 0;
-#ifdef _BLOCK_IS_LARGE_
-#else
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			Vec3i size = block->getSize();
-			Vec3r origin = block->getOrigin();
-			Vec3r blockSize = block->getBlockSize();
-			Vec3r cellSize = block->getCellSize();
-
-			int sz[3] = {size.x, size.y, size.z};
-			int g[1] = {vc};
-			int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
-
-			int* pPhaseId = plsPhaseId->GetBlockData(block);
-			for(int k=vc; k<=size.z+vc-1; k++) {
-				for(int j=vc; j<=size.y+vc-1; j++) {
-					for(int i=vc; i<=size.x+vc-1; i++) {
-						int mp = i + nc[0]*( j + nc[1]*k );
-						if( pPhaseId[mp] > 0 ) {
-							count++;
-						} else {
-							countS++;
-						}
-					}
-				}
-			}
-		}
-
-		long int countTmp = count;
-		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-		countTmp = countS;
-		MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-		/* ---------------------------------------------------------- */
-		PrintLog(2, "%-20s : %d", "Iteration", nIterationCount);
-		PrintLog(2, "%-20s : %d", "FLUID cells", count);
-		PrintLog(2, "%-20s : %d", "SOLID cells", countS);
-		/* ---------------------------------------------------------- */
-	}
+	PrintLog(2, "%-20s : %d", "FLUID cells", count);
+	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
+	PrintLog(2, "%-20s : %d", "Total cells", countAll);
+	/* ---------------------------------------------------------- */
 	PM_Stop(tm_Init_Filling);
 	/* ---------------------------------------------------------- */
 	if( g_pFFVConfig->GridGenerationOutputSTL ) {
@@ -1150,13 +1006,14 @@ int Solver::Init(int argc, char** argv){
 	PrintLog(1, "Partitioning regions");
 	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
-	for(int nRGN=1; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
+	for(int nRGN=0; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
 		int ids = nRGN;
 		real xs = g_pFFVConfig->RegionList[nRGN].origin.x;
 		real ys = g_pFFVConfig->RegionList[nRGN].origin.y;
 		real zs = g_pFFVConfig->RegionList[nRGN].origin.z;
 		int count = FillRegion(plsRegionId, ids, xs, ys, zs);
-		PrintLog(2, "%-20s%d : %d", "Cells in Region ", nRGN, count);
+		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
+		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
 	}
 	PM_Stop(tm_Init_PartitioningRegions);
 	/* ---------------------------------------------------------- */
