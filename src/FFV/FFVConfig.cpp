@@ -180,18 +180,24 @@ void FFVConfig::Load(std::string filename) {
 	}
 
 	//MediumTable
-	std::string FillingMediumState
-		= Read<std::string>		("/MediumTable/" + FillingMedium + "/State");
-	if( !strcasecmp(FillingMediumState.c_str(), "fluid") ) {
+	std::vector<std::string> mediumlist;
+	tp->getArrayLabels														("/MediumTable/Medium[@]", mediumlist);	
+	PPMMap.clear();
+	for(int n=0; n<mediumlist.size(); n++) {
 		PPM ppm0;
-		ppm0.rho							= Read<double>				("/MediumTable/" + FillingMedium + "/MassDensity");
-		ppm0.cp								= Read<double>				("/MediumTable/" + FillingMedium + "/SpecificHeat");
-		ppm0.k								= Read<double>				("/MediumTable/" + FillingMedium + "/ThermalConductivity");
-		ppm0.cs								= Read<double>				("/MediumTable/" + FillingMedium + "/SpeedOfSound", -1.0);
-		ppm0.mu								= Read<double>				("/MediumTable/" + FillingMedium + "/Viscosity");
-		ppm0.color						= Read<std::string>		("/MediumTable/" + FillingMedium + "/Color");
-		MediumTable.clear();
-		MediumTable.push_back(ppm0);
+		ppm0.rho							= Read<double>				(mediumlist[n] + "/MassDensity");
+		ppm0.cp								= Read<double>				(mediumlist[n] + "/SpecificHeat");
+		ppm0.k								= Read<double>				(mediumlist[n] + "/ThermalConductivity");
+		ppm0.cs								= Read<double>				(mediumlist[n] + "/SpeedOfSound", -1.0);
+		ppm0.mu								= Read<double>				(mediumlist[n] + "/Viscosity");
+		ppm0.color						= Read<std::string>		(mediumlist[n] + "/Color");
+		std::string strstate	= Read<std::string>		(mediumlist[n] + "/State");
+		ppm0.state						= 0;
+		if( !strcasecmp(strstate.c_str(), "fluid") ) {
+			ppm0.state = 1;
+		}
+		std::string mediumname= Read<std::string>		(mediumlist[n] + "/Name");
+		PPMMap[mediumname] = ppm0;
 	}
 
 	//RegionInfo

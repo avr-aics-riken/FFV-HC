@@ -410,15 +410,16 @@ int Solver::Init(int argc, char** argv){
 	/* ---------------------------------------------------------- */
 	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
 
-	rhof	= g_pFFVConfig->MediumTable[0].rho;
-	cpf		= g_pFFVConfig->MediumTable[0].cp;
-	kf		= g_pFFVConfig->MediumTable[0].k;
-	mu		= g_pFFVConfig->MediumTable[0].mu;
-	csf   = g_pFFVConfig->MediumTable[0].cs;
+	std::string fluid0 = g_pFFVConfig->FillingMedium;
+	rhof	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cpf		= g_pFFVConfig->PPMMap[fluid0].cp;
+	kf		= g_pFFVConfig->PPMMap[fluid0].k;
+	mu		= g_pFFVConfig->PPMMap[fluid0].mu;
+	csf   = g_pFFVConfig->PPMMap[fluid0].cs;
 
-	rhos	= g_pFFVConfig->MediumTable[0].rho;
-	cps		= g_pFFVConfig->MediumTable[0].cp;
-	ks		= g_pFFVConfig->MediumTable[0].k;
+	rhos	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cps		= g_pFFVConfig->PPMMap[fluid0].cp;
+	ks		= g_pFFVConfig->PPMMap[fluid0].k;
 	/* ---------------------------------------------------------- */
 
 
@@ -1033,11 +1034,15 @@ int Solver::Init(int argc, char** argv){
 				for(int j=vc; j<vc+size.y; j++) {
 					for(int i=vc; i<vc+size.x; i++) {
 						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+						countS++;
 						if( pRegionId[m] >= 0 ) {
-							pPhaseId[m] = 1;
-							countF++;
-						} else {
-							countS++;
+							RGN rgn0 = g_pFFVConfig->RegionList[pRegionId[m]];
+							PPM ppm0 = g_pFFVConfig->PPMMap[rgn0.medium];
+							if( ppm0.state == 1 ) {
+								pPhaseId[m] = 1;
+								countF++;
+								countS--;
+							}
 						}
 					}
 				}
@@ -1045,9 +1050,9 @@ int Solver::Init(int argc, char** argv){
 		}
 		plsPhaseId->ImposeBoundaryCondition(blockManager);
 	}
+
 	long int countTmp = countF;
 	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
 	countTmp = countS;
 	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 

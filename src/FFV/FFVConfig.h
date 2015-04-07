@@ -21,6 +21,7 @@ typedef struct _PPM {
 	double k;
 	double cs;
 	double mu;
+	int state;
 	std::string color;
 }PPM;
 
@@ -106,7 +107,7 @@ class FFVConfig {
 		double				IterationReferenceTemperatureValue;
 
 		//MediumTable
-		std::vector<PPM> MediumTable;
+		std::map<std::string, PPM> PPMMap;
 
 		//Output
 		bool					OutputLogBase;
