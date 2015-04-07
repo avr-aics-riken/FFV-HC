@@ -293,8 +293,9 @@ extern "C" {
 			real* Uc, real* Vc, real* Wc,
 			int *sz, int *g);
 
-	void bcut_set_fluidseed_(
+	void bcut_set_seed_(
 			int* pid,
+			int* ids,
 			real* xs, real* ys, real *zs,
 			real* dx,
 			real* org,

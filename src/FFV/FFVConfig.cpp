@@ -179,20 +179,33 @@ void FFVConfig::Load(std::string filename) {
 			= Read<double>				("/Iteration/ReferenceTemperature/Value");
 	}
 
-
 	//MediumTable
 	std::string FillingMediumState
 		= Read<std::string>		("/MediumTable/" + FillingMedium + "/State");
 	if( !strcasecmp(FillingMediumState.c_str(), "fluid") ) {
-		PPF ppf0;
-		ppf0.rho							= Read<double>				("/MediumTable/" + FillingMedium + "/MassDensity");
-		ppf0.cp								= Read<double>				("/MediumTable/" + FillingMedium + "/SpecificHeat");
-		ppf0.k								= Read<double>				("/MediumTable/" + FillingMedium + "/ThermalConductivity");
-		ppf0.cs								= Read<double>				("/MediumTable/" + FillingMedium + "/SpeedOfSound", -1.0);
-		ppf0.mu								= Read<double>				("/MediumTable/" + FillingMedium + "/Viscosity");
-		ppf0.color						= Read<std::string>		("/MediumTable/" + FillingMedium + "/Color");
-		MediumTableFluid.clear();
-		MediumTableFluid.push_back(ppf0);
+		PPM ppm0;
+		ppm0.rho							= Read<double>				("/MediumTable/" + FillingMedium + "/MassDensity");
+		ppm0.cp								= Read<double>				("/MediumTable/" + FillingMedium + "/SpecificHeat");
+		ppm0.k								= Read<double>				("/MediumTable/" + FillingMedium + "/ThermalConductivity");
+		ppm0.cs								= Read<double>				("/MediumTable/" + FillingMedium + "/SpeedOfSound", -1.0);
+		ppm0.mu								= Read<double>				("/MediumTable/" + FillingMedium + "/Viscosity");
+		ppm0.color						= Read<std::string>		("/MediumTable/" + FillingMedium + "/Color");
+		MediumTable.clear();
+		MediumTable.push_back(ppm0);
+	}
+
+	//RegionInfo
+	std::vector<std::string> rgnlist;
+	tp->getArrayLabels													("/RegionInfo/Region[@]", rgnlist);	
+	RegionList.clear();
+	RGN rgn0;
+	rgn0.medium = FillingMedium;
+	rgn0.origin = FillingOrigin;
+	RegionList.push_back(rgn0);
+	for(int n=0; n<rgnlist.size(); n++) {
+		rgn0.origin						= Read<Vec3d>					(rgnlist[n] + "/Origin");
+		rgn0.medium						= Read<std::string>		(rgnlist[n] + "/Medium");
+		RegionList.push_back(rgn0);
 	}
 
 	//Output

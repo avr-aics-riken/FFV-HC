@@ -410,15 +410,15 @@ int Solver::Init(int argc, char** argv){
 	/* ---------------------------------------------------------- */
 	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
 
-	rhof	= g_pFFVConfig->MediumTableFluid[0].rho;
-	cpf		= g_pFFVConfig->MediumTableFluid[0].cp;
-	kf		= g_pFFVConfig->MediumTableFluid[0].k;
-	mu		= g_pFFVConfig->MediumTableFluid[0].mu;
-	csf   = g_pFFVConfig->MediumTableFluid[0].cs;
+	rhof	= g_pFFVConfig->MediumTable[0].rho;
+	cpf		= g_pFFVConfig->MediumTable[0].cp;
+	kf		= g_pFFVConfig->MediumTable[0].k;
+	mu		= g_pFFVConfig->MediumTable[0].mu;
+	csf   = g_pFFVConfig->MediumTable[0].cs;
 
-	rhos	= g_pFFVConfig->MediumTableFluid[0].rho;
-	cps		= g_pFFVConfig->MediumTableFluid[0].cp;
-	ks		= g_pFFVConfig->MediumTableFluid[0].k;
+	rhos	= g_pFFVConfig->MediumTable[0].rho;
+	cps		= g_pFFVConfig->MediumTable[0].cp;
+	ks		= g_pFFVConfig->MediumTable[0].k;
 	/* ---------------------------------------------------------- */
 
 
@@ -997,9 +997,10 @@ int Solver::Init(int argc, char** argv){
 		real org[3] = {origin.x, origin.y, origin.z};
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
-
-		bcut_set_fluidseed_(
+		int ids = 1;
+		bcut_set_seed_(
 				pPhaseId,
+				&ids,
 				&xs, &ys, &zs,
 				&dx,
 				org,
@@ -1149,7 +1150,14 @@ int Solver::Init(int argc, char** argv){
 	PrintLog(1, "Partitioning regions");
 	/* ---------------------------------------------------------- */
 	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
-
+	for(int nRGN=1; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
+		int ids = nRGN;
+		real xs = g_pFFVConfig->RegionList[nRGN].origin.x;
+		real ys = g_pFFVConfig->RegionList[nRGN].origin.y;
+		real zs = g_pFFVConfig->RegionList[nRGN].origin.z;
+		int count = FillRegion(plsRegionId, ids, xs, ys, zs);
+		PrintLog(2, "%-20s%d : %d", "Cells in Region ", nRGN, count);
+	}
 	PM_Stop(tm_Init_PartitioningRegions);
 	/* ---------------------------------------------------------- */
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -1669,6 +1677,152 @@ int Solver::Init(int argc, char** argv){
 	}
 
 	return EX_SUCCESS;
+}
+
+int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, real zs)
+{
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pId = plsId->GetBlockData(block);
+
+		bcut_set_seed_(
+				pId,
+				&Ids,
+				&xs, &ys, &zs,
+				&dx,
+				org,
+				sz, g);
+	}
+	plsId->ImposeBoundaryCondition(blockManager);
+
+	{
+		int nIterationCount = 0;
+		long int nCellsChanged = 0;
+		do {
+			nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+			//#pragma omp parallel for reduction(+: nCellsChanged)
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				Vec3i size = block->getSize();
+				Vec3r origin = block->getOrigin();
+				Vec3r blockSize = block->getBlockSize();
+				Vec3r cellSize = block->getCellSize();
+
+				int sz[3] = {size.x, size.y, size.z};
+				int g[1] = {vc};
+				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+				real* pCut0 = plsCut0->GetBlockData(block);
+				real* pCut1 = plsCut1->GetBlockData(block);
+				real* pCut2 = plsCut2->GetBlockData(block);
+				real* pCut3 = plsCut3->GetBlockData(block);
+				real* pCut4 = plsCut4->GetBlockData(block);
+				real* pCut5 = plsCut5->GetBlockData(block);
+				int* pCutId0 = plsCutId0->GetBlockData(block);
+				int* pCutId1 = plsCutId1->GetBlockData(block);
+				int* pCutId2 = plsCutId2->GetBlockData(block);
+				int* pCutId3 = plsCutId3->GetBlockData(block);
+				int* pCutId4 = plsCutId4->GetBlockData(block);
+				int* pCutId5 = plsCutId5->GetBlockData(block);
+
+				int* pId = plsId->GetBlockData(block);
+#ifdef _BLOCK_IS_LARGE_
+				//#pragma omp parallel for reduction(+: nCellsChanged)
+#else
+#endif
+				for(int k=vc; k<=size.z+vc-1; k++) {
+					for(int j=vc; j<=size.y+vc-1; j++) {
+						for(int i=vc; i<=size.x+vc-1; i++) {
+							int mp = i + nc[0]*( j + nc[1]*k );
+							int mw = i-1 + nc[0]*( j + nc[1]*k );
+							int me = i+1 + nc[0]*( j + nc[1]*k );
+							int ms = i + nc[0]*( j-1 + nc[1]*k );
+							int mn = i + nc[0]*( j+1 + nc[1]*k );
+							int mb = i + nc[0]*( j + nc[1]*(k-1) );
+							int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+							int cidp0 = pCutId0[mp];
+							int cidp1 = pCutId1[mp];
+							int cidp2 = pCutId2[mp];
+							int cidp3 = pCutId3[mp];
+							int cidp4 = pCutId4[mp];
+							int cidp5 = pCutId5[mp];
+
+							if( pId[mp] == Ids ) {
+								continue;
+							}
+
+							if( (pId[mw] == Ids && cidp0 == 0) ||
+									(pId[me] == Ids && cidp1 == 0) ||
+									(pId[ms] == Ids && cidp2 == 0) ||
+									(pId[mn] == Ids && cidp3 == 0) ||
+									(pId[mb] == Ids && cidp4 == 0) ||
+									(pId[mt] == Ids && cidp5 == 0) ) {
+								pId[mp] = Ids;
+								nCellsChanged++;
+							}
+						}
+					}
+				}
+			}
+			plsId->ImposeBoundaryCondition(blockManager);
+
+			long int nCellsChangedTmp = nCellsChanged;
+			MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+			nIterationCount++;
+		}while(nCellsChanged>0);
+	}
+
+	long int count = 0;
+	{
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size = block->getSize();
+			Vec3r origin = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+			int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+			int* pId = plsId->GetBlockData(block);
+			for(int k=vc; k<=size.z+vc-1; k++) {
+				for(int j=vc; j<=size.y+vc-1; j++) {
+					for(int i=vc; i<=size.x+vc-1; i++) {
+						int mp = i + nc[0]*( j + nc[1]*k );
+						if( pId[mp] == Ids ) {
+							count++;
+						}
+					}
+				}
+			}
+		}
+
+		long int countTmp = count;
+		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+	}
+	return count;
 }
 
 int Solver::Loop() {
@@ -2331,6 +2485,7 @@ void Solver::PrintBasicVariablesVTK(int step) {
 	WriteBasicVariablesInVTKFormat(step, diffLevel, rootGrid, tree, partition);
 	if( step == 0 ) {
 		plsPhaseId->WriteDataInVTKFormat("phase", 0, diffLevel, maxLevel, minLevel, rootGrid, tree, partition);
+		plsRegionId->WriteDataInVTKFormat("region", 0, diffLevel, maxLevel, minLevel, rootGrid, tree, partition);
 	}
 }
 

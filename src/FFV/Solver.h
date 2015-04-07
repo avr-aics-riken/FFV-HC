@@ -189,6 +189,7 @@ class Solver {
 		void UpdateUYe(int step);
 		void UpdateUZe(int step);
 		void UpdateTe(int step);
+		int FillRegion(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
 
 		int Print(int step);
 		double times[32];
