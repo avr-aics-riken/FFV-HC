@@ -14,24 +14,21 @@
 //3d vector value of double
 typedef Vec3<double> Vec3d;
 
-//PhysicalParametersForFluid
-typedef struct _PPF {
+//PhysicalParametersForMedium
+typedef struct _PPM {
 	double rho;
 	double cp;
 	double k;
 	double cs;
 	double mu;
 	std::string color;
-}PPF;
+}PPM;
 
-//PhysicalParametersForSolid
-typedef struct _PPS {
-	double rho;
-	double cp;
-	double k;
-	double cs;
-	std::string color;
-}PPS;
+//Region
+typedef struct _RGN {
+	Vec3d origin;
+	std::string medium;
+}RGN;
 
 class FFVConfig {
 	public:
@@ -109,8 +106,7 @@ class FFVConfig {
 		double				IterationReferenceTemperatureValue;
 
 		//MediumTable
-		std::vector<PPF> MediumTableFluid;
-		std::vector<PPS> MediumTableSolid;
+		std::vector<PPM> MediumTable;
 
 		//Output
 		bool					OutputLogBase;
@@ -185,6 +181,9 @@ class FFVConfig {
 		double				GravityZ;
 		double				BetaG;
 		double				Tref;
+
+		//RegionInfo
+		std::vector<RGN> RegionList;
 
 		//ShapeApproximation
 		std::string		ShapeApproximationMethod;

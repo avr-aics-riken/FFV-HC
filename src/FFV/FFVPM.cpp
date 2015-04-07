@@ -20,6 +20,7 @@ char* label[] = {
 	"Init_CalcCutInfo05",
 	"Init_CalcCutInfo06",
 	"Init_Filling",
+	"Init_PartitioningRegions",
 	"Init_GeometricalProperties",
 	"Init_InitVars",
 	"Update",

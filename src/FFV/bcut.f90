@@ -4676,8 +4676,9 @@ subroutine bcut_calc_nue( &
 #endif
 end subroutine bcut_calc_nue
 
-subroutine bcut_set_fluidseed( &
+subroutine bcut_set_seed( &
                 pid, &
+								ids, &
                 xs, ys, zs, &
                 dx, &
                 org, &
@@ -4688,6 +4689,7 @@ subroutine bcut_set_fluidseed( &
   integer                 :: g
   integer, dimension(3)   :: sz
   integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
+	integer									:: ids
   real                    :: xs, ys, zs
   real                    :: dx
   real, dimension(3)      :: org
@@ -4719,7 +4721,7 @@ subroutine bcut_set_fluidseed( &
     if( (x0 <= xs .and. xs <= x1) .and. &
         (y0 <= ys .and. ys <= y1) .and. &
         (z0 <= zs .and. zs <= z1) ) then
-      pid(i, j, k) = 1
+      pid(i, j, k) = ids
     endif
   end do
   end do
@@ -4729,7 +4731,7 @@ subroutine bcut_set_fluidseed( &
 !$omp end parallel
 #else
 #endif
-end subroutine bcut_set_fluidseed
+end subroutine bcut_set_seed
 
 subroutine bcut_set_reference_value( &
                 Ap, Aw, Ae, As, An, Ab, At, b, &
