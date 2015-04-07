@@ -1440,6 +1440,10 @@ int Solver::Init(int argc, char** argv){
 	plsUZD->ImposeBoundaryCondition(blockManager);
 	plsUZDP->ImposeBoundaryCondition(blockManager);
 
+	plsFX  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFY  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFZ  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+
 	plsVw = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsVe = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsVs = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -2669,6 +2673,8 @@ int Solver::Update(int step) {
 	PM_Stop(tm_UpdateT);
 	double t1 = GetTime();
 
+	UpdateF(step);
+
 	PM_Start(tm_UpdateUX, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
 		UpdateUXe(step);
@@ -2717,6 +2723,36 @@ int Solver::Update(int step) {
 	this->times[6] = t6 - t5;
 
 	return EX_SUCCESS;
+}
+
+void Solver::UpdateF(int step) {
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
+
+		int* pRegionId = plsRegionId->GetBlockData(block);
+
+		bcut_calc_bf_(
+				fx, fy, fz,
+				pRegionId,
+				&dx, &dt,
+				sz, g);
+	}
 }
 
 void Solver::UpdateUXe(int step) {
@@ -3587,6 +3623,10 @@ void Solver::UpdateUX(int step) {
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
+		int* pRegionId = plsRegionId->GetBlockData(block);
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
 
 		real Uc = 0.0;
 
@@ -3691,6 +3731,7 @@ void Solver::UpdateUX(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
+/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -3707,6 +3748,26 @@ void Solver::UpdateUX(int step) {
 				&dx, &dt,
 				&Uc,
 				&gx, &gy, &gz,
+				sz, g);
+*/
+		bcut_calc_abd_u_2_(
+				Ap, Aw, Ae, As, An, Ab, At, b,
+				ux0,
+				uxc0, uxcp,
+				uxd0,
+				p0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				pRegionId,
+				&axis,
+				&alpha,
+				&rhof,
+				&mu,
+				&dx, &dt,
+				&Uc,
+				&gx, &gy, &gz,
+				fx, fy, fz,
 				sz, g);
 		copy_(
 				uxcp,
@@ -3852,6 +3913,10 @@ void Solver::UpdateUY(int step) {
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
+		int* pRegionId = plsRegionId->GetBlockData(block);
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
 
 		real Uc = 0.0;
 
@@ -3956,6 +4021,7 @@ void Solver::UpdateUY(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
+/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -3972,6 +4038,26 @@ void Solver::UpdateUY(int step) {
 				&dx, &dt,
 				&Uc,
 				&gx, &gy, &gz,
+				sz, g);
+*/
+		bcut_calc_abd_u_2_(
+				Ap, Aw, Ae, As, An, Ab, At, b,
+				uy0,
+				uyc0, uycp,
+				uyd0,
+				p0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				pRegionId,
+				&axis,
+				&alpha,
+				&rhof,
+				&mu,
+				&dx, &dt,
+				&Uc,
+				&gx, &gy, &gz,
+				fx, fy, fz,
 				sz, g);
 		copy_(
 				uycp,
@@ -4117,6 +4203,10 @@ void Solver::UpdateUZ(int step) {
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
+		int* pRegionId = plsRegionId->GetBlockData(block);
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
 
 		real Uc = 0.0;
 
@@ -4221,6 +4311,7 @@ void Solver::UpdateUZ(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
+/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
@@ -4237,6 +4328,26 @@ void Solver::UpdateUZ(int step) {
 				&dx, &dt,
 				&Uc,
 				&gx, &gy, &gz,
+				sz, g);
+*/
+		bcut_calc_abd_u_2_(
+				Ap, Aw, Ae, As, An, Ab, At, b,
+				uz0,
+				uzc0, uzcp,
+				uzd0,
+				p0,
+				pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+				pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+				pPhaseId,
+				pRegionId,
+				&axis,
+				&alpha,
+				&rhof,
+				&mu,
+				&dx, &dt,
+				&Uc,
+				&gx, &gy, &gz,
+				fx, fy, fz,
 				sz, g);
 		copy_(
 				uzcp,
