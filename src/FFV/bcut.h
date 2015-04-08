@@ -245,12 +245,6 @@ extern "C" {
 			real* dx, real* dt,
 			int *sz, int *g);
 
-	void bcut_calc_bf_(
-			real *fx, real *fy, real *fz,
-			int* rid,
-			real* dx, real* dt,
-			int *sz, int *g);
-
 	void bcut_calc_f_p_(
 			real *fspx,
 			real *fspy,

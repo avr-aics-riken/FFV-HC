@@ -23,6 +23,7 @@
 #include "GridAccessor/Cell.h"
 
 #include "bcut.h"
+#include "bfm.h"
 #include "bstl.h"
 #include "bils.h"
 #include "FFVPM.h"
@@ -2745,11 +2746,27 @@ void Solver::UpdateF(int step) {
 		real* fy = plsFY->GetBlockData(block);
 		real* fz = plsFZ->GetBlockData(block);
 
+		real* ux0  = plsUX0->GetBlockData(block);
+		real* uy0  = plsUY0->GetBlockData(block);
+		real* uz0  = plsUZ0->GetBlockData(block);
+
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		bcut_calc_bf_(
+		int rid_target = 1;
+		real b = 0.3;
+		real nx = 1.0;
+		real ny = 0.0;
+		real nz = 0.0;
+		real dpmax = 1.0;
+		real umax = 1.0;
+		bfm_hex_(
 				fx, fy, fz,
+				ux0, uy0, uz0,
 				pRegionId,
+				&rid_target,
+				&b,
+				&nx, &ny, &nz,
+				&dpmax, &umax,
 				&dx, &dt,
 				sz, g);
 	}

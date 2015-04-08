@@ -4057,46 +4057,6 @@ subroutine bcut_update_t( &
 #endif
 end subroutine bcut_update_t
 
-subroutine bcut_calc_bf( &
-                fx, &
-                fy, &
-                fz, &
-                rid, &
-                dx, dt, &
-                sz, g)
-  implicit none
-  integer                  :: i, j, k
-  integer                  :: ix, jx, kx
-  integer                  :: g
-  integer, dimension(3)    :: sz
-  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fx, fy, fz
-  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: rid
-  real                    :: dx, dt
-  ix = sz(1)
-  jx = sz(2)
-  kx = sz(3)
-#ifdef _BLOCK_IS_LARGE_
-!$omp parallel private(i, j, k) 
-!$omp do schedule(static, 1)
-#else
-#endif
-  do k=1, kx
-  do j=1, jx
-!ocl nouxsimd
-  do i=1, ix
-		if( rid(i, j, k) == 1 ) then
-			fx(i, j, k) = 1.0
-		end if
-  end do
-  end do
-  end do
-#ifdef _BLOCK_IS_LARGE_
-!$omp end do
-!$omp end parallel
-#else
-#endif
-end subroutine bcut_calc_bf
-
 subroutine bcut_calc_f_p( &
                 fspx, &
                 fspy, &
