@@ -90,7 +90,7 @@ class Solver {
 		LocalScalar3D<real> *plsTD;
 		LocalScalar3D<real> *plsTDP;
 
-// For temporal average
+// For time average
 		LocalScalar3D<real> *plsUXA;
 		LocalScalar3D<real> *plsUYA;
 		LocalScalar3D<real> *plsUZA;

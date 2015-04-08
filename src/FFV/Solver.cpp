@@ -1527,7 +1527,7 @@ int Solver::Init(int argc, char** argv){
 
 
 	/* ---------------------------------------------------------- */
-	/* Init temporal average                                      */
+	/* Init time average                                          */
 	/* ---------------------------------------------------------- */
 	plsUXA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
 	plsUYA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
@@ -1868,19 +1868,24 @@ int Solver::Loop() {
 		bRestart = true;
 	}
 
-	UpdateTA(StepStart);
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+		UpdateTA(StepStart);
+	}
 
 	for(int step=StepStart+1; step<=StepEnd; step++) {
 		Update(step);
-		UpdateTA(step);
+		if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+			UpdateTA(step);
+		}
 		Print(step);
-
 		if( step%g_pFFVConfig->RestartInterval == 0 ) {
 			Dump(step);
 		}
 	}
 
-	PrintTA(StepEnd);
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+		PrintTA(StepEnd);
+	}
 
 	return EX_SUCCESS;
 }
