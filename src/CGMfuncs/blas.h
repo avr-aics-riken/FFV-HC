@@ -17,6 +17,7 @@ extern "C" {
 	void ave_(real *C, real *A, real *B, int *sz, int *g);
 	void triad_(real *C, real *A, real *B, real *d, int *sz, int *g);
 	void scal_(real *y, real *a, int *sz, int *g);
+	void avew_(real *y, real *x, real *a, int *sz, int *g);
 	void axpy_(real *y, real *x, real *a, int *sz, int *g);
 	void xpay_(real *y, real *x, real *a, int *sz, int *g);
 	void axpyz_(real *z, real *x, real *y, real *a, int *sz, int *g);

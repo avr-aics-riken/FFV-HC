@@ -7,6 +7,7 @@
 #include "LocalScalar3D.h"
 #include "FFVVersion.h"
 #include "FFVILS.h"
+#include "FFVTA.h"
 #include "FFVVTKWriter.h"
 #include "FFVPlot3DWriter.h"
 #include "FFVMC.h"
@@ -48,6 +49,7 @@ class Solver {
 		real csf;
 
 	private:
+// Main variables
 		LocalScalar3D<real> *plsUX0;
 		LocalScalar3D<real> *plsUX1;
 		LocalScalar3D<real> *plsUXC;
@@ -88,6 +90,14 @@ class Solver {
 		LocalScalar3D<real> *plsTD;
 		LocalScalar3D<real> *plsTDP;
 
+// For temporal average
+		LocalScalar3D<real> *plsUXA;
+		LocalScalar3D<real> *plsUYA;
+		LocalScalar3D<real> *plsUZA;
+		LocalScalar3D<real> *plsPA;
+		LocalScalar3D<real> *plsTA;
+
+// For grids
 		LocalScalar3D<int> *plsPhaseId;
 		LocalScalar3D<int> *plsRegionId;
 		LocalScalar3D<real> *plsCut0;
@@ -114,6 +124,7 @@ class Solver {
 		LocalScalar3D<int> *plsNormalIndex4;
 		LocalScalar3D<int> *plsNormalIndex5;
 
+// For ILS
 		LocalScalar3D<real> *plsAp;
 		LocalScalar3D<real> *plsAw;
 		LocalScalar3D<real> *plsAe;
@@ -132,19 +143,19 @@ class Solver {
 		LocalScalar3D<real> *plss_;
 		LocalScalar3D<real> *plst_;
 
+// For Post-process
 		LocalScalar3D<real> *plsLapP;
-
 		LocalScalar3D<real> *plsFspx;
 		LocalScalar3D<real> *plsFspy;
 		LocalScalar3D<real> *plsFspz;
 		LocalScalar3D<real> *plsFsvx;
 		LocalScalar3D<real> *plsFsvy;
 		LocalScalar3D<real> *plsFsvz;
-
 		LocalScalar3D<real> *plsQx;
 		LocalScalar3D<real> *plsQy;
 		LocalScalar3D<real> *plsQz;
 
+// For loop collapsing
 		LocalScalar3D<real> *plsM;
 		LocalScalar3D<int> *plsMaskId;
 
@@ -175,6 +186,13 @@ class Solver {
 		int countPreConditionerT;
 		int countT;
 		real residualT;
+
+	private:
+		FFVTA* ptaUX;
+		FFVTA* ptaUY;
+		FFVTA* ptaUZ;
+		FFVTA* ptaP;
+		FFVTA* ptaT;
 
 	public:
 		int Init(int argc, char** argv);
@@ -222,10 +240,16 @@ class Solver {
 		void PrintDerivedVariablesBCM(int step);
 		void PrintDerivedVariablesSILO(int step);
 		void PrintContourQcriterion(int step);
+		void PrintBasicVariablesTAVTK(int step);
 
 	private:
 		void Dump(const int step);
 		void Load(const int step);
+
+	private:
+		void UpdateTA(int step);
+		void PrintTA(int step);
+
 
 	private:
 		void WriteGrid(
@@ -277,6 +301,52 @@ class Solver {
 					g_pFFVConfig->OutputDataFormatOptionVTKPath,
 					g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
 					string("flow"),
+					step,
+					maxLevel,
+					minLevel,
+					rootGrid,
+					tree,
+					partition,
+					g_pFFVConfig->RootBlockOrigin,
+					g_pFFVConfig->RootBlockLength);
+		}
+
+		void WriteBasicVariablesTAInVTKFormat(
+				int step,
+				int difflevel,
+				RootGrid* rootGrid,
+				BCMOctree* tree,
+				Partition* partition) {
+			VtkWriter writer;
+
+			writer.writePUT<real>(
+					this->plsPA->GetID(),
+					this->plsUXA->GetID(),
+					this->plsUYA->GetID(),
+					this->plsUZA->GetID(),
+					this->plsTA->GetID(),
+					this->vc,
+					g_pFFVConfig->OutputDataFormatOptionVTKPath,
+					g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+					string("flow-ta"),
+					step,
+					difflevel,
+					rootGrid,
+					tree,
+					partition,
+					g_pFFVConfig->RootBlockOrigin,
+					g_pFFVConfig->RootBlockLength);
+
+			writer.writeVtkOverlappingAMR_PUT<real>(
+					this->plsPA->GetID(),
+					this->plsUXA->GetID(),
+					this->plsUYA->GetID(),
+					this->plsUZA->GetID(),
+					this->plsTA->GetID(),
+					this->vc,
+					g_pFFVConfig->OutputDataFormatOptionVTKPath,
+					g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
+					string("flow-ta"),
 					step,
 					maxLevel,
 					minLevel,
