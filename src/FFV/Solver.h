@@ -67,6 +67,10 @@ class Solver {
 		LocalScalar3D<real> *plsUZD;
 		LocalScalar3D<real> *plsUZDP;
 
+		LocalScalar3D<real> *plsFX;
+		LocalScalar3D<real> *plsFY;
+		LocalScalar3D<real> *plsFZ;
+
 		LocalScalar3D<real> *plsVw;
 		LocalScalar3D<real> *plsVe;
 		LocalScalar3D<real> *plsVs;
@@ -189,6 +193,7 @@ class Solver {
 		void UpdateUYe(int step);
 		void UpdateUZe(int step);
 		void UpdateTe(int step);
+		void UpdateF(int step);
 		int FillRegion(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
 
 		int Print(int step);
