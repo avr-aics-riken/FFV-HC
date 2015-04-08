@@ -1518,14 +1518,42 @@ int Solver::Init(int argc, char** argv){
 	};
 	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
 	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
-	plsLapP = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	double p0 = g_pFFVConfig->InitialValueP;
 	plsP0->Fill(blockManager, p0);
 	plsP1->Fill(blockManager, p0);
-	plsLapP->Fill(blockManager, 0.0);
 	plsP0->ImposeBoundaryCondition(blockManager);
 	plsP1->ImposeBoundaryCondition(blockManager);
-	plsLapP->ImposeBoundaryCondition(blockManager);
+	/* ---------------------------------------------------------- */
+
+
+	/* ---------------------------------------------------------- */
+	/* Init time average                                          */
+	/* ---------------------------------------------------------- */
+	plsUXA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
+	plsUYA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
+	plsUZA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 1);
+	plsPA  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
+	plsTA  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 1);
+	plsUXA->Fill(blockManager, 0.0);
+	plsUYA->Fill(blockManager, 0.0);
+	plsUZA->Fill(blockManager, 0.0);
+	plsPA->Fill(blockManager, 0.0);
+	plsTA->Fill(blockManager, 0.0);
+	plsUXA->ImposeBoundaryCondition(blockManager);
+	plsUYA->ImposeBoundaryCondition(blockManager);
+	plsUZA->ImposeBoundaryCondition(blockManager);
+	plsPA->ImposeBoundaryCondition(blockManager);
+	plsTA->ImposeBoundaryCondition(blockManager);
+	ptaUX = new FFVTA();
+	ptaUY = new FFVTA();
+	ptaUZ = new FFVTA();
+	ptaP = new FFVTA();
+	ptaT = new FFVTA();
+	ptaUX->Init();
+	ptaUY->Init();
+	ptaUZ->Init();
+	ptaP->Init();
+	ptaT->Init();
 	/* ---------------------------------------------------------- */
 
 
@@ -1641,6 +1669,13 @@ int Solver::Init(int argc, char** argv){
 	plsQy->Fill(blockManager, 0.0);
 	plsQz->Fill(blockManager, 0.0);
 	/* ---------------------------------------------------------- */
+
+	/* ---------------------------------------------------------- */
+	/* Init Laplacian P                                           */
+	/* ---------------------------------------------------------- */
+	plsLapP = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsLapP->Fill(blockManager, 0.0);
+	plsLapP->ImposeBoundaryCondition(blockManager);
 
 	PM_Stop(tm_Init_InitVars);
 
@@ -1833,26 +1868,27 @@ int Solver::Loop() {
 		bRestart = true;
 	}
 
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+		UpdateTA(StepStart);
+	}
+
 	for(int step=StepStart+1; step<=StepEnd; step++) {
-		int nResult = Update(step);
-
+		Update(step);
+		if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+			UpdateTA(step);
+		}
 		Print(step);
-
 		if( step%g_pFFVConfig->RestartInterval == 0 ) {
 			Dump(step);
 		}
+	}
 
-		switch(nResult) {
-			case EX_SUCCESS:
-				break;
-			default:
-				break;
-		}
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
+		PrintTA(StepEnd);
 	}
 
 	return EX_SUCCESS;
 }
-
 
 int Solver::Print(int step) {
 	PM_Start(tm_Print, 0, 0, true);
@@ -1894,6 +1930,10 @@ int Solver::Print(int step) {
 	PM_Stop(tm_Print);
 
 	return EX_SUCCESS;
+}
+
+void Solver::PrintTA(int step) {
+	PrintBasicVariablesTAVTK(step);
 }
 
 void Solver::PrintData(int step) {
@@ -2485,6 +2525,10 @@ void Solver::PrintBasicVariablesVTK(int step) {
 	}
 }
 
+void Solver::PrintBasicVariablesTAVTK(int step) {
+	WriteBasicVariablesTAInVTKFormat(step, diffLevel, rootGrid, tree, partition);
+}
+
 void Solver::PrintBasicVariablesPLOT3D(int step) {
 	WriteBasicVariablesInPlot3DFormat("flow", step, diffLevel, rootGrid, tree, partition);
 }
@@ -2724,6 +2768,14 @@ int Solver::Update(int step) {
 	this->times[6] = t6 - t5;
 
 	return EX_SUCCESS;
+}
+
+void Solver::UpdateTA(int step) {
+	ptaUX->Update(blockManager, plsUXA, plsUX0);	
+	ptaUY->Update(blockManager, plsUYA, plsUY0);	
+	ptaUZ->Update(blockManager, plsUZA, plsUZ0);	
+	ptaP->Update(blockManager, plsPA, plsP0);	
+	ptaT->Update(blockManager, plsTA, plsT0);	
 }
 
 void Solver::UpdateF(int step) {

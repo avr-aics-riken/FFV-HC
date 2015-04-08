@@ -283,6 +283,8 @@ void FFVConfig::Load(std::string filename) {
 		OutputDataBasicVariablesIntervalI
 			= Read<int>						("/Output/Data/BasicVariables/Interval");
 	}
+	OutputDataBasicVariablesTimeAverage
+		= Read<bool>						("/Output/Data/BasicVariables/TimeAverage", false);
 
 	OutputDataDerivedVariablesFormat
 		= Read<std::string>		("/Output/Data/DerivedVariables/Format");

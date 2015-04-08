@@ -145,6 +145,7 @@ class FFVConfig {
 		std::string		OutputDataBasicVariablesTemporalType;
 		int						OutputDataBasicVariablesIntervalI;
 		double				OutputDataBasicVariablesIntervalD;
+		bool					OutputDataBasicVariablesTimeAverage;
 		std::string		OutputDataDerivedVariablesFormat;
 		std::string		OutputDataDerivedVariablesTemporalType;
 		int						OutputDataDerivedVariablesIntervalI;
