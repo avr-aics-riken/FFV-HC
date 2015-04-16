@@ -185,14 +185,40 @@ namespace BCMT_NAMESPACE {
 							(double)(fData[fIndex(i+1,j+1,k+1)]) > 0.5 ) {
 						return 1;
 					} 
-					return 0;
-
-					return 0.125 * (fData[fIndex(i  ,j  ,k  )] + fData[fIndex(i+1,j  ,k  )]
-							+ fData[fIndex(i  ,j+1,k  )] + fData[fIndex(i+1,j+1,k  )]
-							+ fData[fIndex(i  ,j  ,k+1)] + fData[fIndex(i+1,j  ,k+1)]
-							+ fData[fIndex(i  ,j+1,k+1)] + fData[fIndex(i+1,j+1,k+1)]);
+					return -1;
 				}
 
+/*
+				T interpolateF2C_X_M(const T* fData, const Index3DS& fIndex, int I, int J, int K) {
+					int i = 2 * I;
+					int j = 2 * J;
+					int k = 2 * K;
+					if(
+							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k+1)]) > 0.5
+						) {
+						return 1;
+					} 
+					return -1;
+				}
+
+				T interpolateF2C_X_P(const T* fData, const Index3DS& fIndex, int I, int J, int K) {
+					int i = 2 * I;
+					int j = 2 * J;
+					int k = 2 * K;
+					if(
+							(double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 
+						) {
+						return 1;
+					} 
+					return -1;
+				}
+*/
 
 				/*
 				/// レベルL→L+1の線形補間 (粗c(I,J,K) → 細f(i,j,k)).
@@ -225,16 +251,7 @@ namespace BCMT_NAMESPACE {
 					if( (double)(cData[cIndex(I  ,J  ,K  )]) > 0.5 ) {
 						return 1;
 					}
-					return 0;
-
-					return (1.0-t)*( 
-							(1.0-s)*( (1.0-r)*cData[cIndex(I  ,J  ,K  )] + r*cData[cIndex(I+1,J  ,K  )] )
-							+ s*( (1.0-r)*cData[cIndex(I  ,J+1,K  )] + r*cData[cIndex(I+1,J+1,K  )] )
-							)
-						+t*(
-								(1.0-s)*( (1.0-r)*cData[cIndex(I  ,J  ,K+1)] + r*cData[cIndex(I+1,J  ,K+1)] )
-								+ s*( (1.0-r)*cData[cIndex(I  ,J+1,K+1)] + r*cData[cIndex(I+1,J+1,K+1)] )
-							 );
+					return -1;
 				}
 
 				/// C2F補間における補間パラメータの計算.
