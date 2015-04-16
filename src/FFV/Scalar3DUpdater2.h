@@ -175,13 +175,13 @@ namespace BCMT_NAMESPACE {
 					int i = 2 * I;
 					int j = 2 * J;
 					int k = 2 * K;
-					if( (double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 &&
+					if( (double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 ||
 							(double)(fData[fIndex(i+1,j+1,k+1)]) > 0.5 ) {
 						return 1;
 					} 
@@ -873,12 +873,10 @@ namespace BCMT_NAMESPACE {
 
 		};
 
-/*
 template <>
 int Scalar3DUpdater2<int>::interpolateF2C(const int* fData, const Index3DS& fIndex, int I, int J, int K);
 template <>
 int Scalar3DUpdater2<int>::interpolateC2F(const int* cData, const Index3DS& cIndex, int i, int j, int k);
-*/
 
 #ifdef BCMT_NAMESPACE
 } // namespace BCMT_NAMESPACE
