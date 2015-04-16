@@ -121,6 +121,14 @@ BCTable
 		}
 
 	}
+
+	LocalBoundary
+	{
+		ID10
+		{
+			PhaseBoundary			= 1
+		}
+	}
 }
 
 TimeControl
@@ -156,8 +164,9 @@ ApplicationControl
 
 MediumTable
 {
-	fluid0
+	Medium[@]
 	{
+		Name								= "fluid0"
 		State								= "fluid"
 		MassDensity					= 1.0
 		SpecificHeat				= 1.0
