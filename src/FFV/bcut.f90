@@ -128,6 +128,12 @@ subroutine bcut_calc_abd_u( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     mu0 = mu
     mu1 = mu
@@ -164,7 +170,7 @@ subroutine bcut_calc_abd_u( &
     m4 = 0.0d0
     m5 = 0.0d0
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -172,7 +178,7 @@ subroutine bcut_calc_abd_u( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -180,7 +186,7 @@ subroutine bcut_calc_abd_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -188,7 +194,7 @@ subroutine bcut_calc_abd_u( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -196,7 +202,7 @@ subroutine bcut_calc_abd_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -204,7 +210,7 @@ subroutine bcut_calc_abd_u( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -212,7 +218,7 @@ subroutine bcut_calc_abd_u( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       rdpx0 = 0.0
       rdpx1 = 0.0
       dpx0 = 0.0
@@ -221,7 +227,7 @@ subroutine bcut_calc_abd_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       rdpy2 = 0.0
       rdpy3 = 0.0
       dpy2 = 0.0
@@ -230,7 +236,7 @@ subroutine bcut_calc_abd_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       rdpz4 = 0.0
       rdpz5 = 0.0
       dpz4 = 0.0
@@ -275,7 +281,7 @@ subroutine bcut_calc_abd_u( &
                       + l5*(ut - up) &
                       - l4*(up - ub) &
                     )
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
 			ud0_(i, j, k) = 0.0
 		end if
 
@@ -299,7 +305,7 @@ subroutine bcut_calc_abd_u( &
                   + alpha*l4*Uc*m4 &
                   + alpha*l5*Uc*m5 
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       Ap(i, j, k) = 1.0d0
       Aw(i, j, k) = 0.0d0
       Ae(i, j, k) = 0.0d0
@@ -310,7 +316,6 @@ subroutine bcut_calc_abd_u( &
       b (i, j, k) = Uc
       u0_(i, j, k) = 0.0d0
     endif
-
   end do
   end do
   end do
@@ -412,6 +417,12 @@ subroutine bcut_calc_abd_u_2( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     mu0 = mu
     mu1 = mu
@@ -448,7 +459,7 @@ subroutine bcut_calc_abd_u_2( &
     m4 = 0.0d0
     m5 = 0.0d0
 
-    if( cidp0 /= 0 ) then
+   if( pidw == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -456,7 +467,7 @@ subroutine bcut_calc_abd_u_2( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -464,7 +475,7 @@ subroutine bcut_calc_abd_u_2( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -472,7 +483,7 @@ subroutine bcut_calc_abd_u_2( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -480,7 +491,7 @@ subroutine bcut_calc_abd_u_2( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -488,7 +499,7 @@ subroutine bcut_calc_abd_u_2( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -496,7 +507,7 @@ subroutine bcut_calc_abd_u_2( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       rdpx0 = 0.0
       rdpx1 = 0.0
       dpx0 = 0.0
@@ -505,7 +516,7 @@ subroutine bcut_calc_abd_u_2( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       rdpy2 = 0.0
       rdpy3 = 0.0
       dpy2 = 0.0
@@ -514,7 +525,7 @@ subroutine bcut_calc_abd_u_2( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       rdpz4 = 0.0
       rdpz5 = 0.0
       dpz4 = 0.0
@@ -559,7 +570,7 @@ subroutine bcut_calc_abd_u_2( &
                       + l5*(ut - up) &
                       - l4*(up - ub) &
                     )
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
 			ud0_(i, j, k) = 0.0
 		end if
 
@@ -583,7 +594,7 @@ subroutine bcut_calc_abd_u_2( &
                   + alpha*l4*Uc*m4 &
                   + alpha*l5*Uc*m5 
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       Ap(i, j, k) = 1.0d0
       Aw(i, j, k) = 0.0d0
       Ae(i, j, k) = 0.0d0
@@ -594,7 +605,6 @@ subroutine bcut_calc_abd_u_2( &
       b (i, j, k) = Uc
       u0_(i, j, k) = 0.0d0
     endif
-
   end do
   end do
   end do
@@ -696,8 +706,14 @@ subroutine bcut_calc_ab_p( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       r0 = 0.0d0
       vx0 = 0.0d0
       vx0 = vx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -705,7 +721,7 @@ subroutine bcut_calc_ab_p( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       r1 = 0.0d0
       vx1 = 0.0d0
       vx1 = vx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -713,7 +729,7 @@ subroutine bcut_calc_ab_p( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       r2 = 0.0d0
       vy2 = 0.0d0
       vy2 = vy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -721,7 +737,7 @@ subroutine bcut_calc_ab_p( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       r3 = 0.0d0
       vy3 = 0.0d0
       vy3 = vy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -729,7 +745,7 @@ subroutine bcut_calc_ab_p( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       r4 = 0.0d0
       vz4 = 0.0d0
       vz4 = vz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -737,7 +753,7 @@ subroutine bcut_calc_ab_p( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       r5 = 0.0d0
       vz5 = 0.0d0
       vz5 = vz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -745,7 +761,7 @@ subroutine bcut_calc_ab_p( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       r0 = 0.0d0
       r1 = 0.0d0
       vx0 = 0.5d0*(2.0d0 - 1.0d0/d0)*ux(i, j, k)
@@ -756,7 +772,7 @@ subroutine bcut_calc_ab_p( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       r2 = 0.0d0
       r3 = 0.0d0
       vy2 = 0.5d0*(2.0d0 - 1.0d0/d2)*uy(i, j, k)
@@ -767,7 +783,7 @@ subroutine bcut_calc_ab_p( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       r4 = 0.0d0
       r5 = 0.0d0
       vz4 = 0.5d0*(2.0d0 - 1.0d0/d4)*uz(i, j, k)
@@ -804,7 +820,7 @@ subroutine bcut_calc_ab_p( &
     vb(i, j, k) = vz4
     vt(i, j, k) = vz5
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       Ap(i, j, k) =-6.0d0
       Aw(i, j, k) = 1.0d0
       Ae(i, j, k) = 1.0d0
@@ -820,7 +836,6 @@ subroutine bcut_calc_ab_p( &
       vb(i, j, k) = 0.0d0
       vt(i, j, k) = 0.0d0
     endif
-
   end do
   end do
   end do
@@ -926,8 +941,14 @@ subroutine bcut_calc_ab_p_pc( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       r0 = 0.0d0
       vx0 = 0.0d0
       vx0 = vx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -935,7 +956,7 @@ subroutine bcut_calc_ab_p_pc( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       r1 = 0.0d0
       vx1 = 0.0d0
       vx1 = vx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -943,7 +964,7 @@ subroutine bcut_calc_ab_p_pc( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       r2 = 0.0d0
       vy2 = 0.0d0
       vy2 = vy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -951,7 +972,7 @@ subroutine bcut_calc_ab_p_pc( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       r3 = 0.0d0
       vy3 = 0.0d0
       vy3 = vy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -959,7 +980,7 @@ subroutine bcut_calc_ab_p_pc( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       r4 = 0.0d0
       vz4 = 0.0d0
       vz4 = vz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -967,7 +988,7 @@ subroutine bcut_calc_ab_p_pc( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       r5 = 0.0d0
       vz5 = 0.0d0
       vz5 = vz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -975,7 +996,7 @@ subroutine bcut_calc_ab_p_pc( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       r0 = 0.0d0
       r1 = 0.0d0
       vx0 = 0.5d0*(2.0d0 - 1.0d0/d0)*ux(i, j, k)
@@ -986,7 +1007,7 @@ subroutine bcut_calc_ab_p_pc( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       r2 = 0.0d0
       r3 = 0.0d0
       vy2 = 0.5d0*(2.0d0 - 1.0d0/d2)*uy(i, j, k)
@@ -997,7 +1018,7 @@ subroutine bcut_calc_ab_p_pc( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       r4 = 0.0d0
       r5 = 0.0d0
       vz4 = 0.5d0*(2.0d0 - 1.0d0/d4)*uz(i, j, k)
@@ -1035,7 +1056,7 @@ subroutine bcut_calc_ab_p_pc( &
     vb(i, j, k) = vz4
     vt(i, j, k) = vz5
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       Ap(i, j, k) =-6.0d0
       Aw(i, j, k) = 1.0d0
       Ae(i, j, k) = 1.0d0
@@ -1051,7 +1072,6 @@ subroutine bcut_calc_ab_p_pc( &
       vb(i, j, k) = 0.0d0
       vt(i, j, k) = 0.0d0
     endif
-
   end do
   end do
   end do
@@ -1161,6 +1181,12 @@ subroutine bcut_calc_abd_t( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     m0 = 0.0
     m1 = 0.0
@@ -1168,22 +1194,22 @@ subroutine bcut_calc_abd_t( &
     m3 = 0.0
     m4 = 0.0
     m5 = 0.0
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       m0 = 1.0
     endif
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       m1 = 1.0
     endif
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       m2 = 1.0
     endif
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       m3 = 1.0
     endif
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       m4 = 1.0
     endif
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       m5 = 1.0
     endif
 
@@ -1196,27 +1222,27 @@ subroutine bcut_calc_abd_t( &
 		k_n   = kf
 		k_b   = kf
 		k_t   = kf
-		if( pid(i, j, k) /= 1 ) then
+		if( pidp == 0 ) then
 			rho_p = rhos
 			cp_p  = cps
 			k_p   = ks
 		end if
-		if( pid(i-1, j, k) /= 1 ) then
+		if( pidw == 0 ) then
 			k_w   = ks
 		end if
-		if( pid(i+1, j, k) /= 1 ) then
+		if( pide == 0 ) then
 			k_e   = ks
 		end if
-		if( pid(i, j-1, k) /= 1 ) then
+		if( pids == 0 ) then
 			k_s   = ks
 		end if
-		if( pid(i, j+1, k) /= 1 ) then
+		if( pidn == 0 ) then
 			k_n   = ks
 		end if
-		if( pid(i, j, k-1) /= 1 ) then
+		if( pidb == 0 ) then
 			k_b   = ks
 		end if
-		if( pid(i, j, k+1) /= 1 ) then
+		if( pidt == 0 ) then
 			k_t   = ks
 		end if
 
@@ -1356,7 +1382,7 @@ subroutine bcut_calc_abd_t( &
                     - k4*(tp - t4) &
                     )/(rho_p*cp_p)/(dx*dx)
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
 			tc0_(i, j, k) = 0.0
 		end if
 
@@ -1382,7 +1408,7 @@ subroutine bcut_calc_abd_t( &
                   + alpha*l4*t4*m4 &
                   + alpha*l5*t5*m5 
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
 !      Ap(i, j, k) = 1.0
 !      Aw(i, j, k) = 0.0
 !      Ae(i, j, k) = 0.0
@@ -1392,7 +1418,6 @@ subroutine bcut_calc_abd_t( &
 !      At(i, j, k) = 0.0
 !      b (i, j, k) = 0.0
     endif
-
   end do
   end do
   end do
@@ -1502,6 +1527,12 @@ subroutine bcut_calc_c_f_u1( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     f0 = bcut_getupwind(vx0, fw, fp)
     f1 = bcut_getupwind(vx1, fp, fe)
@@ -1524,40 +1555,40 @@ subroutine bcut_calc_c_f_u1( &
     m4 = 0.0d0
     m5 = 0.0d0
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       q0 = (d0 - 0.5d0)/(d0 + 0.5d0)*q1
       m0 = 1.0d0
     endif
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       q1 = (d1 - 0.5d0)/(d1 + 0.5d0)*q0
       m1 = 1.0d0
     endif
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       q2 = (d2 - 0.5d0)/(d2 + 0.5d0)*q3
       m2 = 1.0d0
     endif
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       q3 = (d3 - 0.5d0)/(d3 + 0.5d0)*q2
       m3 = 1.0d0
     endif
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       q4 = (d4 - 0.5d0)/(d4 + 0.5d0)*q5
       m4 = 1.0d0
     endif
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       q5 = (d5 - 0.5d0)/(d5 + 0.5d0)*q4
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       q0 = 0.0d0
       q1 = 0.0d0
     endif
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       q2 = 0.0d0
       q3 = 0.0d0
     endif
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       q4 = 0.0d0
       q5 = 0.0d0
     endif
@@ -1566,7 +1597,7 @@ subroutine bcut_calc_c_f_u1( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -1679,6 +1710,12 @@ subroutine bcut_calc_c_f_c2( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     f0 = 0.5d0*(fp + fw)
     f1 = 0.5d0*(fp + fe)
@@ -1701,40 +1738,40 @@ subroutine bcut_calc_c_f_c2( &
     m4 = 0.0d0
     m5 = 0.0d0
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       q0 = (d0 - 0.5d0)/(d0 + 0.5d0)*q1
       m0 = 1.0d0
     endif
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       q1 = (d1 - 0.5d0)/(d1 + 0.5d0)*q0
       m1 = 1.0d0
     endif
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       q2 = (d2 - 0.5d0)/(d2 + 0.5d0)*q3
       m2 = 1.0d0
     endif
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       q3 = (d3 - 0.5d0)/(d3 + 0.5d0)*q2
       m3 = 1.0d0
     endif
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       q4 = (d4 - 0.5d0)/(d4 + 0.5d0)*q5
       m4 = 1.0d0
     endif
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       q5 = (d5 - 0.5d0)/(d5 + 0.5d0)*q4
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       q0 = 0.0d0
       q1 = 0.0d0
     endif
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       q2 = 0.0d0
       q3 = 0.0d0
     endif
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       q4 = 0.0d0
       q5 = 0.0d0
     endif
@@ -1743,7 +1780,7 @@ subroutine bcut_calc_c_f_c2( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2043,7 +2080,7 @@ subroutine bcut_calc_c_f_e3( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2245,7 +2282,7 @@ subroutine bcut_calc_c_f_w3( &
                 + (max(vy, 0.0)*dfy_n + min(vy, 0.0)*dfy_p) &
                 + (max(vz, 0.0)*dfz_n + min(vz, 0.0)*dfz_p) 
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2444,7 +2481,7 @@ subroutine bcut_calc_c_f_quick( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2623,7 +2660,7 @@ subroutine bcut_calc_c_f_blend( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2885,7 +2922,7 @@ subroutine bcut_calc_c_u_quick( &
                 + (q3 - q2)/dx &
                 + (q5 - q4)/dx
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       fc(i, j, k) = 0.0d0
     endif
 
@@ -2982,38 +3019,44 @@ subroutine bcut_calc_d_u( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       m5 = 1.0d0
@@ -3043,7 +3086,7 @@ subroutine bcut_calc_d_u( &
                       - l4*(up - ub) &
                     )
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       ud0_(i, j, k) = 0.0d0
     endif
   end do
@@ -3148,6 +3191,12 @@ subroutine bcut_calc_d_t( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     m0 = 0.0
     m1 = 0.0
@@ -3155,22 +3204,22 @@ subroutine bcut_calc_d_t( &
     m3 = 0.0
     m4 = 0.0
     m5 = 0.0
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       m0 = 1.0
     endif
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       m1 = 1.0
     endif
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       m2 = 1.0
     endif
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       m3 = 1.0
     endif
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       m4 = 1.0
     endif
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       m5 = 1.0
     endif
 
@@ -3281,10 +3330,9 @@ subroutine bcut_calc_d_t( &
                     - k4*(tp - t4) &
                     )/(rhof*cpf)/(dx*dx)
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       td0_(i, j, k) = 0.0
     endif
-
   end do
   end do
   end do
@@ -3433,44 +3481,50 @@ subroutine bcut_remove_p( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       dpx0 = dpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       dpx1 = dpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       dpy2 = dpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       dpy3 = dpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       dpz4 = dpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       dpz5 = dpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       rdpx0 = 0.0
       rdpx1 = 0.0
       dpx0 = 0.0
@@ -3479,7 +3533,7 @@ subroutine bcut_remove_p( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       rdpy2 = 0.0
       rdpy3 = 0.0
       dpy2 = 0.0
@@ -3488,7 +3542,7 @@ subroutine bcut_remove_p( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       rdpz4 = 0.0
       rdpz5 = 0.0
       dpz4 = 0.0
@@ -3505,7 +3559,7 @@ subroutine bcut_remove_p( &
     uy(i, j, k) = uy(i, j, k) + rdpy*dt
     uz(i, j, k) = uz(i, j, k) + rdpz*dt
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       ux(i, j, k) = 0.0
       uy(i, j, k) = 0.0
       uz(i, j, k) = 0.0
@@ -3614,6 +3668,12 @@ subroutine bcut_corr_u( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     m0 = 0.0d0
     m1 = 0.0d0
@@ -3621,7 +3681,7 @@ subroutine bcut_corr_u( &
     m3 = 0.0d0
     m4 = 0.0d0
     m5 = 0.0d0
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       rdpx0 = rdpx1
       rdpx0 = 0.0d0
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -3630,7 +3690,7 @@ subroutine bcut_corr_u( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       rdpx1 = rdpx0
       rdpx1 = 0.0d0
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -3639,7 +3699,7 @@ subroutine bcut_corr_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       rdpy2 = rdpy3
       rdpy2 = 0.0d0
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -3648,7 +3708,7 @@ subroutine bcut_corr_u( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       rdpy3 = rdpy2
       rdpy3 = 0.0d0
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -3657,7 +3717,7 @@ subroutine bcut_corr_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       rdpz4 = rdpz5
       rdpz4 = 0.0d0
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -3666,7 +3726,7 @@ subroutine bcut_corr_u( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       rdpz5 = rdpz4
       rdpz5 = 0.0d0
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -3675,7 +3735,7 @@ subroutine bcut_corr_u( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       rdpx0 = 0.0
       rdpx1 = 0.0
       dpx0 = 0.0
@@ -3684,7 +3744,7 @@ subroutine bcut_corr_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       rdpy2 = 0.0
       rdpy3 = 0.0
       dpy2 = 0.0
@@ -3693,7 +3753,7 @@ subroutine bcut_corr_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       rdpz4 = 0.0
       rdpz5 = 0.0
       dpz4 = 0.0
@@ -3724,7 +3784,7 @@ subroutine bcut_corr_u( &
                     + p0_(i, j, k+1) + p0_(i, j, k-1) &
                     - 6.0*p0_(i, j, k) )/(dx*dx)
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       ux0_(i, j, k) = 0.0d0
       uy0_(i, j, k) = 0.0d0
       uz0_(i, j, k) = 0.0d0
@@ -3738,15 +3798,14 @@ subroutine bcut_corr_u( &
       lapp(i, j, k) = 0.0d0
     endif
 
-    if( cidp0 /= 0 .or. &
-        cidp1 /= 0 .or. &
-        cidp2 /= 0 .or. &
-        cidp3 /= 0 .or. &
-        cidp4 /= 0 .or. &
-        cidp5 /= 0 ) then
+    if( pidw == 0 .or. &
+        pide == 0 .or. &
+        pids == 0 .or. &
+        pidn == 0 .or. &
+        pidb == 0 .or. &
+        pidt == 0 ) then
       lapp(i, j, k) = 0.0d0
     endif
-
   end do
   end do
   end do
@@ -3841,6 +3900,12 @@ subroutine bcut_update_u( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
     mu0 = mu
     mu1 = mu
@@ -3877,7 +3942,7 @@ subroutine bcut_update_u( &
     m4 = 0.0d0
     m5 = 0.0d0
 
-    if( cidp0 /= 0 ) then
+    if( pidw == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
@@ -3885,7 +3950,7 @@ subroutine bcut_update_u( &
       m0 = 1.0d0
     endif
 
-    if( cidp1 /= 0 ) then
+    if( pide == 0 ) then
       mu0 = mu/d0*2.0d0/(d0 + d1)
       mu1 = mu/d1*2.0d0/(d0 + d1)
       rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
@@ -3893,7 +3958,7 @@ subroutine bcut_update_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 ) then
+    if( pids == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
@@ -3901,7 +3966,7 @@ subroutine bcut_update_u( &
       m2 = 1.0d0
     endif
 
-    if( cidp3 /= 0 ) then
+    if( pidn == 0 ) then
       mu2 = mu/d2*2.0d0/(d2 + d3)
       mu3 = mu/d3*2.0d0/(d2 + d3)
       rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
@@ -3909,7 +3974,7 @@ subroutine bcut_update_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 ) then
+    if( pidb == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
@@ -3917,7 +3982,7 @@ subroutine bcut_update_u( &
       m4 = 1.0d0
     endif
 
-    if( cidp5 /= 0 ) then
+    if( pidt == 0 ) then
       mu4 = mu/d4*2.0d0/(d4 + d5)
       mu5 = mu/d5*2.0d0/(d4 + d5)
       rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
@@ -3925,7 +3990,7 @@ subroutine bcut_update_u( &
       m5 = 1.0d0
     endif
 
-    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+    if( pidw == 0 .and. pide == 0 ) then
       rdpx0 = 0.0
       rdpx1 = 0.0
       dpx0 = 0.0
@@ -3934,7 +3999,7 @@ subroutine bcut_update_u( &
       m1 = 1.0d0
     endif
 
-    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+    if( pids == 0 .and. pidn == 0 ) then
       rdpy2 = 0.0
       rdpy3 = 0.0
       dpy2 = 0.0
@@ -3943,7 +4008,7 @@ subroutine bcut_update_u( &
       m3 = 1.0d0
     endif
 
-    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+    if( pidb == 0 .and. pidt == 0 ) then
       rdpz4 = 0.0
       rdpz5 = 0.0
       dpz4 = 0.0
@@ -3970,7 +4035,7 @@ subroutine bcut_update_u( &
                   + (1.5*ud0_(i, j, k) - 0.5*udp_(i, j, k))*dt &
                   - rdp*dt
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       u0_(i, j, k) = Uc
     endif
   end do
@@ -4043,7 +4108,7 @@ subroutine bcut_update_t( &
                   - (1.5*tc0_(i, j, k) - 0.5*tcp_(i, j, k))*dt &
                   + (1.5*td0_(i, j, k) - 0.5*tdp_(i, j, k))*dt 
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       t0_(i, j, k) = 0.0
     endif
 
@@ -4202,7 +4267,7 @@ subroutine bcut_calc_f_p( &
       m5 = 1.0d0
     endif
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       m0 = 0.0d0
       m1 = 0.0d0
       m2 = 0.0d0
@@ -4381,7 +4446,7 @@ subroutine bcut_calc_f_v( &
       m5 = 1.0d0
     endif
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       m0 = 0.0d0
       m1 = 0.0d0
       m2 = 0.0d0
@@ -4530,7 +4595,7 @@ subroutine bcut_calc_q( &
 
     pidp = pid(i, j, k)
 
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       cycle
     endif
 
@@ -4862,30 +4927,36 @@ subroutine bcut_calc_nue( &
     cidp5 = cid5(i, j, k)
 
     pidp = pid(i, j, k)
+    pidw = pid(i-1, j, k)
+    pide = pid(i+1, j, k)
+    pids = pid(i, j-1, k)
+    pidn = pid(i, j+1, k)
+    pidb = pid(i, j, k-1)
+    pidt = pid(i, j, k+1)
 
-    m0 = 0.0d0
-    m1 = 0.0d0
-    m2 = 0.0d0
-    m3 = 0.0d0
-    m4 = 0.0d0
-    m5 = 0.0d0
-    if( cidp0 /= 0 ) then
-      m0 = 1.0d0
+    m0 = 0.0
+    m1 = 0.0
+    m2 = 0.0
+    m3 = 0.0
+    m4 = 0.0
+    m5 = 0.0
+    if( pidw == 0 ) then
+      m0 = 1.0
     endif
-    if( cidp1 /= 0 ) then
-      m1 = 1.0d0
+    if( pide == 0 ) then
+      m1 = 1.0
     endif
-    if( cidp2 /= 0 ) then
-      m2 = 1.0d0
+    if( pids == 0 ) then
+      m2 = 1.0
     endif
-    if( cidp3 /= 0 ) then
-      m3 = 1.0d0
+    if( pidn == 0 ) then
+      m3 = 1.0
     endif
-    if( cidp4 /= 0 ) then
-      m4 = 1.0d0
+    if( pidb == 0 ) then
+      m4 = 1.0
     endif
-    if( cidp5 /= 0 ) then
-      m5 = 1.0d0
+    if( pidt == 0 ) then
+      m5 = 1.0
     endif
 
     up = ux_(i, j, k)
@@ -4947,7 +5018,7 @@ subroutine bcut_calc_nue( &
     csm_c = csm_c2*csm_fom*(abs(csm_fcs))**1.5
 
     nue_(i, j, k) = csm_c*dx*dx*sl
-    if( pidp /= 1 ) then
+    if( pidp == 0 ) then
       nue_(i, j, k) = 0.0
     endif
   end do
