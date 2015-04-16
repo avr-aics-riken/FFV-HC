@@ -40,6 +40,38 @@ Solver::~Solver() {
 	MPI::Finalize();
 }
 
+int Solver::Init(int argc, char** argv){
+	InitMPI(argc, argv);
+	InitConfig(argv[1]);
+	InitPMlib();
+	InitPolylib();
+	InitDivider();
+	InitTree();
+	InitBlocks();
+	InitGridParams();
+	InitSTL();
+	InitSTL2();
+	InitPhysicalParams();
+	InitCutlib();
+	InitCutlibModify();
+	InitWallFlag();
+	InitPhaseBoundary();
+	InitPhase();
+	InitRegion();
+	InitGeometricalProps();
+
+	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
+		return EX_FAILURE;
+		return EX_SUCCESS;
+	}
+
+	InitVars();
+	InitOutputData();
+	InitTimer();
+
+	return EX_SUCCESS;
+}
+
 void Solver::InitMPI(int argc, char** argv) {
 	MPI::Init(argc, argv);
 
@@ -1126,6 +1158,7 @@ void Solver::InitPhase() {
 			}
 		}
 	}
+	plsPhaseId->ImposeBoundaryCondition(blockManager);
 
 	long int countTmp = countF;
 	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
@@ -1692,37 +1725,6 @@ void Solver::InitTimer() {
 	for(int i=0; i<32; i++) {
 		this->times[i] = 0.0;
 	}
-}
-
-int Solver::Init(int argc, char** argv){
-	InitMPI(argc, argv);
-	InitConfig(argv[1]);
-	InitPMlib();
-	InitPolylib();
-	InitDivider();
-	InitTree();
-	InitBlocks();
-	InitGridParams();
-	InitSTL();
-	InitSTL2();
-	InitPhysicalParams();
-	InitCutlib();
-	InitWallFlag();
-	InitPhaseBoundary();
-	InitPhase();
-	InitRegion();
-	InitGeometricalProps();
-
-	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
-		return EX_FAILURE;
-		return EX_SUCCESS;
-	}
-
-	InitVars();
-	InitOutputData();
-	InitTimer();
-
-	return EX_SUCCESS;
 }
 
 int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, real zs)
