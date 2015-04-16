@@ -24,12 +24,15 @@ class Solver {
 	private:
 		BlockManager& blockManager;
 		int myrank;
-		int vc;
-		int diffLevel;
 		int maxLevel;
 		int minLevel;
+		int diffLevel;
+		Vec3i size;
+		int vc;
 		std::string updateMethod;
 
+		PolylibNS::BCMPolylib* pl;
+		Divider* divider;
 		RootGrid* rootGrid;
 		BCMOctree* tree;
 		Partition* partition;
@@ -112,6 +115,12 @@ class Solver {
 		LocalScalar3D<int> *plsCutId3;
 		LocalScalar3D<int> *plsCutId4;
 		LocalScalar3D<int> *plsCutId5;
+		LocalScalar3D<int> *plsWallFlag0;
+		LocalScalar3D<int> *plsWallFlag1;
+		LocalScalar3D<int> *plsWallFlag2;
+		LocalScalar3D<int> *plsWallFlag3;
+		LocalScalar3D<int> *plsWallFlag4;
+		LocalScalar3D<int> *plsWallFlag5;
 
 		int *pNormalN;
 		real **pNormalX;
@@ -200,6 +209,29 @@ class Solver {
 		int Post();
 
 	private:
+		void InitMPI(int argc, char** argv);
+		void InitConfig(const char* configfilename);
+		void InitPMlib();
+		void InitPolylib();
+		void InitDivider();
+		void InitTree();
+		void InitBlocks();
+		void InitGridParams();
+		void InitSTL();
+		void InitSTL2();
+		void InitPhysicalParams();
+		void InitCutlib();
+		void InitCutlibModify();
+		void InitPhase();
+		void InitRegion();
+		void InitGeometricalProps();
+		void InitVars();
+		void InitVarsBasic();
+		void InitVarsDerived();
+		void InitVarsILS();
+		void InitOutputData();
+		void InitTimer();
+
 		int Update(int step);
 		void UpdateUX(int step);
 		void UpdateUY(int step);
