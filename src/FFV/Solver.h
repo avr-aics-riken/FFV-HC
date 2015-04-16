@@ -222,7 +222,12 @@ class Solver {
 		void InitPhysicalParams();
 		void InitCutlib();
 		void InitCutlibModify();
+		void InitWallFlag();
+		void ClearWallFlag();
+		void ModifyWallFlag(int cid_target);
+		void InitPhaseBoundary();
 		void InitPhase();
+		void InitPhase2();
 		void InitRegion();
 		void InitGeometricalProps();
 		void InitVars();
@@ -245,6 +250,7 @@ class Solver {
 		void UpdateTe(int step);
 		void UpdateF(int step);
 		int FillRegion(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
+		int FillRegion2(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
 
 		int Print(int step);
 		double times[32];

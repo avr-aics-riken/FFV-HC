@@ -252,6 +252,7 @@ class FFVConfig {
 
 		int    BCInternalBoundaryType[32];
 		double BCInternalBoundaryValue[32];
+		int    BCInternalBoundaryPhaseBoundary[32];
 
 	public:
 		void Load(std::string filename);

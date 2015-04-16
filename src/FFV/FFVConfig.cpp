@@ -541,6 +541,8 @@ void FFVConfig::Load(std::string filename) {
 		bcid << n;
 		BCInternalBoundaryType[n]  = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/Type", -1);
 		BCInternalBoundaryValue[n] = Read<double>("/BCTable/LocalBoundary/ID" + bcid.str() + "/Value", 0.0);
+		BCInternalBoundaryPhaseBoundary[n]
+															 = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/PhaseBoundary", 1);
 		//		std::cout << n << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
 	}
 }
