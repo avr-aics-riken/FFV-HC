@@ -259,11 +259,15 @@ namespace BCMT_NAMESPACE {
 				///  @note 端点では，内挿ではなく外挿
 				///
 				void linearInterpolate(int i, int n, int& I, double& r) {
-#if 1
-					//    I = std::min(std::max(i/2 - 1 + i%2, 0), n - 2);
+					I = i/2;
+					r = 0.5;
+/*
+					I = std::min(std::max(i/2 - 1 + i%2, 0), n - 2);
+					r = -0.25 + 0.5 * i - double(I);
+
 					I = i/2 - 1 + i%2;
 					r = -0.25 + 0.5 * i - double(I);
-#else
+
 					if (i == 0) {
 						// 外挿
 						I = 0;
@@ -282,7 +286,8 @@ namespace BCMT_NAMESPACE {
 						I = i/2;
 						r = 0.25;
 					}
-#endif
+*/
+
 				}
 
 				/*
