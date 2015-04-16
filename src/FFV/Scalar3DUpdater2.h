@@ -856,6 +856,12 @@ namespace BCMT_NAMESPACE {
 
 		};
 
+/*
+template <>
+int Scalar3DUpdater2<int>::interpolateF2C(const int* fData, const Index3DS& fIndex, int I, int J, int K);
+template <>
+int Scalar3DUpdater2<int>::interpolateC2F(const int* cData, const Index3DS& cIndex, int i, int j, int k);
+*/
 
 #ifdef BCMT_NAMESPACE
 } // namespace BCMT_NAMESPACE
