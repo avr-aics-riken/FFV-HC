@@ -1160,6 +1160,48 @@ void Solver::InitPhase() {
 	}
 	plsPhaseId->ImposeBoundaryCondition(blockManager);
 
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+
+		double bpos[3] = {origin.x, origin.y, origin.z};
+		unsigned int bbsize[3] = {size.x, size.y, size.z};
+		unsigned int gcsize[3] = {vc, vc, vc};
+		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		size_t ncell[3];
+		double org[3];
+		for(int i=0; i<3; i++) {
+			ncell[i] = bbsize[i] + 2*gcsize[i];
+			org[i] = bpos[i] - gcsize[i]*dx[i];
+		}
+
+		int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int mw = i-1 + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					if( pPhaseId[mw] == -1 ) {
+						std::cout << i << " " << j << " " << k << " " << n << std::endl;
+					}
+				}
+			}
+		}
+	}
+
 	long int countTmp = countF;
 	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
