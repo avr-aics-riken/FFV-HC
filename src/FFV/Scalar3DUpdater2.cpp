@@ -4,6 +4,7 @@
 namespace BCMT_NAMESPACE {
 #endif
 
+/*
 template <>
 int Scalar3DUpdater2<int>::interpolateF2C(const int* fData, const Index3DS& fIndex, int I, int J, int K) {
 					int i = 2 * I;
@@ -36,6 +37,7 @@ int Scalar3DUpdater2<int>::interpolateC2F(const int* cData, const Index3DS& cInd
 					}
 					return -1;
 				}
+*/
 
 #ifdef BCMT_NAMESPACE
 } // namespace BCMT_NAMESPACE
