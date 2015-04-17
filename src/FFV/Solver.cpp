@@ -54,8 +54,8 @@ int Solver::Init(int argc, char** argv){
 	InitPhysicalParams();
 	InitCutlib();
 	InitCutlibModify();
-	InitWallFlag();
-	InitPhaseBoundary();
+	InitFaceFlag();
+	InitCellFlag();
 	InitPhase();
 	InitRegion();
 	InitGeometricalProps();
@@ -969,47 +969,47 @@ void Solver::InitCutlibModify() {
 	}
 }
 
-void Solver::InitWallFlag() {
+void Solver::InitFaceFlag() {
 	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
 	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
 	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-	plsWallFlag0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsWallFlag0->Fill(blockManager, 0);
-	plsWallFlag1->Fill(blockManager, 0);
-	plsWallFlag2->Fill(blockManager, 0);
-	plsWallFlag3->Fill(blockManager, 0);
-	plsWallFlag4->Fill(blockManager, 0);
-	plsWallFlag5->Fill(blockManager, 0);
-	plsWallFlag0->ImposeBoundaryCondition(blockManager);
-	plsWallFlag1->ImposeBoundaryCondition(blockManager);
-	plsWallFlag2->ImposeBoundaryCondition(blockManager);
-	plsWallFlag3->ImposeBoundaryCondition(blockManager);
-	plsWallFlag4->ImposeBoundaryCondition(blockManager);
-	plsWallFlag5->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag0->Fill(blockManager, -1);
+	plsFaceFlag1->Fill(blockManager, -1);
+	plsFaceFlag2->Fill(blockManager, -1);
+	plsFaceFlag3->Fill(blockManager, -1);
+	plsFaceFlag4->Fill(blockManager, -1);
+	plsFaceFlag5->Fill(blockManager, -1);
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
 }
 
-void Solver::ClearWallFlag() {
-	plsWallFlag0->Fill(blockManager, 0);
-	plsWallFlag1->Fill(blockManager, 0);
-	plsWallFlag2->Fill(blockManager, 0);
-	plsWallFlag3->Fill(blockManager, 0);
-	plsWallFlag4->Fill(blockManager, 0);
-	plsWallFlag5->Fill(blockManager, 0);
-	plsWallFlag0->ImposeBoundaryCondition(blockManager);
-	plsWallFlag1->ImposeBoundaryCondition(blockManager);
-	plsWallFlag2->ImposeBoundaryCondition(blockManager);
-	plsWallFlag3->ImposeBoundaryCondition(blockManager);
-	plsWallFlag4->ImposeBoundaryCondition(blockManager);
-	plsWallFlag5->ImposeBoundaryCondition(blockManager);
+void Solver::ClearFaceFlag() {
+	plsFaceFlag0->Fill(blockManager, -1);
+	plsFaceFlag1->Fill(blockManager, -1);
+	plsFaceFlag2->Fill(blockManager, -1);
+	plsFaceFlag3->Fill(blockManager, -1);
+	plsFaceFlag4->Fill(blockManager, -1);
+	plsFaceFlag5->Fill(blockManager, -1);
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
 }
 
-void Solver::ModifyWallFlag(int cid_target) {
+void Solver::ModifyFaceFlag(int cid_target) {
 	if( cid_target <=0 || cid_target > 31 ) {
 		return;
 	}
@@ -1031,12 +1031,12 @@ void Solver::ModifyWallFlag(int cid_target) {
 		int* pCutId3 = plsCutId3->GetBlockData(block);
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
-		int* pWallFlag0 = plsWallFlag0->GetBlockData(block);
-		int* pWallFlag1 = plsWallFlag1->GetBlockData(block);
-		int* pWallFlag2 = plsWallFlag2->GetBlockData(block);
-		int* pWallFlag3 = plsWallFlag3->GetBlockData(block);
-		int* pWallFlag4 = plsWallFlag4->GetBlockData(block);
-		int* pWallFlag5 = plsWallFlag5->GetBlockData(block);
+		int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+		int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+		int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+		int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+		int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+		int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
 #ifdef _BLOCK_IS_LARGE_
 #pragma omp parallel for
 #else
@@ -1051,54 +1051,162 @@ void Solver::ModifyWallFlag(int cid_target) {
 					int cid3 = pCutId3[m];
 					int cid4 = pCutId4[m];
 					int cid5 = pCutId5[m];
-					int wf0 = pWallFlag0[m];
-					int wf1 = pWallFlag1[m];
-					int wf2 = pWallFlag2[m];
-					int wf3 = pWallFlag3[m];
-					int wf4 = pWallFlag4[m];
-					int wf5 = pWallFlag5[m];
+					int ff0 = pFaceFlag0[m];
+					int ff1 = pFaceFlag1[m];
+					int ff2 = pFaceFlag2[m];
+					int ff3 = pFaceFlag3[m];
+					int ff4 = pFaceFlag4[m];
+					int ff5 = pFaceFlag5[m];
 					if( cid0 == cid_target ) {
-						wf0 = 1;
+						ff0 = 1;
 					}
 					if( cid1 == cid_target ) {
-						wf1 = 1;
+						ff1 = 1;
 					}
 					if( cid2 == cid_target ) {
-						wf2 = 1;
+						ff2 = 1;
 					}
 					if( cid3 == cid_target ) {
-						wf3 = 1;
+						ff3 = 1;
 					}
 					if( cid4 == cid_target ) {
-						wf4 = 1;
+						ff4 = 1;
 					}
 					if( cid5 == cid_target ) {
-						wf5 = 1;
+						ff5 = 1;
 					}
-					pWallFlag0[m] = wf0;
-					pWallFlag1[m] = wf1;
-					pWallFlag2[m] = wf2;
-					pWallFlag3[m] = wf3;
-					pWallFlag4[m] = wf4;
-					pWallFlag5[m] = wf5;
+					pFaceFlag0[m] = ff0;
+					pFaceFlag1[m] = ff1;
+					pFaceFlag2[m] = ff2;
+					pFaceFlag3[m] = ff3;
+					pFaceFlag4[m] = ff4;
+					pFaceFlag5[m] = ff5;
 				}
 			}
 		}
 	}
-	plsWallFlag0->ImposeBoundaryCondition(blockManager);
-	plsWallFlag1->ImposeBoundaryCondition(blockManager);
-	plsWallFlag2->ImposeBoundaryCondition(blockManager);
-	plsWallFlag3->ImposeBoundaryCondition(blockManager);
-	plsWallFlag4->ImposeBoundaryCondition(blockManager);
-	plsWallFlag5->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
 }
 
-void Solver::InitPhaseBoundary() {
-	ClearWallFlag();
-	for(int n=1; n<32; n++) {
-		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[n] != 0 ) {
-			ModifyWallFlag(n);
-		}
+void Solver::InitCellFlag() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
+
+	plsCellFlag = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsCellFlag->Fill(blockManager, -1);
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+}
+
+void Solver::FillCellFlag(real xs, real ys, real zs)
+{
+	plsCellFlag->Fill(blockManager, -1);
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+	int ids = 1;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pCellFlag = plsCellFlag->GetBlockData(block);
+
+		bcut_set_seed_(
+				pCellFlag,
+				&ids,
+				&xs, &ys, &zs,
+				&dx,
+				org,
+				sz, g);
+	}
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+
+	{
+		int nIterationCount = 0;
+		long int nCellsChanged = 0;
+		do {
+			nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				Vec3i size = block->getSize();
+				Vec3r origin = block->getOrigin();
+				Vec3r blockSize = block->getBlockSize();
+				Vec3r cellSize = block->getCellSize();
+
+				int sz[3] = {size.x, size.y, size.z};
+				int g[1] = {vc};
+				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+				int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+				int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+				int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+				int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+				int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+				int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
+
+				int* pCellFlag = plsCellFlag->GetBlockData(block);
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+				for(int k=vc; k<=size.z+vc-1; k++) {
+					for(int j=vc; j<=size.y+vc-1; j++) {
+						for(int i=vc; i<=size.x+vc-1; i++) {
+							int mp = i + nc[0]*( j + nc[1]*k );
+							int mw = i-1 + nc[0]*( j + nc[1]*k );
+							int me = i+1 + nc[0]*( j + nc[1]*k );
+							int ms = i + nc[0]*( j-1 + nc[1]*k );
+							int mn = i + nc[0]*( j+1 + nc[1]*k );
+							int mb = i + nc[0]*( j + nc[1]*(k-1) );
+							int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+							int ff0 = pFaceFlag0[mp];
+							int ff1 = pFaceFlag1[mp];
+							int ff2 = pFaceFlag2[mp];
+							int ff3 = pFaceFlag3[mp];
+							int ff4 = pFaceFlag4[mp];
+							int ff5 = pFaceFlag5[mp];
+
+							if( pCellFlag[mp] == ids ) {
+								continue;
+							}
+
+							if( (pCellFlag[mw] == ids && ff0 != 1) ||
+									(pCellFlag[me] == ids && ff1 != 1) ||
+									(pCellFlag[ms] == ids && ff2 != 1) ||
+									(pCellFlag[mn] == ids && ff3 != 1) ||
+									(pCellFlag[mb] == ids && ff4 != 1) ||
+									(pCellFlag[mt] == ids && ff5 != 1) ) {
+								pCellFlag[mp] = ids;
+								nCellsChanged++;
+							}
+						}
+					}
+				}
+			}
+			plsCellFlag->ImposeBoundaryCondition(blockManager);
+
+			long int nCellsChangedTmp = nCellsChanged;
+			MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+			nIterationCount++;
+		}while(nCellsChanged>0);
 	}
 }
 
@@ -1107,15 +1215,24 @@ void Solver::InitPhase() {
 	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
 	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsPhaseId->Fill(blockManager, -1);
+
+	ClearFaceFlag();
+	for(int n=1; n<32; n++) {
+		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[n] != 0 ) {
+			std::cout << n << std::endl;
+			ModifyFaceFlag(n);
+		}
+	}
 
 	int ids = 0;
 	real xs = g_pFFVConfig->RegionList[ids].origin.x;
 	real ys = g_pFFVConfig->RegionList[ids].origin.y;
 	real zs = g_pFFVConfig->RegionList[ids].origin.z;
-	long int countF = FillRegion(plsPhaseId, 1, xs, ys, zs);
+	FillCellFlag(xs, ys, zs);
 
+	long int countF = 0;
 	long int countS = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -1141,6 +1258,7 @@ void Solver::InitPhase() {
 			org[i] = bpos[i] - gcsize[i]*dx[i];
 		}
 
+		int* pCellFlag = plsCellFlag->GetBlockData(block);
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
 #ifdef _BLOCK_IS_LARGE_
@@ -1150,7 +1268,10 @@ void Solver::InitPhase() {
 			for(int j=vc; j<vc+size.y; j++) {
 				for(int i=vc; i<vc+size.x; i++) {
 					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
-					if( pPhaseId[m] != 1 ) {
+					if( pCellFlag[m] == 1 ) {
+						pPhaseId[m] = 1;
+						countF++;
+					} else {
 						pPhaseId[m] = 0;
 						countS++;
 					}
@@ -1160,6 +1281,20 @@ void Solver::InitPhase() {
 	}
 	plsPhaseId->ImposeBoundaryCondition(blockManager);
 
+	long int countTmp = countF;
+	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+	countTmp = countS;
+	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+	long int nBlocks = blockManager.getNumBlock();
+	long int nCellsPerBlock = size.x*size.y*size.z;
+	long int countAll = nBlocks*nCellsPerBlock;
+	PrintLog(2, "%-20s : %d", "FLUID cells", countF);
+	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
+	PrintLog(2, "%-20s : %d", "Total cells", countAll);
+
+/*
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -1194,6 +1329,8 @@ void Solver::InitPhase() {
 				for(int i=vc; i<vc+size.x; i++) {
 					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
 					int mw = i-1 + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int me = i+1 + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int ms = i + (2*vc + size.x)*(j-1 + (2*vc + size.y)*k);
 					if( pPhaseId[mw] == -1 ) {
 						std::cout << i << " " << j << " " << k << " " << n << std::endl;
 					}
@@ -1201,19 +1338,7 @@ void Solver::InitPhase() {
 			}
 		}
 	}
-
-	long int countTmp = countF;
-	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-	countTmp = countS;
-	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-	long int nBlocks = blockManager.getNumBlock();
-	long int nCellsPerBlock = size.x*size.y*size.z;
-	long int countAll = nBlocks*nCellsPerBlock;
-	PrintLog(2, "%-20s : %d", "FLUID cells", countF);
-	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
-	PrintLog(2, "%-20s : %d", "Total cells", countAll);
+*/
 }
 
 void Solver::InitRegion() {
@@ -1221,27 +1346,73 @@ void Solver::InitRegion() {
 	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
 	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsRegionId->Fill(blockManager, -1);
 
 	PrintLog(1, "Partitioning regions");
 
 	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
-	int *pCountRGN = new int [g_pFFVConfig->RegionList.size()];
 	for(int nRGN=0; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
 		int ids = nRGN;
 		real xs = g_pFFVConfig->RegionList[ids].origin.x;
 		real ys = g_pFFVConfig->RegionList[ids].origin.y;
 		real zs = g_pFFVConfig->RegionList[ids].origin.z;
-		int cid_target = 10;
-		ClearWallFlag();
-		ModifyWallFlag(cid_target);
-		int count = FillRegion(plsRegionId, ids, xs, ys, zs);
+		int cid_target = g_pFFVConfig->RegionList[ids].cid_target;
+		ClearFaceFlag();
+		ModifyFaceFlag(cid_target);
+		FillCellFlag(xs, ys, zs);
+
+		long int count = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size      = block->getSize();
+			Vec3r origin    = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize  = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+
+			double bpos[3] = {origin.x, origin.y, origin.z};
+			unsigned int bbsize[3] = {size.x, size.y, size.z};
+			unsigned int gcsize[3] = {vc, vc, vc};
+			double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+			size_t ncell[3];
+			double org[3];
+			for(int i=0; i<3; i++) {
+				ncell[i] = bbsize[i] + 2*gcsize[i];
+				org[i] = bpos[i] - gcsize[i]*dx[i];
+			}
+
+			int* pCellFlag = plsCellFlag->GetBlockData(block);
+			int* pRegionId = plsRegionId->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for(int k=vc; k<vc+size.z; k++) {
+				for(int j=vc; j<vc+size.y; j++) {
+					for(int i=vc; i<vc+size.x; i++) {
+						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+						if( pCellFlag[m] == 1 ) {
+							pRegionId[m] = ids;
+							count++;
+						}
+					}
+				}
+			}
+		}
+		plsRegionId->ImposeBoundaryCondition(blockManager);
+
+		long int countTmp = count;
+		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
 		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
 		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
-		pCountRGN[nRGN] = count;
 	}
-	delete [] pCountRGN;
 	PM_Stop(tm_Init_PartitioningRegions);
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
@@ -1818,12 +1989,12 @@ int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, rea
 				int g[1] = {vc};
 				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
 
-				int* pWallFlag0 = plsWallFlag0->GetBlockData(block);
-				int* pWallFlag1 = plsWallFlag1->GetBlockData(block);
-				int* pWallFlag2 = plsWallFlag2->GetBlockData(block);
-				int* pWallFlag3 = plsWallFlag3->GetBlockData(block);
-				int* pWallFlag4 = plsWallFlag4->GetBlockData(block);
-				int* pWallFlag5 = plsWallFlag5->GetBlockData(block);
+				int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+				int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+				int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+				int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+				int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+				int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
 
 				int* pId = plsId->GetBlockData(block);
 #ifdef _BLOCK_IS_LARGE_
@@ -1841,23 +2012,23 @@ int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, rea
 							int mb = i + nc[0]*( j + nc[1]*(k-1) );
 							int mt = i + nc[0]*( j + nc[1]*(k+1) );
 
-							int wf0 = pWallFlag0[mp];
-							int wf1 = pWallFlag1[mp];
-							int wf2 = pWallFlag2[mp];
-							int wf3 = pWallFlag3[mp];
-							int wf4 = pWallFlag4[mp];
-							int wf5 = pWallFlag5[mp];
+							int ff0 = pFaceFlag0[mp];
+							int ff1 = pFaceFlag1[mp];
+							int ff2 = pFaceFlag2[mp];
+							int ff3 = pFaceFlag3[mp];
+							int ff4 = pFaceFlag4[mp];
+							int ff5 = pFaceFlag5[mp];
 
 							if( pId[mp] == Ids ) {
 								continue;
 							}
 
-							if( (pId[mw] == Ids && wf0 == 0) ||
-									(pId[me] == Ids && wf1 == 0) ||
-									(pId[ms] == Ids && wf2 == 0) ||
-									(pId[mn] == Ids && wf3 == 0) ||
-									(pId[mb] == Ids && wf4 == 0) ||
-									(pId[mt] == Ids && wf5 == 0) ) {
+							if( (pId[mw] == Ids && ff0 != 1) ||
+									(pId[me] == Ids && ff1 != 1) ||
+									(pId[ms] == Ids && ff2 != 1) ||
+									(pId[mn] == Ids && ff3 != 1) ||
+									(pId[mb] == Ids && ff4 != 1) ||
+									(pId[mt] == Ids && ff5 != 1) ) {
 								pId[mp] = Ids;
 								nCellsChanged++;
 							}

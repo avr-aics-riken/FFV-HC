@@ -28,7 +28,7 @@ typedef struct _PPM {
 //Region
 typedef struct _RGN {
 	Vec3d origin;
-	std::string medium;
+	int cid_target;
 }RGN;
 
 class FFVConfig {

@@ -101,8 +101,6 @@ class Solver {
 		LocalScalar3D<real> *plsTA;
 
 // For grids
-		LocalScalar3D<int> *plsPhaseId;
-		LocalScalar3D<int> *plsRegionId;
 		LocalScalar3D<real> *plsCut0;
 		LocalScalar3D<real> *plsCut1;
 		LocalScalar3D<real> *plsCut2;
@@ -115,12 +113,6 @@ class Solver {
 		LocalScalar3D<int> *plsCutId3;
 		LocalScalar3D<int> *plsCutId4;
 		LocalScalar3D<int> *plsCutId5;
-		LocalScalar3D<int> *plsWallFlag0;
-		LocalScalar3D<int> *plsWallFlag1;
-		LocalScalar3D<int> *plsWallFlag2;
-		LocalScalar3D<int> *plsWallFlag3;
-		LocalScalar3D<int> *plsWallFlag4;
-		LocalScalar3D<int> *plsWallFlag5;
 
 		int *pNormalN;
 		real **pNormalX;
@@ -132,6 +124,18 @@ class Solver {
 		LocalScalar3D<int> *plsNormalIndex3;
 		LocalScalar3D<int> *plsNormalIndex4;
 		LocalScalar3D<int> *plsNormalIndex5;
+
+		LocalScalar3D<int> *plsPhaseId;
+		LocalScalar3D<int> *plsRegionId;
+
+		LocalScalar3D<int> *plsCellFlag;
+		LocalScalar3D<int> *plsFaceFlag0;
+		LocalScalar3D<int> *plsFaceFlag1;
+		LocalScalar3D<int> *plsFaceFlag2;
+		LocalScalar3D<int> *plsFaceFlag3;
+		LocalScalar3D<int> *plsFaceFlag4;
+		LocalScalar3D<int> *plsFaceFlag5;
+
 
 // For ILS
 		LocalScalar3D<real> *plsAp;
@@ -222,10 +226,11 @@ class Solver {
 		void InitPhysicalParams();
 		void InitCutlib();
 		void InitCutlibModify();
-		void InitWallFlag();
-		void ClearWallFlag();
-		void ModifyWallFlag(int cid_target);
-		void InitPhaseBoundary();
+		void InitFaceFlag();
+		void ClearFaceFlag();
+		void ModifyFaceFlag(int cid_target);
+		void InitCellFlag();
+		void FillCellFlag(real xs, real ys, real zs);
 		void InitPhase();
 		void InitPhase2();
 		void InitRegion();

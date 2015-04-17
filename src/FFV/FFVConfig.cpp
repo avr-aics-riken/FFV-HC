@@ -205,12 +205,12 @@ void FFVConfig::Load(std::string filename) {
 	tp->getArrayLabels													("/RegionInfo/Region[@]", rgnlist);	
 	RegionList.clear();
 	RGN rgn0;
-	rgn0.medium = FillingMedium;
 	rgn0.origin = FillingOrigin;
+	rgn0.cid_target = 0;
 	RegionList.push_back(rgn0);
 	for(int n=0; n<rgnlist.size(); n++) {
 		rgn0.origin						= Read<Vec3d>					(rgnlist[n] + "/Origin");
-		rgn0.medium						= Read<std::string>		(rgnlist[n] + "/Medium");
+		rgn0.cid_target				= Read<int>						(rgnlist[n] + "/ID");
 		RegionList.push_back(rgn0);
 	}
 
