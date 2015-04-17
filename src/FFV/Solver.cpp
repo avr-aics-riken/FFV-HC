@@ -51,7 +51,7 @@ int Solver::Init(int argc, char** argv){
 	InitGridParams();
 	InitSTL();
 	InitSTL2();
-	InitPhysicalParams();
+	InitPGList();
 	InitCutlib();
 	InitCutlibModify();
 	InitFaceFlag();
@@ -65,6 +65,7 @@ int Solver::Init(int argc, char** argv){
 		return EX_SUCCESS;
 	}
 
+	InitPhysicalParams();
 	InitVars();
 	InitOutputData();
 	InitTimer();
@@ -421,19 +422,18 @@ void Solver::InitSTL2() {
 	PrintLog(2, "Completed");
 }
 
-void Solver::InitPhysicalParams() {
-	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
-
-	std::string fluid0 = g_pFFVConfig->FillingMedium;
-	rhof	= g_pFFVConfig->PPMMap[fluid0].rho;
-	cpf		= g_pFFVConfig->PPMMap[fluid0].cp;
-	kf		= g_pFFVConfig->PPMMap[fluid0].k;
-	mu		= g_pFFVConfig->PPMMap[fluid0].mu;
-	csf   = g_pFFVConfig->PPMMap[fluid0].cs;
-
-	rhos	= g_pFFVConfig->PPMMap[fluid0].rho;
-	cps		= g_pFFVConfig->PPMMap[fluid0].cp;
-	ks		= g_pFFVConfig->PPMMap[fluid0].k;
+void Solver::InitPGList() {
+  this->pgList = new std::vector<std::string>;
+  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
+  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
+  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
+		int id = (*it)->get_id();
+		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[id] != 0 ) {
+	    this->pgList->push_back((*it)->acq_fullpath());
+			std::cout << id << std::endl;
+		}
+  }
+//  delete leafGroups;
 }
 
 void Solver::InitCutlib() {
@@ -509,7 +509,7 @@ void Solver::InitCutlib() {
 
 		//		CutInfoCell(org, dx, pl, cutPos, cutBid);
 		PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
-		int ret = CalcCutInfo(grid, pl, cutPos, cutBid, cutNormal);
+		int ret = CalcCutInfo(grid, pl, this->pgList, cutPos, cutBid, cutNormal);
 		PM_Stop(tm_Init_CalcCutInfo01);
 
 		pNormalN[n] = cutNormal->getNumNormal();
@@ -1221,7 +1221,6 @@ void Solver::InitPhase() {
 	ClearFaceFlag();
 	for(int n=1; n<32; n++) {
 		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[n] != 0 ) {
-			std::cout << n << std::endl;
 			ModifyFaceFlag(n);
 		}
 	}
@@ -1540,6 +1539,21 @@ void Solver::InitGeometricalProps() {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
+}
+
+void Solver::InitPhysicalParams() {
+	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
+
+	std::string fluid0 = g_pFFVConfig->FillingMedium;
+	rhof	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cpf		= g_pFFVConfig->PPMMap[fluid0].cp;
+	kf		= g_pFFVConfig->PPMMap[fluid0].k;
+	mu		= g_pFFVConfig->PPMMap[fluid0].mu;
+	csf   = g_pFFVConfig->PPMMap[fluid0].cs;
+
+	rhos	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cps		= g_pFFVConfig->PPMMap[fluid0].cp;
+	ks		= g_pFFVConfig->PPMMap[fluid0].k;
 }
 
 void Solver::InitVarsBasic() {

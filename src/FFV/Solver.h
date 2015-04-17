@@ -32,6 +32,8 @@ class Solver {
 		std::string updateMethod;
 
 		PolylibNS::BCMPolylib* pl;
+		std::vector<std::string>* pgList;
+
 		Divider* divider;
 		RootGrid* rootGrid;
 		BCMOctree* tree;
@@ -223,7 +225,7 @@ class Solver {
 		void InitGridParams();
 		void InitSTL();
 		void InitSTL2();
-		void InitPhysicalParams();
+		void InitPGList();
 		void InitCutlib();
 		void InitCutlibModify();
 		void InitFaceFlag();
@@ -235,6 +237,7 @@ class Solver {
 		void InitPhase2();
 		void InitRegion();
 		void InitGeometricalProps();
+		void InitPhysicalParams();
 		void InitVars();
 		void InitVarsBasic();
 		void InitVarsDerived();
