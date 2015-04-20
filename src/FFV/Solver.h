@@ -226,8 +226,11 @@ class Solver {
 		void InitSTL();
 		void InitSTL2();
 		void InitPGList();
-		void InitCutlib();
-		void InitCutlibModify();
+		void InitCut();
+		void ClearCut();
+		void CalcCut();
+		void ModifyCut1();
+		void ModifyCut2();
 		void InitFaceFlag();
 		void ClearFaceFlag();
 		void ModifyFaceFlag(int cid_target);

@@ -52,8 +52,10 @@ int Solver::Init(int argc, char** argv){
 	InitSTL();
 	InitSTL2();
 	InitPGList();
-	InitCutlib();
-	InitCutlibModify();
+	InitCut();
+	CalcCut();
+	ModifyCut1();
+	ModifyCut2();
 	InitFaceFlag();
 	InitCellFlag();
 	InitPhase();
@@ -433,10 +435,10 @@ void Solver::InitPGList() {
 			std::cout << id << std::endl;
 		}
   }
-//  delete leafGroups;
+  delete leafGroups;
 }
 
-void Solver::InitCutlib() {
+void Solver::InitCut() {
 	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
 	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
 	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
@@ -456,6 +458,16 @@ void Solver::InitCutlib() {
 	plsCutId3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCutId4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCutId5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	pNormalN = new int   [blockManager.getNumBlock()];
+	pNormalX = new real* [blockManager.getNumBlock()];
+	pNormalY = new real* [blockManager.getNumBlock()];
+	pNormalZ = new real* [blockManager.getNumBlock()];
+	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCut0->Fill(blockManager, 1.0);
 	plsCut1->Fill(blockManager, 1.0);
 	plsCut2->Fill(blockManager, 1.0);
@@ -468,16 +480,37 @@ void Solver::InitCutlib() {
 	plsCutId3->Fill(blockManager, 0);
 	plsCutId4->Fill(blockManager, 0);
 	plsCutId5->Fill(blockManager, 0);
-	pNormalN = new int   [blockManager.getNumBlock()];
-	pNormalX = new real* [blockManager.getNumBlock()];
-	pNormalY = new real* [blockManager.getNumBlock()];
-	pNormalZ = new real* [blockManager.getNumBlock()];
-	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	PM_Stop(tm_Init_CalcCutInfo);
+
+	if( g_pFFVConfig->GridGenerationOutputSTL ) {
+		PrintLog(1, "Printing STL files for cut info");
+		PrintCut(0);
+		PrintHole(0);
+		WriteGrid(
+				rootGrid,
+				tree,
+				partition);
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+	PrintLog(2, "Completed");
+}
+
+void Solver::ClearCut() {
+	plsCut0->Fill(blockManager, 1.0);
+	plsCut1->Fill(blockManager, 1.0);
+	plsCut2->Fill(blockManager, 1.0);
+	plsCut3->Fill(blockManager, 1.0);
+	plsCut4->Fill(blockManager, 1.0);
+	plsCut5->Fill(blockManager, 1.0);
+	plsCutId0->Fill(blockManager, 0);
+	plsCutId1->Fill(blockManager, 0);
+	plsCutId2->Fill(blockManager, 0);
+	plsCutId3->Fill(blockManager, 0);
+	plsCutId4->Fill(blockManager, 0);
+	plsCutId5->Fill(blockManager, 0);
+}
+
+void Solver::CalcCut() {
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -507,7 +540,6 @@ void Solver::InitCutlib() {
 		cutlib::CutBidArray*    cutBid = new cutlib::CutBid5Array(ncell);
 		cutlib::CutNormalArray* cutNormal = new cutlib::CutNormalArray(ncell);
 
-		//		CutInfoCell(org, dx, pl, cutPos, cutBid);
 		PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
 		int ret = CalcCutInfo(grid, pl, this->pgList, cutPos, cutBid, cutNormal);
 		PM_Stop(tm_Init_CalcCutInfo01);
@@ -560,7 +592,6 @@ void Solver::InitCutlib() {
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
-		PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 #ifdef _BLOCK_IS_LARGE_
 #pragma omp parallel for
 #else
@@ -612,7 +643,64 @@ void Solver::InitCutlib() {
 		delete cutPos;
 		delete cutBid;
 		delete cutNormal;
-		PM_Stop(tm_Init_CalcCutInfo02);
+	}
+
+	PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
+	PM_Stop(tm_Init_CalcCutInfo02);
+
+	PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
+	plsCut0->ImposeBoundaryCondition(blockManager);
+	plsCut1->ImposeBoundaryCondition(blockManager);
+	plsCut2->ImposeBoundaryCondition(blockManager);
+	plsCut3->ImposeBoundaryCondition(blockManager);
+	plsCut4->ImposeBoundaryCondition(blockManager);
+	plsCut5->ImposeBoundaryCondition(blockManager);
+	plsCutId0->ImposeBoundaryCondition(blockManager);
+	plsCutId1->ImposeBoundaryCondition(blockManager);
+	plsCutId2->ImposeBoundaryCondition(blockManager);
+	plsCutId3->ImposeBoundaryCondition(blockManager);
+	plsCutId4->ImposeBoundaryCondition(blockManager);
+	plsCutId5->ImposeBoundaryCondition(blockManager);
+	PM_Stop(tm_Init_CalcCutInfo06);
+}
+
+void Solver::ModifyCut1() {
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+
+		double bpos[3] = {origin.x, origin.y, origin.z};
+		unsigned int bbsize[3] = {size.x, size.y, size.z};
+		unsigned int gcsize[3] = {vc, vc, vc};
+		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		size_t ncell[3];
+		double org[3];
+		for(int i=0; i<3; i++) {
+			ncell[i] = bbsize[i] + 2*gcsize[i];
+			org[i] = bpos[i] - gcsize[i]*dx[i];
+		}
+
+		real* pCut0 = plsCut0->GetBlockData(block);
+		real* pCut1 = plsCut1->GetBlockData(block);
+		real* pCut2 = plsCut2->GetBlockData(block);
+		real* pCut3 = plsCut3->GetBlockData(block);
+		real* pCut4 = plsCut4->GetBlockData(block);
+		real* pCut5 = plsCut5->GetBlockData(block);
+		int* pCutId0 = plsCutId0->GetBlockData(block);
+		int* pCutId1 = plsCutId1->GetBlockData(block);
+		int* pCutId2 = plsCutId2->GetBlockData(block);
+		int* pCutId3 = plsCutId3->GetBlockData(block);
+		int* pCutId4 = plsCutId4->GetBlockData(block);
+		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		PM_Start(tm_Init_CalcCutInfo03, 0, 0, false);
 		if( g_pFFVConfig->ShapeApproximationMethod == "cut" ) {
@@ -643,38 +731,9 @@ void Solver::InitCutlib() {
 		}
 		PM_Stop(tm_Init_CalcCutInfo05);
 	}
-
-	PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
-	plsCut0->ImposeBoundaryCondition(blockManager);
-	plsCut1->ImposeBoundaryCondition(blockManager);
-	plsCut2->ImposeBoundaryCondition(blockManager);
-	plsCut3->ImposeBoundaryCondition(blockManager);
-	plsCut4->ImposeBoundaryCondition(blockManager);
-	plsCut5->ImposeBoundaryCondition(blockManager);
-	plsCutId0->ImposeBoundaryCondition(blockManager);
-	plsCutId1->ImposeBoundaryCondition(blockManager);
-	plsCutId2->ImposeBoundaryCondition(blockManager);
-	plsCutId3->ImposeBoundaryCondition(blockManager);
-	plsCutId4->ImposeBoundaryCondition(blockManager);
-	plsCutId5->ImposeBoundaryCondition(blockManager);
-	PM_Stop(tm_Init_CalcCutInfo06);
-
-	PM_Stop(tm_Init_CalcCutInfo);
-
-	if( g_pFFVConfig->GridGenerationOutputSTL ) {
-		PrintLog(1, "Printing STL files for cut info");
-		PrintCut(0);
-		PrintHole(0);
-		WriteGrid(
-				rootGrid,
-				tree,
-				partition);
-		MPI_Barrier(MPI_COMM_WORLD);
-	}
-	PrintLog(2, "Completed");
 }
 
-void Solver::InitCutlibModify() {
+void Solver::ModifyCut2() {
 	{
 		/* ---------------------------------------------------------- */
 		/* Detect zero-cut                                            */
