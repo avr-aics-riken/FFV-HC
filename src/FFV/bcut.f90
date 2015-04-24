@@ -605,6 +605,494 @@ subroutine bcut_calc_abd_u_2( &
 #endif
 end subroutine bcut_calc_abd_u_2
 
+subroutine bcut_calc_abd_u_3( &
+                Ap, Aw, Ae, As, An, Ab, At, b, &
+                u0_, &
+                uc0_, ucp_, &
+                ud0_, &
+                p0_, &
+                c0, c1, c2, c3, c4, c5, &
+                cid0, cid1, cid2, cid3, cid4, cid5, &
+                pid, &
+                rid, &
+                dir, &
+								nnum, &
+								nx_, ny_, nz_, &
+                nidx0, nidx1, nidx2, nidx3, nidx4, nidx5, &
+								alpha, &
+                rhof, &
+                mu, &
+                dx, dt, &
+                Uc, &
+                gx, gy, gz, &
+                fx, fy, fz, &
+								org, &
+								step, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: Ap, Aw, Ae, As, An, Ab, At, b
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: u0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: uc0_, ucp_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ud0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: p0_
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: c0, c1, c2, c3, c4, c5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: cid0, cid1, cid2, cid3, cid4, cid5
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid, rid
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fx, fy, fz
+  real, dimension(3)			:: org
+	integer									:: step
+  integer                  :: cidp
+  integer                  :: cidp0, cidp1, cidp2, cidp3, cidp4, cidp5
+  integer                  :: pidp, pidw, pide, pids, pidn, pidb, pidt
+  integer                  :: dir
+  integer                   :: nnum
+  real, dimension(0:nnum-1) :: nx_, ny_, nz_
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: nidx0, nidx1, nidx2, nidx3, nidx4, nidx5
+	real										:: alpha
+  real                    :: rhof
+  real                    :: mu
+  real                    :: dx, dt
+  real                    :: Uc, ucx, ucy, ucz
+	real										:: ucx0, ucx1, ucx2, ucx3, ucx4, ucx5
+	real										:: ucy0, ucy1, ucy2, ucy3, ucy4, ucy5
+	real										:: ucz0, ucz1, ucz2, ucz3, ucz4, ucz5
+	real										:: uc0, uc1, uc2, uc3, uc4, uc5
+  real                    :: gx, gy, gz
+  real                    :: d0, d1, d2, d3, d4, d5
+  real                    :: mu0, mu1, mu2, mu3, mu4, mu5
+  real                    :: m0, m1, m2, m3, m4, m5
+  real                    :: l0, l1, l2, l3, l4, l5
+  real                    :: r0, r1, r2, r3, r4, r5
+  real                    :: dpx0, dpx1, dpy2, dpy3, dpz4, dpz5
+  real                    :: rdpx0, rdpx1, rdpy2, rdpy3, rdpz4, rdpz5
+  real                    :: rdpx, rdpy, rdpz, rdp
+  real                    :: up, uw, ue, us, un, ub, ut
+	real										:: x, y, z, rl, ux, uy, uz, u2, ul
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(cidp) &
+!$omp           private(cidp0, cidp1, cidp2, cidp3, cidp4, cidp5) &
+!$omp           private(pidp, pidw, pide, pids, pidn, pidb, pidt) &
+!$omp						private(Uc, ucx, ucy, ucz) &
+!$omp						private(ucx0, ucx1, ucx2, ucx3, ucx4, ucx5, ucx6) &
+!$omp						private(ucy0, ucy1, ucy2, ucy3, ucy4, ucy5, ucy6) &
+!$omp						private(ucz0, ucz1, ucz2, ucz3, ucz4, ucz5, ucz6) &
+!$omp						private(uc0, uc1, uc2, uc3, uc4, uc5, uc6) &
+!$omp           private(d0, d1, d2, d3, d4, d5) &
+!$omp           private(mu0, mu1, mu2, mu3, mu4, mu5) &
+!$omp           private(m0, m1, m2, m3, m4, m5) &
+!$omp           private(l0, l1, l2, l3, l4, l5) &
+!$omp           private(r0, r1, r2, r3, r4, r5) &
+!$omp           private(dpx0, dpx1, dpy2, dpy3, dpz4, dpz5) &
+!$omp           private(rdpx0, rdpx1, rdpy2, rdpy3, rdpz4, rdpz5) &
+!$omp           private(rdpx, rdpy, rdpz, rdp) &
+!$omp           private(up, uw, ue, us, un, ub, ut) &
+!$omp						private(x, y, z, rl, ux, uy, uz, u2, ul)
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    x = org(1) + (real(i) - 0.5)*dx
+    y = org(2) + (real(j) - 0.5)*dx
+    z = org(3) + (real(k) - 0.5)*dx
+
+    d0 = c0(i, j, k)
+    d1 = c1(i, j, k)
+    d2 = c2(i, j, k)
+    d3 = c3(i, j, k)
+    d4 = c4(i, j, k)
+    d5 = c5(i, j, k)
+
+    cidp0 = cid0(i, j, k)
+    cidp1 = cid1(i, j, k)
+    cidp2 = cid2(i, j, k)
+    cidp3 = cid3(i, j, k)
+    cidp4 = cid4(i, j, k)
+    cidp5 = cid5(i, j, k)
+
+    pidp = pid(i, j, k)
+
+    mu0 = mu
+    mu1 = mu
+    mu2 = mu
+    mu3 = mu
+    mu4 = mu
+    mu5 = mu
+
+    r0 = 1.0d0/rhof
+    r1 = 1.0d0/rhof
+    r2 = 1.0d0/rhof
+    r3 = 1.0d0/rhof
+    r4 = 1.0d0/rhof
+    r5 = 1.0d0/rhof
+
+    dpx0 = (p0_(i, j, k) - p0_(i-1, j, k))/dx
+    dpx1 = (p0_(i+1, j, k) - p0_(i, j, k))/dx
+    dpy2 = (p0_(i, j, k) - p0_(i, j-1, k))/dx
+    dpy3 = (p0_(i, j+1, k) - p0_(i, j, k))/dx
+    dpz4 = (p0_(i, j, k) - p0_(i, j, k-1))/dx
+    dpz5 = (p0_(i, j, k+1) - p0_(i, j, k))/dx
+
+    rdpx0 = r0*dpx0 - gx*0.0
+    rdpx1 = r1*dpx1 - gx*0.0
+    rdpy2 = r2*dpy2 - gy*0.0
+    rdpy3 = r3*dpy3 - gy*0.0
+    rdpz4 = r4*dpz4 - gz*0.0
+    rdpz5 = r5*dpz5 - gz*0.0
+
+    m0 = 0.0d0
+    m1 = 0.0d0
+    m2 = 0.0d0
+    m3 = 0.0d0
+    m4 = 0.0d0
+    m5 = 0.0d0
+
+    if( cidp0 /= 0 ) then
+      mu0 = mu/d0*2.0d0/(d0 + d1)
+      mu1 = mu/d1*2.0d0/(d0 + d1)
+      rdpx0 = rdpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
+      dpx0 = dpx1*(d0 - 0.5d0)/(d0 + 0.5d0)
+      m0 = 1.0d0
+    endif
+
+    if( cidp1 /= 0 ) then
+      mu0 = mu/d0*2.0d0/(d0 + d1)
+      mu1 = mu/d1*2.0d0/(d0 + d1)
+      rdpx1 = rdpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
+      dpx1 = dpx0*(d1 - 0.5d0)/(d1 + 0.5d0)
+      m1 = 1.0d0
+    endif
+
+    if( cidp2 /= 0 ) then
+      mu2 = mu/d2*2.0d0/(d2 + d3)
+      mu3 = mu/d3*2.0d0/(d2 + d3)
+      rdpy2 = rdpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
+      dpy2 = dpy3*(d2 - 0.5d0)/(d2 + 0.5d0)
+      m2 = 1.0d0
+    endif
+
+    if( cidp3 /= 0 ) then
+      mu2 = mu/d2*2.0d0/(d2 + d3)
+      mu3 = mu/d3*2.0d0/(d2 + d3)
+      rdpy3 = rdpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
+      dpy3 = dpy2*(d3 - 0.5d0)/(d3 + 0.5d0)
+      m3 = 1.0d0
+    endif
+
+    if( cidp4 /= 0 ) then
+      mu4 = mu/d4*2.0d0/(d4 + d5)
+      mu5 = mu/d5*2.0d0/(d4 + d5)
+      rdpz4 = rdpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
+      dpz4 = dpz5*(d4 - 0.5d0)/(d4 + 0.5d0)
+      m4 = 1.0d0
+    endif
+
+    if( cidp5 /= 0 ) then
+      mu4 = mu/d4*2.0d0/(d4 + d5)
+      mu5 = mu/d5*2.0d0/(d4 + d5)
+      rdpz5 = rdpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
+      dpz5 = dpz4*(d5 - 0.5d0)/(d5 + 0.5d0)
+      m5 = 1.0d0
+    endif
+
+    if( cidp0 /= 0 .and. cidp1 /= 0 ) then
+      rdpx0 = 0.0
+      rdpx1 = 0.0
+      dpx0 = 0.0
+      dpx1 = 0.0
+      m0 = 1.0d0
+      m1 = 1.0d0
+    endif
+
+    if( cidp2 /= 0 .and. cidp3 /= 0 ) then
+      rdpy2 = 0.0
+      rdpy3 = 0.0
+      dpy2 = 0.0
+      dpy3 = 0.0
+      m2 = 1.0d0
+      m3 = 1.0d0
+    endif
+
+    if( cidp4 /= 0 .and. cidp5 /= 0 ) then
+      rdpz4 = 0.0
+      rdpz5 = 0.0
+      dpz4 = 0.0
+      dpz5 = 0.0
+      m4 = 1.0d0
+      m5 = 1.0d0
+    endif
+
+		ucx0 = 0.0
+		ucy0 = 0.0
+		ucz0 = 0.0
+		if( cidp0 == 12 ) then
+			ucx0 = Uc*nx_( nidx0(i, j, k) )
+			ucy0 = Uc*ny_( nidx0(i, j, k) )
+			ucz0 = Uc*nz_( nidx0(i, j, k) )
+			ucx0 = 0.0
+			ucy0 = 0.0
+			ucz0 = 0.0
+		end if
+
+		ucx1 = 0.0
+		ucy1 = 0.0
+		ucz1 = 0.0
+		if( cidp1 == 12 ) then
+			ucx1 = Uc*nx_( nidx1(i, j, k) )
+			ucy1 = Uc*ny_( nidx1(i, j, k) )
+			ucz1 = Uc*nz_( nidx1(i, j, k) )
+			ucx1 = 0.0
+			ucy1 = 0.0
+			ucz1 = 0.0
+		end if
+
+		ucx2 = 0.0
+		ucy2 = 0.0
+		ucz2 = 0.0
+		if( cidp2 == 12 ) then
+			ucx2 = Uc*nx_( nidx2(i, j, k) )
+			ucy2 = Uc*ny_( nidx2(i, j, k) )
+			ucz2 = Uc*nz_( nidx2(i, j, k) )
+			rl = sqrt((y-d2*dx)**2 + z**2)
+			rl = sqrt(y**2 + z**2)
+			ucx2 = 0.0
+			ucy2 = -Uc*y/rl
+			ucz2 = -Uc*z/rl
+		end if
+
+		ucx3 = 0.0
+		ucy3 = 0.0
+		ucz3 = 0.0
+		if( cidp3 == 12 ) then
+			ucx3 = Uc*nx_( nidx3(i, j, k) )
+			ucy3 = Uc*ny_( nidx3(i, j, k) )
+			ucz3 = Uc*nz_( nidx3(i, j, k) )
+			rl = sqrt((y+d3*dx)**2 + z**2)
+			rl = sqrt(y**2 + z**2)
+			ucx3 = 0.0
+			ucy3 = -Uc*y/rl
+			ucz3 = -Uc*z/rl
+		end if
+
+		ucx4 = 0.0
+		ucy4 = 0.0
+		ucz4 = 0.0
+		if( cidp4 == 12 ) then
+			ucx4 = Uc*nx_( nidx4(i, j, k) )
+			ucy4 = Uc*ny_( nidx4(i, j, k) )
+			ucz4 = Uc*nz_( nidx4(i, j, k) )
+			rl = sqrt(y**2 + (z-d4*dx)**2)
+			rl = sqrt(y**2 + z**2)
+			ucx4 = 0.0
+			ucy4 = -Uc*y/rl
+			ucz4 = -Uc*z/rl
+		end if
+
+		ucx5 = 0.0
+		ucy5 = 0.0
+		ucz5 = 0.0
+		if( cidp5 == 12 ) then
+			ucx5 = Uc*nx_( nidx5(i, j, k) )
+			ucy5 = Uc*ny_( nidx5(i, j, k) )
+			ucz5 = Uc*nz_( nidx5(i, j, k) )
+			rl = sqrt(y**2 + (z+d5*dx)**2)
+			rl = sqrt(y**2 + z**2)
+			ucx5 = 0.0
+			ucy5 = -Uc*y/rl
+			ucz5 = -Uc*z/rl
+		end if
+
+    rdpx = 0.5d0*(rdpx0 + rdpx1) - fx(i, j, k)/rhof
+    rdpy = 0.5d0*(rdpy2 + rdpy3) - fy(i, j, k)/rhof
+    rdpz = 0.5d0*(rdpz4 + rdpz5) - fz(i, j, k)/rhof
+
+    rdp = 0.0
+		uc0 = 0.0
+		uc1 = 0.0
+		uc2 = 0.0
+		uc3 = 0.0
+		uc4 = 0.0
+		uc5 = 0.0
+    if( dir==0 ) then
+      rdp = rdpx 
+			uc0 = ucx0
+			uc1 = ucx1
+			uc2 = ucx2
+			uc3 = ucx3
+			uc4 = ucx4
+			uc5 = ucx5
+    else if( dir==1 ) then
+      rdp = rdpy
+			uc0 = ucy0
+			uc1 = ucy1
+			uc2 = ucy2
+			uc3 = ucy3
+			uc4 = ucy4
+			uc5 = ucy5
+    else if( dir==2 ) then
+      rdp = rdpz
+			uc0 = ucz0
+			uc1 = ucz1
+			uc2 = ucz2
+			uc3 = ucz3
+			uc4 = ucz4
+			uc5 = ucz5
+    end if
+
+
+    l0 = mu0/(rhof)*dt/(dx*dx)
+    l1 = mu1/(rhof)*dt/(dx*dx)
+    l2 = mu2/(rhof)*dt/(dx*dx)
+    l3 = mu3/(rhof)*dt/(dx*dx)
+    l4 = mu4/(rhof)*dt/(dx*dx)
+    l5 = mu5/(rhof)*dt/(dx*dx)
+
+    up = u0_(i, j, k)
+    uw = u0_(i-1, j, k)*(1.0 - m0) + uc0*m0
+    ue = u0_(i+1, j, k)*(1.0 - m1) + uc1*m1
+    us = u0_(i, j-1, k)*(1.0 - m2) + uc2*m2
+    un = u0_(i, j+1, k)*(1.0 - m3) + uc3*m3
+    ub = u0_(i, j, k-1)*(1.0 - m4) + uc4*m4
+    ut = u0_(i, j, k+1)*(1.0 - m5) + uc5*m5
+
+    ud0_(i, j, k) = ( &
+                        l1*(ue - up) &
+                      - l0*(up - uw) &
+                      + l3*(un - up) &
+                      - l2*(up - us) &
+                      + l5*(ut - up) &
+                      - l4*(up - ub) &
+                    )
+    if( pidp /= 1 ) then
+			ud0_(i, j, k) = 0.0
+		end if
+
+    Ap(i, j, k) = 1.0d0 + alpha*(l0 + l1) &
+                        + alpha*(l2 + l3) &
+                        + alpha*(l4 + l5)
+    Aw(i, j, k) = -alpha*l0*(1.0d0 - m0)
+    Ae(i, j, k) = -alpha*l1*(1.0d0 - m1)
+    As(i, j, k) = -alpha*l2*(1.0d0 - m2)
+    An(i, j, k) = -alpha*l3*(1.0d0 - m3)
+    Ab(i, j, k) = -alpha*l4*(1.0d0 - m4)
+    At(i, j, k) = -alpha*l5*(1.0d0 - m5)
+     b(i, j, k) = u0_(i, j, k) &
+                  - (1.5d0*uc0_(i, j, k) - 0.5d0*ucp_(i, j, k) )*dt &
+                  + (1.0 - alpha)*ud0_(i, j, k)*dt &
+                  - rdp*dt &
+                  + alpha*l0*uc0*m0 &
+                  + alpha*l1*uc1*m1 &
+                  + alpha*l2*uc2*m2 &
+                  + alpha*l3*uc3*m3 &
+                  + alpha*l4*uc4*m4 &
+                  + alpha*l5*uc5*m5 
+
+		if( 20 <= step .and. step <= 30 ) then
+			if( cidp0 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc0
+				u0_(i, j, k) = uc0
+			end if
+
+			if( cidp1 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc1
+				u0_(i, j, k) = uc1
+			end if
+
+			if( cidp2 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc2
+				u0_(i, j, k) = uc2
+			end if
+
+			if( cidp3 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc3
+				u0_(i, j, k) = uc3
+			end if
+
+			if( cidp4 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc4
+				u0_(i, j, k) = uc4
+			end if
+
+			if( cidp5 == 12 ) then
+				Ap(i, j, k) = 1.0d0
+				Aw(i, j, k) = 0.0d0
+				Ae(i, j, k) = 0.0d0
+				As(i, j, k) = 0.0d0
+				An(i, j, k) = 0.0d0
+				Ab(i, j, k) = 0.0d0
+				At(i, j, k) = 0.0d0
+				b (i, j, k) = uc5
+				u0_(i, j, k) = uc5
+			end if
+		end if
+
+    if( pidp /= 1 ) then
+      Ap(i, j, k) = 1.0d0
+      Aw(i, j, k) = 0.0d0
+      Ae(i, j, k) = 0.0d0
+      As(i, j, k) = 0.0d0
+      An(i, j, k) = 0.0d0
+      Ab(i, j, k) = 0.0d0
+      At(i, j, k) = 0.0d0
+      b (i, j, k) = 0.0
+      u0_(i, j, k) = 0.0d0
+    endif
+
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_calc_abd_u_3
+
 subroutine bcut_calc_ab_p( &
                 Ap, Aw, Ae, As, An, Ab, At, b, &
                 vw, ve, vs, vn, vb, vt, &

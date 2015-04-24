@@ -1057,6 +1057,7 @@ int Solver::Init(int argc, char** argv){
 	countTmp = countS;
 	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
+/*
 	{
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -1141,6 +1142,7 @@ int Solver::Init(int argc, char** argv){
 		}
 		plsPhaseId->ImposeBoundaryCondition(blockManager);
 	}
+*/
 
 	int nBlocks = blockManager.getNumBlock();
 	int nCellsPerBlock = size.x*size.y*size.z;
@@ -2709,6 +2711,15 @@ int Solver::Update(int step) {
 		plsUX1->ResetBoundaryConditionValue(blockManager, 0, vb);
 	}
 
+/*
+	real Uc = 0.0;
+	if( 20 <= step && step <= 30 ) {
+		Uc = g_pFFVConfig->BCInternalBoundaryValue[12];
+	}
+	plsUX0->ResetBoundaryConditionValue(blockManager, 0, Uc);
+	plsUX1->ResetBoundaryConditionValue(blockManager, 0, Uc);
+*/
+
 	PM_Start(tm_UpdateT, 0, 0, true);
 	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForT.c_str(), "explicit") ) {
 		UpdateTe(step);
@@ -3655,6 +3666,7 @@ void Solver::UpdateUX(int step) {
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
 
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
@@ -3697,7 +3709,17 @@ void Solver::UpdateUX(int step) {
 		real* fy = plsFY->GetBlockData(block);
 		real* fz = plsFZ->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
 		real Uc = 0.0;
+		if( 20 <= step && step <= 30 ) {
+			Uc = g_pFFVConfig->BCInternalBoundaryValue[12];
+		}
 
 		real* uy0  = plsUY0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
@@ -3819,7 +3841,7 @@ void Solver::UpdateUX(int step) {
 				&gx, &gy, &gz,
 				sz, g);
 */
-		bcut_calc_abd_u_2_(
+		bcut_calc_abd_u_3_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
 				uxc0, uxcp,
@@ -3830,6 +3852,11 @@ void Solver::UpdateUX(int step) {
 				pPhaseId,
 				pRegionId,
 				&axis,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&alpha,
 				&rhof,
 				&mu,
@@ -3837,6 +3864,8 @@ void Solver::UpdateUX(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				fx, fy, fz,
+				org,
+				&step,
 				sz, g);
 		copy_(
 				uxcp,
@@ -3945,6 +3974,7 @@ void Solver::UpdateUY(int step) {
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
 
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
@@ -3987,7 +4017,17 @@ void Solver::UpdateUY(int step) {
 		real* fy = plsFY->GetBlockData(block);
 		real* fz = plsFZ->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
 		real Uc = 0.0;
+		if( 20 <= step && step <= 30 ) {
+			Uc = g_pFFVConfig->BCInternalBoundaryValue[12];
+		}
 
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uz0  = plsUZ0->GetBlockData(block);
@@ -4109,7 +4149,7 @@ void Solver::UpdateUY(int step) {
 				&gx, &gy, &gz,
 				sz, g);
 */
-		bcut_calc_abd_u_2_(
+		bcut_calc_abd_u_3_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
 				uyc0, uycp,
@@ -4120,6 +4160,11 @@ void Solver::UpdateUY(int step) {
 				pPhaseId,
 				pRegionId,
 				&axis,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&alpha,
 				&rhof,
 				&mu,
@@ -4127,6 +4172,8 @@ void Solver::UpdateUY(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				fx, fy, fz,
+				org,
+				&step,
 				sz, g);
 		copy_(
 				uycp,
@@ -4235,6 +4282,7 @@ void Solver::UpdateUZ(int step) {
 		int sz[3] = {size.x, size.y, size.z};
 		int g[1] = {vc};
 		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
 
 		real* Ap = plsAp->GetBlockData(block);
 		real* Aw = plsAw->GetBlockData(block);
@@ -4277,7 +4325,17 @@ void Solver::UpdateUZ(int step) {
 		real* fy = plsFY->GetBlockData(block);
 		real* fz = plsFZ->GetBlockData(block);
 
+		int* pNormalIndex0 = plsNormalIndex0->GetBlockData(block);
+		int* pNormalIndex1 = plsNormalIndex1->GetBlockData(block);
+		int* pNormalIndex2 = plsNormalIndex2->GetBlockData(block);
+		int* pNormalIndex3 = plsNormalIndex3->GetBlockData(block);
+		int* pNormalIndex4 = plsNormalIndex4->GetBlockData(block);
+		int* pNormalIndex5 = plsNormalIndex5->GetBlockData(block);
+
 		real Uc = 0.0;
+		if( 20 <= step && step <= 30 ) {
+			Uc = g_pFFVConfig->BCInternalBoundaryValue[12];
+		}
 
 		real* ux0  = plsUX0->GetBlockData(block);
 		real* uy0  = plsUY0->GetBlockData(block);
@@ -4399,7 +4457,7 @@ void Solver::UpdateUZ(int step) {
 				&gx, &gy, &gz,
 				sz, g);
 */
-		bcut_calc_abd_u_2_(
+		bcut_calc_abd_u_3_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
 				uzc0, uzcp,
@@ -4410,6 +4468,11 @@ void Solver::UpdateUZ(int step) {
 				pPhaseId,
 				pRegionId,
 				&axis,
+				&pNormalN[n],
+				pNormalX[n],
+				pNormalY[n],
+				pNormalZ[n],
+				pNormalIndex0, pNormalIndex1, pNormalIndex2, pNormalIndex3, pNormalIndex4, pNormalIndex5,
 				&alpha,
 				&rhof,
 				&mu,
@@ -4417,6 +4480,8 @@ void Solver::UpdateUZ(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				fx, fy, fz,
+				org,
+				&step,
 				sz, g);
 		copy_(
 				uzcp,
