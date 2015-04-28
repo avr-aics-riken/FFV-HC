@@ -51,15 +51,26 @@ int Solver::Init(int argc, char** argv){
 	InitGridParams();
 	InitSTL();
 	InitSTL2();
-	InitPGList();
+
 	InitCut();
+	InitFaceFlag();
+	InitCellFlag();
+	InitPGList();
+
+	InitPGListForRegion();
+	ClearCut();
 	CalcCut();
 	ModifyCut1();
 	ModifyCut2();
-	InitFaceFlag();
-	InitCellFlag();
-	InitPhase();
 	InitRegion();
+
+	InitPGListForPhase();
+	ClearCut();
+	CalcCut();
+	ModifyCut1();
+	ModifyCut2();
+	InitPhase();
+
 	InitGeometricalProps();
 
 	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
@@ -422,20 +433,6 @@ void Solver::InitSTL2() {
 	PM_Stop(tm_Init_RepairPolygonData);
 
 	PrintLog(2, "Completed");
-}
-
-void Solver::InitPGList() {
-  this->pgList = new std::vector<std::string>;
-  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
-  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
-  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
-		int id = (*it)->get_id();
-		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[id] != 0 ) {
-	    this->pgList->push_back((*it)->acq_fullpath());
-			std::cout << id << std::endl;
-		}
-  }
-  delete leafGroups;
 }
 
 void Solver::InitCut() {
@@ -1269,6 +1266,121 @@ void Solver::FillCellFlag(real xs, real ys, real zs)
 	}
 }
 
+void Solver::InitPGList() {
+  this->pgList = new std::vector<std::string>;
+}
+
+void Solver::InitPGListForRegion() {
+	this->pgList->clear();
+  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
+  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
+  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
+		int         id    = (*it)->get_id();
+		std::string type  = (*it)->get_type();
+		std::string label = (*it)->get_label();
+		if( !strcasecmp(type.c_str(), "region_boundary") ) {
+	    this->pgList->push_back((*it)->acq_fullpath());
+			PrintLog(2, "%-20s : %d", "Region boundary ", id);
+		} else {
+		}
+  }
+  delete leafGroups;
+}
+
+void Solver::InitPGListForPhase() {
+	this->pgList->clear();
+  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
+  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
+  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
+		int         id    = (*it)->get_id();
+		std::string type  = (*it)->get_type();
+		std::string label = (*it)->get_label();
+		if( !strcasecmp(type.c_str(), "region_boundary") ) {
+		} else {
+	    this->pgList->push_back((*it)->acq_fullpath());
+			PrintLog(2, "%-20s : %d", "Phase boundary ", id);
+		}
+  }
+  delete leafGroups;
+}
+
+void Solver::InitRegion() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
+
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsRegionId->Fill(blockManager, -1);
+
+	PrintLog(1, "Partitioning regions");
+
+	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
+	for(int nRGN=0; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
+		int ids = nRGN;
+		real xs = g_pFFVConfig->RegionList[ids].origin.x;
+		real ys = g_pFFVConfig->RegionList[ids].origin.y;
+		real zs = g_pFFVConfig->RegionList[ids].origin.z;
+		int cid_target = g_pFFVConfig->RegionList[ids].cid_target;
+		ClearFaceFlag();
+		ModifyFaceFlag(cid_target);
+		FillCellFlag(xs, ys, zs);
+
+		long int count = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size      = block->getSize();
+			Vec3r origin    = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize  = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+
+			double bpos[3] = {origin.x, origin.y, origin.z};
+			unsigned int bbsize[3] = {size.x, size.y, size.z};
+			unsigned int gcsize[3] = {vc, vc, vc};
+			double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+			size_t ncell[3];
+			double org[3];
+			for(int i=0; i<3; i++) {
+				ncell[i] = bbsize[i] + 2*gcsize[i];
+				org[i] = bpos[i] - gcsize[i]*dx[i];
+			}
+
+			int* pCellFlag = plsCellFlag->GetBlockData(block);
+			int* pRegionId = plsRegionId->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for(int k=vc; k<vc+size.z; k++) {
+				for(int j=vc; j<vc+size.y; j++) {
+					for(int i=vc; i<vc+size.x; i++) {
+						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+						if( pCellFlag[m] == 1 ) {
+							pRegionId[m] = ids;
+							count++;
+						}
+					}
+				}
+			}
+		}
+		plsRegionId->ImposeBoundaryCondition(blockManager);
+
+		long int countTmp = count;
+		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
+		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
+	}
+	PM_Stop(tm_Init_PartitioningRegions);
+	MPI_Barrier(MPI_COMM_WORLD);
+	PrintLog(2, "Completed");
+}
+
 void Solver::InitPhase() {
 	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
 	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
@@ -1397,83 +1509,6 @@ void Solver::InitPhase() {
 		}
 	}
 */
-}
-
-void Solver::InitRegion() {
-	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
-	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
-	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
-
-	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
-	plsRegionId->Fill(blockManager, -1);
-
-	PrintLog(1, "Partitioning regions");
-
-	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
-	for(int nRGN=0; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
-		int ids = nRGN;
-		real xs = g_pFFVConfig->RegionList[ids].origin.x;
-		real ys = g_pFFVConfig->RegionList[ids].origin.y;
-		real zs = g_pFFVConfig->RegionList[ids].origin.z;
-		int cid_target = g_pFFVConfig->RegionList[ids].cid_target;
-		ClearFaceFlag();
-		ModifyFaceFlag(cid_target);
-		FillCellFlag(xs, ys, zs);
-
-		long int count = 0;
-#ifdef _BLOCK_IS_LARGE_
-#else
-#endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			Vec3i size      = block->getSize();
-			Vec3r origin    = block->getOrigin();
-			Vec3r blockSize = block->getBlockSize();
-			Vec3r cellSize  = block->getCellSize();
-
-			int sz[3] = {size.x, size.y, size.z};
-			int g[1] = {vc};
-
-			double bpos[3] = {origin.x, origin.y, origin.z};
-			unsigned int bbsize[3] = {size.x, size.y, size.z};
-			unsigned int gcsize[3] = {vc, vc, vc};
-			double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
-			size_t ncell[3];
-			double org[3];
-			for(int i=0; i<3; i++) {
-				ncell[i] = bbsize[i] + 2*gcsize[i];
-				org[i] = bpos[i] - gcsize[i]*dx[i];
-			}
-
-			int* pCellFlag = plsCellFlag->GetBlockData(block);
-			int* pRegionId = plsRegionId->GetBlockData(block);
-
-#ifdef _BLOCK_IS_LARGE_
-#else
-#endif
-			for(int k=vc; k<vc+size.z; k++) {
-				for(int j=vc; j<vc+size.y; j++) {
-					for(int i=vc; i<vc+size.x; i++) {
-						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
-						if( pCellFlag[m] == 1 ) {
-							pRegionId[m] = ids;
-							count++;
-						}
-					}
-				}
-			}
-		}
-		plsRegionId->ImposeBoundaryCondition(blockManager);
-
-		long int countTmp = count;
-		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
-
-		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
-		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
-	}
-	PM_Stop(tm_Init_PartitioningRegions);
-	MPI_Barrier(MPI_COMM_WORLD);
-	PrintLog(2, "Completed");
 }
 
 void Solver::InitGeometricalProps() {

@@ -225,20 +225,27 @@ class Solver {
 		void InitGridParams();
 		void InitSTL();
 		void InitSTL2();
-		void InitPGList();
+
 		void InitCut();
 		void ClearCut();
 		void CalcCut();
 		void ModifyCut1();
 		void ModifyCut2();
+
 		void InitFaceFlag();
 		void ClearFaceFlag();
 		void ModifyFaceFlag(int cid_target);
 		void InitCellFlag();
 		void FillCellFlag(real xs, real ys, real zs);
+
+		void InitPGList();
+		void InitPGListForRegion();
+		void InitPGListForPhase();
+
+		void InitRegion();
 		void InitPhase();
 		void InitPhase2();
-		void InitRegion();
+
 		void InitGeometricalProps();
 		void InitPhysicalParams();
 		void InitVars();
