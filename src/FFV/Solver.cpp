@@ -3276,14 +3276,26 @@ void Solver::UpdateF(int step) {
 
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		int rid_target = 1;
-		real b = 0.3;
+		int rid_target = 2;
+		real b = 0.025;
 		real nx = 1.0;
 		real ny = 0.0;
 		real nz = 0.0;
-		real dpmax = 1.0;
-		real umax = 1.0;
+		real dpmax = 2.0;
+		real umax = 0.1;
 		bfm_hex_(
+				fx, fy, fz,
+				ux0, uy0, uz0,
+				pRegionId,
+				&rid_target,
+				&b,
+				&nx, &ny, &nz,
+				&dpmax, &umax,
+				&dx, &dt,
+				sz, g);
+
+		rid_target = 1;
+		bfm_fan_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
