@@ -1868,13 +1868,13 @@ int Solver::Loop() {
 		bRestart = true;
 	}
 
-	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == "true" ) {
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
 		UpdateTA(StepStart);
 	}
 
 	for(int step=StepStart+1; step<=StepEnd; step++) {
 		Update(step);
-		if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == "true" ) {
+		if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
 			UpdateTA(step);
 		}
 		Print(step);
@@ -1883,7 +1883,7 @@ int Solver::Loop() {
 		}
 	}
 
-	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == "true" ) {
+	if( g_pFFVConfig->OutputDataBasicVariablesTimeAverage == true ) {
 		PrintTA(StepEnd);
 	}
 
