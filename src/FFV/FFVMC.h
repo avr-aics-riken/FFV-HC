@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <sys/stat.h>
 
 #include "BCMTools.h"
 #include "BlockManager.h"
@@ -67,12 +68,12 @@ template <typename T>
 				Vec3r rootOrigin,
 				double rootLength,
 				double threshold) {
-		ostringstream ossFileNameTime;
+		std::ostringstream ossFileNameTime;
 		ossFileNameTime << path;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
 		ossFileNameTime << "/";
 		ossFileNameTime.width(10);
-		ossFileNameTime.setf(ios::fixed);
+		ossFileNameTime.setf(std::ios::fixed);
 		ossFileNameTime.fill('0');
 		ossFileNameTime << step;
 		mkdir(ossFileNameTime.str().c_str(), 0755);
@@ -116,14 +117,14 @@ template <typename T>
 			return;
 		}
 
-		ostringstream ossFileName;
+		std::ostringstream ossFileName;
 		ossFileName << path;
 		ossFileName << "/";
 		ossFileName << prefix;
 		ossFileName << name.c_str();
 		ossFileName << "-";
 		ossFileName.width(10);
-		ossFileName.setf(ios::fixed);
+		ossFileName.setf(std::ios::fixed);
 		ossFileName.fill('0');
 		ossFileName << step;
 		ossFileName << ".pvtp";
@@ -158,10 +159,10 @@ template <typename T>
 				cellSize.z = blockSize.z / size.z;
 				int level = node->getLevel();
 
-				ostringstream ossFileName2;
+				std::ostringstream ossFileName2;
 				ossFileName2 << "./";
 				ossFileName2.width(10);
-				ossFileName2.setf(ios::fixed);
+				ossFileName2.setf(std::ios::fixed);
 				ossFileName2.fill('0');
 				ossFileName2 << step;
 				ossFileName2 << "/";
@@ -169,17 +170,17 @@ template <typename T>
 				ossFileName2 << name.c_str();
 				ossFileName2 << "-";
 				ossFileName2.width(5);
-				ossFileName2.setf(ios::fixed);
+				ossFileName2.setf(std::ios::fixed);
 				ossFileName2.fill('0');
 				ossFileName2 << iRank;
 				ossFileName2 << "-";
 				ossFileName2.width(5);
-				ossFileName2.setf(ios::fixed);
+				ossFileName2.setf(std::ios::fixed);
 				ossFileName2.fill('0');
 				ossFileName2 << id - partition->getStart(iRank);
 				ossFileName2 << "-";
 				ossFileName2.width(10);
-				ossFileName2.setf(ios::fixed);
+				ossFileName2.setf(std::ios::fixed);
 				ossFileName2.fill('0');
 				ossFileName2 << step;
 				ossFileName2 << ".vtp";

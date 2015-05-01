@@ -34,8 +34,8 @@ CGM_FUNCS   := ../CGMfuncs
 
 FFV_COMP    := pgi
 FFV_COMP    := fx
-FFV_COMP    := gnu
 FFV_COMP    := intel
+FFV_COMP    := gnu
 
 FFV_REAL    := float
 FFV_REAL    := double
