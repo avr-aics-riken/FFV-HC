@@ -390,9 +390,10 @@ void Solver::InitGridParams() {
 	vc = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
 	updateMethod = g_pFFVConfig->TuningVCUpdate;
 
-	PrintLog(2, "%-20s : %d", "num", blockManager.getNumBlock());
-	PrintLog(2, "%-20s : %d", "min level", minLevel);
-	PrintLog(2, "%-20s : %d", "max level", maxLevel);
+	int numLeafNode = this->tree->getNumLeafNode();
+	PrintLog(2, "%-20s : %d", "Num.", numLeafNode);
+	PrintLog(2, "%-20s : %d", "Min level", minLevel);
+	PrintLog(2, "%-20s : %d", "Max level", maxLevel);
 	PrintLog(2, "Completed");
 }
 
@@ -1458,8 +1459,9 @@ void Solver::InitPhase() {
 	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
 	long int nBlocks = blockManager.getNumBlock();
+	long int numLeafNode = this->tree->getNumLeafNode();
 	long int nCellsPerBlock = size.x*size.y*size.z;
-	long int countAll = nBlocks*nCellsPerBlock;
+	long int countAll = numLeafNode*nCellsPerBlock;
 	PrintLog(2, "%-20s : %d", "FLUID cells", countF);
 	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
 	PrintLog(2, "%-20s : %d", "Total cells", countAll);
