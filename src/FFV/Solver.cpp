@@ -4286,7 +4286,6 @@ void Solver::UpdateUX(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -4304,7 +4303,7 @@ void Solver::UpdateUX(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -4324,6 +4323,7 @@ void Solver::UpdateUX(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uxcp,
 				uxc0,
@@ -4576,7 +4576,6 @@ void Solver::UpdateUY(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -4594,7 +4593,7 @@ void Solver::UpdateUY(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -4614,6 +4613,7 @@ void Solver::UpdateUY(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uycp,
 				uyc0,
@@ -4866,7 +4866,6 @@ void Solver::UpdateUZ(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
@@ -4884,7 +4883,7 @@ void Solver::UpdateUZ(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
@@ -4904,6 +4903,7 @@ void Solver::UpdateUZ(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uzcp,
 				uzc0,
