@@ -175,24 +175,50 @@ namespace BCMT_NAMESPACE {
 					int i = 2 * I;
 					int j = 2 * J;
 					int k = 2 * K;
-					if( (double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 &&
-							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 &&
+					if( (double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 ||
 							(double)(fData[fIndex(i+1,j+1,k+1)]) > 0.5 ) {
 						return 1;
 					} 
-					return 0;
-
-					return 0.125 * (fData[fIndex(i  ,j  ,k  )] + fData[fIndex(i+1,j  ,k  )]
-							+ fData[fIndex(i  ,j+1,k  )] + fData[fIndex(i+1,j+1,k  )]
-							+ fData[fIndex(i  ,j  ,k+1)] + fData[fIndex(i+1,j  ,k+1)]
-							+ fData[fIndex(i  ,j+1,k+1)] + fData[fIndex(i+1,j+1,k+1)]);
+					return -1;
 				}
 
+/*
+				T interpolateF2C_X_M(const T* fData, const Index3DS& fIndex, int I, int J, int K) {
+					int i = 2 * I;
+					int j = 2 * J;
+					int k = 2 * K;
+					if(
+							(double)(fData[fIndex(i+1,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i+1,j+1,k+1)]) > 0.5
+						) {
+						return 1;
+					} 
+					return -1;
+				}
+
+				T interpolateF2C_X_P(const T* fData, const Index3DS& fIndex, int I, int J, int K) {
+					int i = 2 * I;
+					int j = 2 * J;
+					int k = 2 * K;
+					if(
+							(double)(fData[fIndex(i  ,j  ,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k  )]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j  ,k+1)]) > 0.5 ||
+							(double)(fData[fIndex(i  ,j+1,k+1)]) > 0.5 
+						) {
+						return 1;
+					} 
+					return -1;
+				}
+*/
 
 				/*
 				/// レベルL→L+1の線形補間 (粗c(I,J,K) → 細f(i,j,k)).
@@ -222,19 +248,16 @@ namespace BCMT_NAMESPACE {
 					linearInterpolate(j, ny, J, s);
 					linearInterpolate(k, nz, K, t);
 
+/*
+					I = i/2;
+					J = j/2;
+					K = k/2;
+*/
+
 					if( (double)(cData[cIndex(I  ,J  ,K  )]) > 0.5 ) {
 						return 1;
 					}
-					return 0;
-
-					return (1.0-t)*( 
-							(1.0-s)*( (1.0-r)*cData[cIndex(I  ,J  ,K  )] + r*cData[cIndex(I+1,J  ,K  )] )
-							+ s*( (1.0-r)*cData[cIndex(I  ,J+1,K  )] + r*cData[cIndex(I+1,J+1,K  )] )
-							)
-						+t*(
-								(1.0-s)*( (1.0-r)*cData[cIndex(I  ,J  ,K+1)] + r*cData[cIndex(I+1,J  ,K+1)] )
-								+ s*( (1.0-r)*cData[cIndex(I  ,J+1,K+1)] + r*cData[cIndex(I+1,J+1,K+1)] )
-							 );
+					return -1;
 				}
 
 				/// C2F補間における補間パラメータの計算.
@@ -242,11 +265,15 @@ namespace BCMT_NAMESPACE {
 				///  @note 端点では，内挿ではなく外挿
 				///
 				void linearInterpolate(int i, int n, int& I, double& r) {
-#if 1
-					//    I = std::min(std::max(i/2 - 1 + i%2, 0), n - 2);
+					I = i/2;
+					r = 0.5;
+/*
+					I = std::min(std::max(i/2 - 1 + i%2, 0), n - 2);
+					r = -0.25 + 0.5 * i - double(I);
+
 					I = i/2 - 1 + i%2;
 					r = -0.25 + 0.5 * i - double(I);
-#else
+
 					if (i == 0) {
 						// 外挿
 						I = 0;
@@ -265,7 +292,8 @@ namespace BCMT_NAMESPACE {
 						I = i/2;
 						r = 0.25;
 					}
-#endif
+*/
+
 				}
 
 				/*
@@ -856,6 +884,12 @@ namespace BCMT_NAMESPACE {
 
 		};
 
+/*
+template <>
+int Scalar3DUpdater2<int>::interpolateF2C(const int* fData, const Index3DS& fIndex, int I, int J, int K);
+template <>
+int Scalar3DUpdater2<int>::interpolateC2F(const int* cData, const Index3DS& cIndex, int i, int j, int k);
+*/
 
 #ifdef BCMT_NAMESPACE
 } // namespace BCMT_NAMESPACE

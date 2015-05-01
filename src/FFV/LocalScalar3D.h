@@ -8,6 +8,7 @@
 #include "Scalar3DUpdater1.h"
 #include "Scalar3DUpdater2.h"
 #include "Scalar3DUpdater3.h"
+#include "Scalar3DUpdater6.h"
 #include "real.h"
 #include "FFVGlobalVars.h"
 #include "FFVVTKWriter.h"
@@ -33,6 +34,8 @@ class LocalScalar3D {
 				this->id = blockManager.setDataClass<Scalar3D<T>, Scalar3DUpdater2<T> >(this->vc);
 			} else if( updaterType == 3 ) {
 				this->id = blockManager.setDataClass<Scalar3D<T>, Scalar3DUpdater3<T> >(this->vc);
+			} else if( updaterType == 6 ) {
+				this->id = blockManager.setDataClass<Scalar3D<T>, Scalar3DUpdater6<T> >(this->vc);
 			} else {
 				this->id = blockManager.setDataClass<Scalar3D<T>, Scalar3DUpdater1<T> >(this->vc);
 			}

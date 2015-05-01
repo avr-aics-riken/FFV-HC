@@ -24,12 +24,17 @@ class Solver {
 	private:
 		BlockManager& blockManager;
 		int myrank;
-		int vc;
-		int diffLevel;
 		int maxLevel;
 		int minLevel;
+		int diffLevel;
+		Vec3i size;
+		int vc;
 		std::string updateMethod;
 
+		PolylibNS::BCMPolylib* pl;
+		std::vector<std::string>* pgList;
+
+		Divider* divider;
 		RootGrid* rootGrid;
 		BCMOctree* tree;
 		Partition* partition;
@@ -98,8 +103,6 @@ class Solver {
 		LocalScalar3D<real> *plsTA;
 
 // For grids
-		LocalScalar3D<int> *plsPhaseId;
-		LocalScalar3D<int> *plsRegionId;
 		LocalScalar3D<real> *plsCut0;
 		LocalScalar3D<real> *plsCut1;
 		LocalScalar3D<real> *plsCut2;
@@ -123,6 +126,18 @@ class Solver {
 		LocalScalar3D<int> *plsNormalIndex3;
 		LocalScalar3D<int> *plsNormalIndex4;
 		LocalScalar3D<int> *plsNormalIndex5;
+
+		LocalScalar3D<int> *plsPhaseId;
+		LocalScalar3D<int> *plsRegionId;
+
+		LocalScalar3D<int> *plsCellFlag;
+		LocalScalar3D<int> *plsFaceFlag0;
+		LocalScalar3D<int> *plsFaceFlag1;
+		LocalScalar3D<int> *plsFaceFlag2;
+		LocalScalar3D<int> *plsFaceFlag3;
+		LocalScalar3D<int> *plsFaceFlag4;
+		LocalScalar3D<int> *plsFaceFlag5;
+
 
 // For ILS
 		LocalScalar3D<real> *plsAp;
@@ -200,6 +215,46 @@ class Solver {
 		int Post();
 
 	private:
+		void InitMPI(int argc, char** argv);
+		void InitConfig(const char* configfilename);
+		void InitPMlib();
+		void InitPolylib();
+		void InitDivider();
+		void InitTree();
+		void InitBlocks();
+		void InitGridParams();
+		void InitSTL();
+		void InitSTL2();
+
+		void InitCut();
+		void ClearCut();
+		void CalcCut();
+		void ModifyCut1();
+		void ModifyCut2();
+
+		void InitFaceFlag();
+		void ClearFaceFlag();
+		void ModifyFaceFlag(int cid_target);
+		void InitCellFlag();
+		void FillCellFlag(real xs, real ys, real zs);
+
+		void InitPGList();
+		void InitPGListForRegion();
+		void InitPGListForPhase();
+
+		void InitRegion();
+		void InitPhase();
+		void InitPhase2();
+
+		void InitGeometricalProps();
+		void InitPhysicalParams();
+		void InitVars();
+		void InitVarsBasic();
+		void InitVarsDerived();
+		void InitVarsILS();
+		void InitOutputData();
+		void InitTimer();
+
 		int Update(int step);
 		void UpdateUX(int step);
 		void UpdateUY(int step);
@@ -213,6 +268,7 @@ class Solver {
 		void UpdateTe(int step);
 		void UpdateF(int step);
 		int FillRegion(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
+		int FillRegion2(LocalScalar3D<int> *plsId, int value, real xs, real ys, real zs);
 
 		int Print(int step);
 		double times[32];

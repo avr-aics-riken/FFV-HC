@@ -205,12 +205,12 @@ void FFVConfig::Load(std::string filename) {
 	tp->getArrayLabels													("/RegionInfo/Region[@]", rgnlist);	
 	RegionList.clear();
 	RGN rgn0;
-	rgn0.medium = FillingMedium;
 	rgn0.origin = FillingOrigin;
+	rgn0.cid_target = 0;
 	RegionList.push_back(rgn0);
 	for(int n=0; n<rgnlist.size(); n++) {
 		rgn0.origin						= Read<Vec3d>					(rgnlist[n] + "/Origin");
-		rgn0.medium						= Read<std::string>		(rgnlist[n] + "/Medium");
+		rgn0.cid_target				= Read<int>						(rgnlist[n] + "/ID");
 		RegionList.push_back(rgn0);
 	}
 
@@ -541,6 +541,8 @@ void FFVConfig::Load(std::string filename) {
 		bcid << n;
 		BCInternalBoundaryType[n]  = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/Type", -1);
 		BCInternalBoundaryValue[n] = Read<double>("/BCTable/LocalBoundary/ID" + bcid.str() + "/Value", 0.0);
+		BCInternalBoundaryPhaseBoundary[n]
+															 = Read<int>   ("/BCTable/LocalBoundary/ID" + bcid.str() + "/PhaseBoundary", 1);
 		//		std::cout << n << " " << BCInternalBoundaryType[n] << " " << BCInternalBoundaryValue[n] << std::endl;
 	}
 }

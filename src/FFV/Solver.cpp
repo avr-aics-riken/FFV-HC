@@ -41,11 +41,54 @@ Solver::~Solver() {
 }
 
 int Solver::Init(int argc, char** argv){
-	/* ---------------------------------------------------------- */
-	/* Init MPI                                                   */
-	/* ---------------------------------------------------------- */
-	/* ---------------------------------------------------------- */
+	InitMPI(argc, argv);
+	InitConfig(argv[1]);
+	InitPMlib();
+	InitPolylib();
+	InitDivider();
+	InitTree();
+	InitBlocks();
+	InitGridParams();
+	InitSTL();
+	InitSTL2();
+
+	InitCut();
+	InitFaceFlag();
+	InitCellFlag();
+	InitPGList();
+
+	InitPGListForRegion();
+	ClearCut();
+	CalcCut();
+	ModifyCut1();
+	ModifyCut2();
+	InitRegion();
+
+	InitPGListForPhase();
+	ClearCut();
+	CalcCut();
+	ModifyCut1();
+	ModifyCut2();
+	InitPhase();
+
+	InitGeometricalProps();
+
+	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
+		return EX_FAILURE;
+		return EX_SUCCESS;
+	}
+
+	InitPhysicalParams();
+	InitVars();
+	InitOutputData();
+	InitTimer();
+
+	return EX_SUCCESS;
+}
+
+void Solver::InitMPI(int argc, char** argv) {
 	MPI::Init(argc, argv);
+
 	MPI::Comm& comm = MPI::COMM_WORLD;
 	this->myrank = comm.Get_rank();
 
@@ -55,38 +98,34 @@ int Solver::Init(int argc, char** argv){
 		PrintLog(0, "usage: %s configfile", argv[0]);
 		comm.Abort(EX_USAGE);
 	}
-	/* ---------------------------------------------------------- */
-	PrintLog(1, FFV_SOLVERNAME);
-	PrintLog(2, "%-20s : %s", "Version", FFV_VERSION);
-	PrintLog(2, "%-20s : %s", "Revision", FFV_REVISION);
-	PrintLog(2, "%-20s : %s", "Build date", BUILD_DATE);
-	PrintLog(2, "%-20s : %s", "Configuration file", argv[1]);
-	PrintLog(2, "%-20s : %d", "MPI processes", comm.Get_size());
-#ifdef _OPENMP
-	PrintLog(2, "%-20s : %d", "OpenMP threads", omp_get_max_threads());
-#endif
-	/* ---------------------------------------------------------- */
 
-	/* ---------------------------------------------------------- */
-	/* Init Config                                                */
-	/* ---------------------------------------------------------- */
+	PrintLog(1, FFV_SOLVERNAME);
+	PrintLog(2, "%-20s : %s", "Version"           , FFV_VERSION);
+	PrintLog(2, "%-20s : %s", "Revision"          , FFV_REVISION);
+	PrintLog(2, "%-20s : %s", "Build date"        , BUILD_DATE);
+	PrintLog(2, "%-20s : %s", "Configuration file", argv[1]);
+	PrintLog(2, "%-20s : %d", "MPI processes"     , comm.Get_size());
+#ifdef _OPENMP
+	PrintLog(2, "%-20s : %d", "OpenMP threads"    , omp_get_max_threads());
+#endif
+}
+
+void Solver::InitConfig(const char* configfilename) {
 	PrintLog(1, "Loading configuration file");
-	/* ---------------------------------------------------------- */
+
 	g_pFFVConfig = new FFVConfig();
-	g_pFFVConfig->Load(argv[1]);
-	/* ---------------------------------------------------------- */
+	g_pFFVConfig->Load(configfilename);
+
 	PrintLog(2, "%-20s : %s", "tree type", g_pFFVConfig->TreeType.c_str());
 	PrintLog(2, "%-20s : %s", "ordering",  g_pFFVConfig->TuningBlockOrdering.c_str());
 	PrintLog(2, "%-20s : %d", "block size", g_pFFVConfig->LeafBlockNumberOfCells);
 	PrintLog(2, "%-20s : %d", "vc width", g_pFFVConfig->LeafBlockNumberOfVirtualCells);
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
-	/* ---------------------------------------------------------- */
-	/* Init PMlib                                                 */
-	/* ---------------------------------------------------------- */
+void Solver::InitPMlib() {
 	PrintLog(1, "Initializing PMlib");
-	/* ---------------------------------------------------------- */
+
 	g_pPM = new pm_lib::PerfMonitor;
 	g_pPM->initialize(tm_END);
 	g_pPM->setRankInfo(this->myrank);
@@ -154,36 +193,33 @@ int Solver::Init(int argc, char** argv){
 #ifdef _OPENMP
 	nThreads = omp_get_max_threads();
 #endif
+	MPI::Comm& comm = MPI::COMM_WORLD;
 	g_pPM->setParallelMode("Hybrid", nThreads, comm.Get_size());
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
 
-	/* ---------------------------------------------------------- */
-	/* Load STL                                                   */
-	/* ---------------------------------------------------------- */
+	PrintLog(2, "Completed");
+}
+
+void Solver::InitPolylib() {
 	PrintLog(1, "Loading STL file(s)");
-	/* ---------------------------------------------------------- */
+
 	PM_Start(tm_Init_LoadSTL, 0, 0, true);
-	PolylibNS::BCMPolylib* pl = new PolylibNS::BCMPolylib;
+	this->pl = new PolylibNS::BCMPolylib;
 	struct stat st;
 	int ret = stat(g_pFFVConfig->PolylibConfig.c_str(), &st);
 	if( ret == 0 ) {
-		pl->load(g_pFFVConfig->PolylibConfig);
+		this->pl->load(g_pFFVConfig->PolylibConfig);
 	} else {
 	}
 	PM_Stop(tm_Init_LoadSTL);
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
 
-	/* ---------------------------------------------------------- */
-	/* Divide domain                                              */
-	/* ---------------------------------------------------------- */
+	PrintLog(2, "Completed");
+}
+
+void Solver::InitDivider() {
 	PrintLog(1, "Dividing domain");
-	/* ---------------------------------------------------------- */
+
 	PM_Start(tm_Init_DivideDomain, 0, 0, true);
-	Divider* divider = 0;
+	this->divider = 0;
 	if(myrank == 0) {
 		rootGrid = new RootGrid(g_pFFVConfig->RootBlockGrid);
 		if( g_pFFVConfig->RootBlockPeriodicX ) {
@@ -197,26 +233,26 @@ int Solver::Init(int argc, char** argv){
 		}
 
 		if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "flat") || !strcasecmp(g_pFFVConfig->TreeType.c_str(), "uniform")) {
-			divider = new FlatDivider(
+			this->divider = new FlatDivider(
 					rootGrid,
 					g_pFFVConfig->TreeMaxLevel);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "simple")) {
-			divider = new SimpleDivider(
+			this->divider = new SimpleDivider(
 					rootGrid,
 					g_pFFVConfig->TreeMinLevel,
 					g_pFFVConfig->TreeMaxLevel);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "polygon")) {
-			divider = new PolygonBBoxDivider(
+			this->divider = new PolygonBBoxDivider(
 					g_pFFVConfig->RootBlockOrigin,
 					g_pFFVConfig->RootBlockLength,
 					rootGrid,
 					g_pFFVConfig->TreeMinLevel,
-					pl,
+					this->pl,
 					g_pFFVConfig->PolygonGroupList,
 					g_pFFVConfig->BoundingBoxList,
 					(double)((double)g_pFFVConfig->LeafBlockNumberOfMarginalCells/(double)g_pFFVConfig->LeafBlockNumberOfCells));
 		} else if(!strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere_old") || !strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere2")) {
-			divider = new SphereDivider2(
+			this->divider = new SphereDivider2(
 					rootGrid,
 					g_pFFVConfig->TreeMinLevel,
 					g_pFFVConfig->TreeMaxLevel,
@@ -227,12 +263,12 @@ int Solver::Init(int argc, char** argv){
 					g_pFFVConfig->TreeDividerDeltaR,
 					g_pFFVConfig->TreeDividerHollow);
 		} else if (!strcasecmp(g_pFFVConfig->TreeType.c_str(), "sphere")) {
-			divider = new SphereDivider3(
+			this->divider = new SphereDivider3(
 					g_pFFVConfig->RootBlockOrigin,
 					g_pFFVConfig->RootBlockLength,
 					rootGrid,
 					g_pFFVConfig->TreeMinLevel,
-					pl,
+					this->pl,
 					g_pFFVConfig->PolygonGroupList,
 					g_pFFVConfig->BoundingBoxList,
 					g_pFFVConfig->SphericalBoxList,
@@ -242,15 +278,13 @@ int Solver::Init(int argc, char** argv){
 		}
 	}
 	PM_Stop(tm_Init_DivideDomain);
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
 
-	/* ---------------------------------------------------------- */
-	/* Create tree                                                */
-	/* ---------------------------------------------------------- */
+	PrintLog(2, "Completed");
+}
+
+void Solver::InitTree() {
 	PrintLog(1, "Creating tree");
-	/* ---------------------------------------------------------- */
+
 	PM_Start(tm_Init_CreateTree, 0, 0, true);
 	if(myrank == 0) {
 		BCMOctree::Ordering ordering;
@@ -265,14 +299,15 @@ int Solver::Init(int argc, char** argv){
 		} else {
 			exit(EX_READ_CONFIG);
 		}
-		tree = new BCMOctree(rootGrid, divider, ordering);
-		tree->broadcast();
+		this->tree = new BCMOctree(rootGrid, this->divider, ordering);
+		this->tree->broadcast();
 	} else {
-		tree = BCMOctree::ReceiveFromMaster();
+		this->tree = BCMOctree::ReceiveFromMaster();
 	}
 	PM_Stop(tm_Init_CreateTree);
-	/* ---------------------------------------------------------- */
+
 	int numLeafNode = tree->getNumLeafNode();
+	MPI::Comm& comm = MPI::COMM_WORLD;
 	partition = new Partition(comm.Get_size(), numLeafNode);
 	for(int n=0; n<comm.Get_size(); n++) {
 		if( n==0 ) {
@@ -282,13 +317,11 @@ int Solver::Init(int argc, char** argv){
 		}
 	}
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
-	/* ---------------------------------------------------------- */
-	/* Register blocks                                            */
-	/* ---------------------------------------------------------- */
+void Solver::InitBlocks() {
 	PrintLog(1, "Registering block(s)");
-	/* ---------------------------------------------------------- */
+
 	// ブロック内のセル数
 	Vec3i size(g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells);
 	Vec3r rootOrigin = g_pFFVConfig->RootBlockOrigin;
@@ -331,58 +364,15 @@ int Solver::Init(int argc, char** argv){
 		blockManager.registerBlock(block);
 	}
 	blockManager.endRegisterBlock();
-	/* ---------------------------------------------------------- */
+
 	//  blockManager.printBlockLayoutInfo();
 	blockManager.printBlockLayoutInfo("data-block.txt");
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
-	/* ---------------------------------------------------------- */
-	/* Distribute STL                                             */
-	/* ---------------------------------------------------------- */
-	PrintLog(1, "Distributing polygon(s)");
-	/* ---------------------------------------------------------- */
-	PM_Start(tm_Init_DistributeSTL, 0, 0, true);
-	if( myrank == 0 ) {
-		Vec3r rootOrigin = g_pFFVConfig->RootBlockOrigin;
-		double rootLength = g_pFFVConfig->RootBlockLength;
-		int margin = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
-		BlockBoundingBox bbb(tree, rootOrigin, rootLength, size, margin);
-
-		for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
-			BoundingBox box;
-			for (int id = partition->getStart(iRank); id < partition->getEnd(iRank); id++) {
-				Node* node = leafNodeArray[id];
-				box.addBox(bbb.getBoundingBox(node));
-			}
-			pl->set_bounding_box(iRank, box);
-		}
-		pl->send_to_all();
-	} else {
-		pl->load_from_rank0();
-	}
-	PM_Stop(tm_Init_DistributeSTL);
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
-
-	/* ---------------------------------------------------------- */
-	/* Repair polygon                                             */
-	/* ---------------------------------------------------------- */
-	PrintLog(1, "Repairing polygon(s)");
-	/* ---------------------------------------------------------- */
-	PM_Start(tm_Init_RepairPolygonData, 0, 0, true);
-	cutlib::RepairPolygonData(pl);
-	PM_Stop(tm_Init_RepairPolygonData);
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
-
-	/* ---------------------------------------------------------- */
-	/* Misc.                                                      */
-	/* ---------------------------------------------------------- */
+void Solver::InitGridParams() {
 	PrintLog(1, "Summarizing block layout");
-	/* ---------------------------------------------------------- */
+
 	maxLevel = 0;
 	minLevel = INT_MAX;
 	for (int n=0; n<blockManager.getNumBlock(); ++n) {
@@ -396,54 +386,64 @@ int Solver::Init(int argc, char** argv){
 		}
 	}
 	diffLevel = maxLevel - minLevel;
+	size = Vec3i(g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells, g_pFFVConfig->LeafBlockNumberOfCells);
 	vc = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
 	updateMethod = g_pFFVConfig->TuningVCUpdate;
-	/* ---------------------------------------------------------- */
-	PrintLog(2, "%-20s : %d", "num", blockManager.getNumBlock());
-	PrintLog(2, "%-20s : %d", "min level", minLevel);
-	PrintLog(2, "%-20s : %d", "max level", maxLevel);
+
+	int numLeafNode = this->tree->getNumLeafNode();
+	PrintLog(2, "%-20s : %d", "Num.", numLeafNode);
+	PrintLog(2, "%-20s : %d", "Min level", minLevel);
+	PrintLog(2, "%-20s : %d", "Max level", maxLevel);
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
+void Solver::InitSTL() {
+	PrintLog(1, "Distributing polygon(s)");
 
-	/* ---------------------------------------------------------- */
-	/* Init physical parameters                                   */
-	/* ---------------------------------------------------------- */
-	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
+	MPI::Comm& comm = MPI::COMM_WORLD;
+	PM_Start(tm_Init_DistributeSTL, 0, 0, true);
+	if( myrank == 0 ) {
+		Vec3r rootOrigin = g_pFFVConfig->RootBlockOrigin;
+		double rootLength = g_pFFVConfig->RootBlockLength;
+		int margin = g_pFFVConfig->LeafBlockNumberOfVirtualCells;
+		BlockBoundingBox bbb(tree, rootOrigin, rootLength, size, margin);
 
-	std::string fluid0 = g_pFFVConfig->FillingMedium;
-	rhof	= g_pFFVConfig->PPMMap[fluid0].rho;
-	cpf		= g_pFFVConfig->PPMMap[fluid0].cp;
-	kf		= g_pFFVConfig->PPMMap[fluid0].k;
-	mu		= g_pFFVConfig->PPMMap[fluid0].mu;
-	csf   = g_pFFVConfig->PPMMap[fluid0].cs;
+		std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
+		for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
+			BoundingBox box;
+			for (int id = partition->getStart(iRank); id < partition->getEnd(iRank); id++) {
+				Node* node = leafNodeArray[id];
+				box.addBox(bbb.getBoundingBox(node));
+			}
+			this->pl->set_bounding_box(iRank, box);
+		}
+		this->pl->send_to_all();
+	} else {
+		this->pl->load_from_rank0();
+	}
+	PM_Stop(tm_Init_DistributeSTL);
 
-	rhos	= g_pFFVConfig->PPMMap[fluid0].rho;
-	cps		= g_pFFVConfig->PPMMap[fluid0].cp;
-	ks		= g_pFFVConfig->PPMMap[fluid0].k;
-	/* ---------------------------------------------------------- */
+	PrintLog(2, "Completed");
+}
 
+void Solver::InitSTL2() {
+	PrintLog(1, "Repairing polygon(s)");
 
-	int boundaryTypeNULL[NUM_FACE] = {
-		1, 1, 1, 1, 1, 1,
-	};
+	PM_Start(tm_Init_RepairPolygonData, 0, 0, true);
+	cutlib::RepairPolygonData(this->pl);
+	PM_Stop(tm_Init_RepairPolygonData);
 
-	real boundaryValueNULL[NUM_FACE] = {
-		0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-	};
+	PrintLog(2, "Completed");
+}
 
-	int boundaryValueNULLINT[NUM_FACE] = {
-		0, 0, 0, 0, 0, 0,
-	};
+void Solver::InitCut() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-
-	/* ---------------------------------------------------------- */
-	/* Calc cutinfo                                               */
-	/* ---------------------------------------------------------- */
 	PrintLog(1, "Computing cuts");
-	/* ---------------------------------------------------------- */
-	PM_Start(tm_Init_CalcCutInfo, 0, 0, true);
 
+	PM_Start(tm_Init_CalcCutInfo, 0, 0, true);
 	plsCut0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsCut1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsCut2 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -456,6 +456,16 @@ int Solver::Init(int argc, char** argv){
 	plsCutId3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCutId4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCutId5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	pNormalN = new int   [blockManager.getNumBlock()];
+	pNormalX = new real* [blockManager.getNumBlock()];
+	pNormalY = new real* [blockManager.getNumBlock()];
+	pNormalZ = new real* [blockManager.getNumBlock()];
+	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
 	plsCut0->Fill(blockManager, 1.0);
 	plsCut1->Fill(blockManager, 1.0);
 	plsCut2->Fill(blockManager, 1.0);
@@ -468,17 +478,37 @@ int Solver::Init(int argc, char** argv){
 	plsCutId3->Fill(blockManager, 0);
 	plsCutId4->Fill(blockManager, 0);
 	plsCutId5->Fill(blockManager, 0);
-	pNormalN = new int   [blockManager.getNumBlock()];
-	pNormalX = new real* [blockManager.getNumBlock()];
-	pNormalY = new real* [blockManager.getNumBlock()];
-	pNormalZ = new real* [blockManager.getNumBlock()];
-	plsNormalIndex0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsNormalIndex5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	PM_Stop(tm_Init_CalcCutInfo);
 
+	if( g_pFFVConfig->GridGenerationOutputSTL ) {
+		PrintLog(1, "Printing STL files for cut info");
+		PrintCut(0);
+		PrintHole(0);
+		WriteGrid(
+				rootGrid,
+				tree,
+				partition);
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+	PrintLog(2, "Completed");
+}
+
+void Solver::ClearCut() {
+	plsCut0->Fill(blockManager, 1.0);
+	plsCut1->Fill(blockManager, 1.0);
+	plsCut2->Fill(blockManager, 1.0);
+	plsCut3->Fill(blockManager, 1.0);
+	plsCut4->Fill(blockManager, 1.0);
+	plsCut5->Fill(blockManager, 1.0);
+	plsCutId0->Fill(blockManager, 0);
+	plsCutId1->Fill(blockManager, 0);
+	plsCutId2->Fill(blockManager, 0);
+	plsCutId3->Fill(blockManager, 0);
+	plsCutId4->Fill(blockManager, 0);
+	plsCutId5->Fill(blockManager, 0);
+}
+
+void Solver::CalcCut() {
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -508,9 +538,8 @@ int Solver::Init(int argc, char** argv){
 		cutlib::CutBidArray*    cutBid = new cutlib::CutBid5Array(ncell);
 		cutlib::CutNormalArray* cutNormal = new cutlib::CutNormalArray(ncell);
 
-		//		CutInfoCell(org, dx, pl, cutPos, cutBid);
 		PM_Start(tm_Init_CalcCutInfo01, 0, 0, false);
-		int ret = CalcCutInfo(grid, pl, cutPos, cutBid, cutNormal);
+		int ret = CalcCutInfo(grid, pl, this->pgList, cutPos, cutBid, cutNormal);
 		PM_Stop(tm_Init_CalcCutInfo01);
 
 		pNormalN[n] = cutNormal->getNumNormal();
@@ -561,7 +590,6 @@ int Solver::Init(int argc, char** argv){
 		int* pCutId4 = plsCutId4->GetBlockData(block);
 		int* pCutId5 = plsCutId5->GetBlockData(block);
 
-		PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
 #ifdef _BLOCK_IS_LARGE_
 #pragma omp parallel for
 #else
@@ -613,7 +641,64 @@ int Solver::Init(int argc, char** argv){
 		delete cutPos;
 		delete cutBid;
 		delete cutNormal;
-		PM_Stop(tm_Init_CalcCutInfo02);
+	}
+
+	PM_Start(tm_Init_CalcCutInfo02, 0, 0, false);
+	PM_Stop(tm_Init_CalcCutInfo02);
+
+	PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
+	plsCut0->ImposeBoundaryCondition(blockManager);
+	plsCut1->ImposeBoundaryCondition(blockManager);
+	plsCut2->ImposeBoundaryCondition(blockManager);
+	plsCut3->ImposeBoundaryCondition(blockManager);
+	plsCut4->ImposeBoundaryCondition(blockManager);
+	plsCut5->ImposeBoundaryCondition(blockManager);
+	plsCutId0->ImposeBoundaryCondition(blockManager);
+	plsCutId1->ImposeBoundaryCondition(blockManager);
+	plsCutId2->ImposeBoundaryCondition(blockManager);
+	plsCutId3->ImposeBoundaryCondition(blockManager);
+	plsCutId4->ImposeBoundaryCondition(blockManager);
+	plsCutId5->ImposeBoundaryCondition(blockManager);
+	PM_Stop(tm_Init_CalcCutInfo06);
+}
+
+void Solver::ModifyCut1() {
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+
+		double bpos[3] = {origin.x, origin.y, origin.z};
+		unsigned int bbsize[3] = {size.x, size.y, size.z};
+		unsigned int gcsize[3] = {vc, vc, vc};
+		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		size_t ncell[3];
+		double org[3];
+		for(int i=0; i<3; i++) {
+			ncell[i] = bbsize[i] + 2*gcsize[i];
+			org[i] = bpos[i] - gcsize[i]*dx[i];
+		}
+
+		real* pCut0 = plsCut0->GetBlockData(block);
+		real* pCut1 = plsCut1->GetBlockData(block);
+		real* pCut2 = plsCut2->GetBlockData(block);
+		real* pCut3 = plsCut3->GetBlockData(block);
+		real* pCut4 = plsCut4->GetBlockData(block);
+		real* pCut5 = plsCut5->GetBlockData(block);
+		int* pCutId0 = plsCutId0->GetBlockData(block);
+		int* pCutId1 = plsCutId1->GetBlockData(block);
+		int* pCutId2 = plsCutId2->GetBlockData(block);
+		int* pCutId3 = plsCutId3->GetBlockData(block);
+		int* pCutId4 = plsCutId4->GetBlockData(block);
+		int* pCutId5 = plsCutId5->GetBlockData(block);
 
 		PM_Start(tm_Init_CalcCutInfo03, 0, 0, false);
 		if( g_pFFVConfig->ShapeApproximationMethod == "cut" ) {
@@ -644,38 +729,9 @@ int Solver::Init(int argc, char** argv){
 		}
 		PM_Stop(tm_Init_CalcCutInfo05);
 	}
+}
 
-	PM_Start(tm_Init_CalcCutInfo06, 0, 0, true);
-	plsCut0->ImposeBoundaryCondition(blockManager);
-	plsCut1->ImposeBoundaryCondition(blockManager);
-	plsCut2->ImposeBoundaryCondition(blockManager);
-	plsCut3->ImposeBoundaryCondition(blockManager);
-	plsCut4->ImposeBoundaryCondition(blockManager);
-	plsCut5->ImposeBoundaryCondition(blockManager);
-	plsCutId0->ImposeBoundaryCondition(blockManager);
-	plsCutId1->ImposeBoundaryCondition(blockManager);
-	plsCutId2->ImposeBoundaryCondition(blockManager);
-	plsCutId3->ImposeBoundaryCondition(blockManager);
-	plsCutId4->ImposeBoundaryCondition(blockManager);
-	plsCutId5->ImposeBoundaryCondition(blockManager);
-	PM_Stop(tm_Init_CalcCutInfo06);
-
-	PM_Stop(tm_Init_CalcCutInfo);
-	/* ---------------------------------------------------------- */
-	if( g_pFFVConfig->GridGenerationOutputSTL ) {
-		PrintLog(1, "Printing STL files for cut info");
-		PrintCut(0);
-		PrintHole(0);
-		WriteGrid(
-				rootGrid,
-				tree,
-				partition);
-		MPI_Barrier(MPI_COMM_WORLD);
-	}
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
-
-
+void Solver::ModifyCut2() {
 	{
 		/* ---------------------------------------------------------- */
 		/* Detect zero-cut                                            */
@@ -968,39 +1024,309 @@ int Solver::Init(int argc, char** argv){
 		PrintLog(2, "Completed");
 		/* ---------------------------------------------------------- */
 	}
+}
 
+void Solver::InitFaceFlag() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
+	plsFaceFlag0 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag1 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag2 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag3 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag4 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag5 = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsFaceFlag0->Fill(blockManager, -1);
+	plsFaceFlag1->Fill(blockManager, -1);
+	plsFaceFlag2->Fill(blockManager, -1);
+	plsFaceFlag3->Fill(blockManager, -1);
+	plsFaceFlag4->Fill(blockManager, -1);
+	plsFaceFlag5->Fill(blockManager, -1);
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
+}
+
+void Solver::ClearFaceFlag() {
+	plsFaceFlag0->Fill(blockManager, -1);
+	plsFaceFlag1->Fill(blockManager, -1);
+	plsFaceFlag2->Fill(blockManager, -1);
+	plsFaceFlag3->Fill(blockManager, -1);
+	plsFaceFlag4->Fill(blockManager, -1);
+	plsFaceFlag5->Fill(blockManager, -1);
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
+}
+
+void Solver::ModifyFaceFlag(int cid_target) {
+	if( cid_target <=0 || cid_target > 31 ) {
+		return;
+	}
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		int* pCutId0 = plsCutId0->GetBlockData(block);
+		int* pCutId1 = plsCutId1->GetBlockData(block);
+		int* pCutId2 = plsCutId2->GetBlockData(block);
+		int* pCutId3 = plsCutId3->GetBlockData(block);
+		int* pCutId4 = plsCutId4->GetBlockData(block);
+		int* pCutId5 = plsCutId5->GetBlockData(block);
+		int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+		int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+		int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+		int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+		int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+		int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
+#ifdef _BLOCK_IS_LARGE_
+#pragma omp parallel for
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int cid0 = pCutId0[m];
+					int cid1 = pCutId1[m];
+					int cid2 = pCutId2[m];
+					int cid3 = pCutId3[m];
+					int cid4 = pCutId4[m];
+					int cid5 = pCutId5[m];
+					int ff0 = pFaceFlag0[m];
+					int ff1 = pFaceFlag1[m];
+					int ff2 = pFaceFlag2[m];
+					int ff3 = pFaceFlag3[m];
+					int ff4 = pFaceFlag4[m];
+					int ff5 = pFaceFlag5[m];
+					if( cid0 == cid_target ) {
+						ff0 = 1;
+					}
+					if( cid1 == cid_target ) {
+						ff1 = 1;
+					}
+					if( cid2 == cid_target ) {
+						ff2 = 1;
+					}
+					if( cid3 == cid_target ) {
+						ff3 = 1;
+					}
+					if( cid4 == cid_target ) {
+						ff4 = 1;
+					}
+					if( cid5 == cid_target ) {
+						ff5 = 1;
+					}
+					pFaceFlag0[m] = ff0;
+					pFaceFlag1[m] = ff1;
+					pFaceFlag2[m] = ff2;
+					pFaceFlag3[m] = ff3;
+					pFaceFlag4[m] = ff4;
+					pFaceFlag5[m] = ff5;
+				}
+			}
+		}
+	}
+	plsFaceFlag0->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag1->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag2->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag3->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag4->ImposeBoundaryCondition(blockManager);
+	plsFaceFlag5->ImposeBoundaryCondition(blockManager);
+}
+
+void Solver::InitCellFlag() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
+
+	plsCellFlag = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsCellFlag->Fill(blockManager, -1);
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+}
+
+void Solver::FillCellFlag(real xs, real ys, real zs)
+{
+	plsCellFlag->Fill(blockManager, -1);
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+	int ids = 1;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pCellFlag = plsCellFlag->GetBlockData(block);
+
+		bcut_set_seed_(
+				pCellFlag,
+				&ids,
+				&xs, &ys, &zs,
+				&dx,
+				org,
+				sz, g);
+	}
+	plsCellFlag->ImposeBoundaryCondition(blockManager);
+
+	{
+		int nIterationCount = 0;
+		long int nCellsChanged = 0;
+		do {
+			nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				Vec3i size = block->getSize();
+				Vec3r origin = block->getOrigin();
+				Vec3r blockSize = block->getBlockSize();
+				Vec3r cellSize = block->getCellSize();
+
+				int sz[3] = {size.x, size.y, size.z};
+				int g[1] = {vc};
+				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+				int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+				int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+				int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+				int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+				int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+				int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
+
+				int* pCellFlag = plsCellFlag->GetBlockData(block);
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+				for(int k=vc; k<=size.z+vc-1; k++) {
+					for(int j=vc; j<=size.y+vc-1; j++) {
+						for(int i=vc; i<=size.x+vc-1; i++) {
+							int mp = i + nc[0]*( j + nc[1]*k );
+							int mw = i-1 + nc[0]*( j + nc[1]*k );
+							int me = i+1 + nc[0]*( j + nc[1]*k );
+							int ms = i + nc[0]*( j-1 + nc[1]*k );
+							int mn = i + nc[0]*( j+1 + nc[1]*k );
+							int mb = i + nc[0]*( j + nc[1]*(k-1) );
+							int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+							int ff0 = pFaceFlag0[mp];
+							int ff1 = pFaceFlag1[mp];
+							int ff2 = pFaceFlag2[mp];
+							int ff3 = pFaceFlag3[mp];
+							int ff4 = pFaceFlag4[mp];
+							int ff5 = pFaceFlag5[mp];
+
+							if( pCellFlag[mp] == ids ) {
+								continue;
+							}
+
+							if( (pCellFlag[mw] == ids && ff0 != 1) ||
+									(pCellFlag[me] == ids && ff1 != 1) ||
+									(pCellFlag[ms] == ids && ff2 != 1) ||
+									(pCellFlag[mn] == ids && ff3 != 1) ||
+									(pCellFlag[mb] == ids && ff4 != 1) ||
+									(pCellFlag[mt] == ids && ff5 != 1) ) {
+								pCellFlag[mp] = ids;
+								nCellsChanged++;
+							}
+						}
+					}
+				}
+			}
+			plsCellFlag->ImposeBoundaryCondition(blockManager);
+
+			long int nCellsChangedTmp = nCellsChanged;
+			MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+			nIterationCount++;
+		}while(nCellsChanged>0);
+	}
+}
+
+void Solver::InitPGList() {
+  this->pgList = new std::vector<std::string>;
+}
+
+void Solver::InitPGListForRegion() {
+	this->pgList->clear();
+  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
+  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
+  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
+		int         id    = (*it)->get_id();
+		std::string type  = (*it)->get_type();
+		std::string label = (*it)->get_label();
+		if( !strcasecmp(type.c_str(), "region_boundary") ) {
+	    this->pgList->push_back((*it)->acq_fullpath());
+			PrintLog(2, "%-20s : %d", "Region boundary ", id);
+		} else {
+		}
+  }
+  delete leafGroups;
+}
+
+void Solver::InitPGListForPhase() {
+	this->pgList->clear();
+  std::vector<PolygonGroup *>* leafGroups = this->pl->get_leaf_groups();
+  std::vector<PolygonGroup*>::iterator it = leafGroups->begin();
+  for (it = leafGroups->begin(); it != leafGroups->end(); ++it) {
+		int         id    = (*it)->get_id();
+		std::string type  = (*it)->get_type();
+		std::string label = (*it)->get_label();
+		if( !strcasecmp(type.c_str(), "region_boundary") ) {
+		} else {
+	    this->pgList->push_back((*it)->acq_fullpath());
+			PrintLog(2, "%-20s : %d", "Phase boundary ", id);
+		}
+  }
+  delete leafGroups;
+}
+
+void Solver::InitRegion() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
+
+	plsRegionId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
 	plsRegionId->Fill(blockManager, -1);
-	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 2);
-	plsPhaseId->Fill(blockManager, -1);
 
-	/* ---------------------------------------------------------- */
-	/* Partitioning region                                        */
-	/* ---------------------------------------------------------- */
 	PrintLog(1, "Partitioning regions");
-	/* ---------------------------------------------------------- */
+
 	PM_Start(tm_Init_PartitioningRegions, 0, 0, true);
-	int *pCountRGN = new int [g_pFFVConfig->RegionList.size()];
 	for(int nRGN=0; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
 		int ids = nRGN;
-		real xs = g_pFFVConfig->RegionList[nRGN].origin.x;
-		real ys = g_pFFVConfig->RegionList[nRGN].origin.y;
-		real zs = g_pFFVConfig->RegionList[nRGN].origin.z;
-		int count = FillRegion(plsRegionId, ids, xs, ys, zs);
-		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
-		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
-		pCountRGN[nRGN] = count;
-	}
-	PM_Stop(tm_Init_PartitioningRegions);
-	/* ---------------------------------------------------------- */
-	MPI_Barrier(MPI_COMM_WORLD);
-	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+		real xs = g_pFFVConfig->RegionList[ids].origin.x;
+		real ys = g_pFFVConfig->RegionList[ids].origin.y;
+		real zs = g_pFFVConfig->RegionList[ids].origin.z;
+		int cid_target = g_pFFVConfig->RegionList[ids].cid_target;
+		ClearFaceFlag();
+		ModifyFaceFlag(cid_target);
+		FillCellFlag(xs, ys, zs);
 
-	long int countF = 0;
-	long int countS = 0;
-	{
+		long int count = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -1025,7 +1351,7 @@ int Solver::Init(int argc, char** argv){
 				org[i] = bpos[i] - gcsize[i]*dx[i];
 			}
 
-			int* pPhaseId = plsPhaseId->GetBlockData(block);
+			int* pCellFlag = plsCellFlag->GetBlockData(block);
 			int* pRegionId = plsRegionId->GetBlockData(block);
 
 #ifdef _BLOCK_IS_LARGE_
@@ -1035,133 +1361,161 @@ int Solver::Init(int argc, char** argv){
 				for(int j=vc; j<vc+size.y; j++) {
 					for(int i=vc; i<vc+size.x; i++) {
 						int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
-						countS++;
-						if( pRegionId[m] >= 0 ) {
-							RGN rgn0 = g_pFFVConfig->RegionList[pRegionId[m]];
-							PPM ppm0 = g_pFFVConfig->PPMMap[rgn0.medium];
-							if( ppm0.state == 1 ) {
-								pPhaseId[m] = 1;
-								countF++;
-								countS--;
-							}
+						if( pCellFlag[m] == 1 ) {
+							pRegionId[m] = ids;
+							count++;
 						}
 					}
 				}
 			}
 		}
-		plsPhaseId->ImposeBoundaryCondition(blockManager);
+		plsRegionId->ImposeBoundaryCondition(blockManager);
+
+		long int countTmp = count;
+		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+		PrintLog(2, "%-18s%02d : %f %f %f", "Seed for Region ", nRGN, xs, ys, zs);
+		PrintLog(2, "%-18s%02d : %d", "Cells in Region ", nRGN, count);
 	}
+	PM_Stop(tm_Init_PartitioningRegions);
+	MPI_Barrier(MPI_COMM_WORLD);
+	PrintLog(2, "Completed");
+}
+
+void Solver::InitPhase() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
+
+	plsPhaseId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT, 6);
+	plsPhaseId->Fill(blockManager, -1);
+
+	ClearFaceFlag();
+	for(int n=1; n<32; n++) {
+		if( g_pFFVConfig->BCInternalBoundaryPhaseBoundary[n] != 0 ) {
+			ModifyFaceFlag(n);
+		}
+	}
+
+	int ids = 0;
+	real xs = g_pFFVConfig->RegionList[ids].origin.x;
+	real ys = g_pFFVConfig->RegionList[ids].origin.y;
+	real zs = g_pFFVConfig->RegionList[ids].origin.z;
+	FillCellFlag(xs, ys, zs);
+
+	long int countF = 0;
+	long int countS = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+
+		double bpos[3] = {origin.x, origin.y, origin.z};
+		unsigned int bbsize[3] = {size.x, size.y, size.z};
+		unsigned int gcsize[3] = {vc, vc, vc};
+		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		size_t ncell[3];
+		double org[3];
+		for(int i=0; i<3; i++) {
+			ncell[i] = bbsize[i] + 2*gcsize[i];
+			org[i] = bpos[i] - gcsize[i]*dx[i];
+		}
+
+		int* pCellFlag = plsCellFlag->GetBlockData(block);
+		int* pPhaseId = plsPhaseId->GetBlockData(block);
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					if( pCellFlag[m] == 1 ) {
+						pPhaseId[m] = 1;
+						countF++;
+					} else {
+						pPhaseId[m] = 0;
+						countS++;
+					}
+				}
+			}
+		}
+	}
+	plsPhaseId->ImposeBoundaryCondition(blockManager);
 
 	long int countTmp = countF;
 	MPI_Allreduce(&countTmp, &countF, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
 	countTmp = countS;
 	MPI_Allreduce(&countTmp, &countS, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
-	{
+	long int nBlocks = blockManager.getNumBlock();
+	long int numLeafNode = this->tree->getNumLeafNode();
+	long int nCellsPerBlock = size.x*size.y*size.z;
+	long int countAll = numLeafNode*nCellsPerBlock;
+	PrintLog(2, "%-20s : %d", "FLUID cells", countF);
+	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
+	PrintLog(2, "%-20s : %d", "Total cells", countAll);
+
+/*
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
-		for (int n=0; n<blockManager.getNumBlock(); ++n) {
-			BlockBase* block = blockManager.getBlock(n);
-			Vec3i size      = block->getSize();
-			Vec3r origin    = block->getOrigin();
-			Vec3r blockSize = block->getBlockSize();
-			Vec3r cellSize  = block->getCellSize();
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size      = block->getSize();
+		Vec3r origin    = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize  = block->getCellSize();
 
-			int sz[3] = {size.x, size.y, size.z};
-			int g[1] = {vc};
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
 
-			double bpos[3] = {origin.x, origin.y, origin.z};
-			unsigned int bbsize[3] = {size.x, size.y, size.z};
-			unsigned int gcsize[3] = {vc, vc, vc};
-			double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
-			size_t ncell[3];
-			double org[3];
-			for(int i=0; i<3; i++) {
-				ncell[i] = bbsize[i] + 2*gcsize[i];
-				org[i] = bpos[i] - gcsize[i]*dx[i];
-			}
+		double bpos[3] = {origin.x, origin.y, origin.z};
+		unsigned int bbsize[3] = {size.x, size.y, size.z};
+		unsigned int gcsize[3] = {vc, vc, vc};
+		double dx[3] = {cellSize.x, cellSize.x, cellSize.x};
+		size_t ncell[3];
+		double org[3];
+		for(int i=0; i<3; i++) {
+			ncell[i] = bbsize[i] + 2*gcsize[i];
+			org[i] = bpos[i] - gcsize[i]*dx[i];
+		}
 
-			int* pPhaseId = plsPhaseId->GetBlockData(block);
-			int* pRegionId = plsRegionId->GetBlockData(block);
-			real* pCut0 = plsCut0->GetBlockData(block);
-			real* pCut1 = plsCut1->GetBlockData(block);
-			real* pCut2 = plsCut2->GetBlockData(block);
-			real* pCut3 = plsCut3->GetBlockData(block);
-			real* pCut4 = plsCut4->GetBlockData(block);
-			real* pCut5 = plsCut5->GetBlockData(block);
-			int* pCutId0 = plsCutId0->GetBlockData(block);
-			int* pCutId1 = plsCutId1->GetBlockData(block);
-			int* pCutId2 = plsCutId2->GetBlockData(block);
-			int* pCutId3 = plsCutId3->GetBlockData(block);
-			int* pCutId4 = plsCutId4->GetBlockData(block);
-			int* pCutId5 = plsCutId5->GetBlockData(block);
+		int* pPhaseId = plsPhaseId->GetBlockData(block);
+
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
-			for(int k=vc; k<vc+size.z; k++) {
-				for(int j=vc; j<vc+size.y; j++) {
-					for(int i=vc; i<vc+size.x; i++) {
-						int mp = i + ncell[0]*( j + ncell[1]*k );
-						int mw = i-1 + ncell[0]*( j + ncell[1]*k );
-						int me = i+1 + ncell[0]*( j + ncell[1]*k );
-						int ms = i + ncell[0]*( j-1 + ncell[1]*k );
-						int mn = i + ncell[0]*( j+1 + ncell[1]*k );
-						int mb = i + ncell[0]*( j + ncell[1]*(k-1) );
-						int mt = i + ncell[0]*( j + ncell[1]*(k+1) );
-						if( pPhaseId[mp] == 1 ) {
-							if( pPhaseId[mw] == 1 ) {
-								pCut0[mp] = 1.0;
-								pCutId0[mp] = 0;
-							}
-							if( pPhaseId[me] == 1 ) {
-								pCut1[mp] = 1.0;
-								pCutId1[mp] = 0;
-							}
-							if( pPhaseId[ms] == 1 ) {
-								pCut2[mp] = 1.0;
-								pCutId2[mp] = 0;
-							}
-							if( pPhaseId[mn] == 1 ) {
-								pCut3[mp] = 1.0;
-								pCutId3[mp] = 0;
-							}
-							if( pPhaseId[mb] == 1 ) {
-								pCut4[mp] = 1.0;
-								pCutId4[mp] = 0;
-							}
-							if( pPhaseId[mt] == 1 ) {
-								pCut5[mp] = 1.0;
-								pCutId5[mp] = 0;
-							}
-						}
+		for(int k=vc; k<vc+size.z; k++) {
+			for(int j=vc; j<vc+size.y; j++) {
+				for(int i=vc; i<vc+size.x; i++) {
+					int m = i + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int mw = i-1 + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int me = i+1 + (2*vc + size.x)*(j + (2*vc + size.y)*k);
+					int ms = i + (2*vc + size.x)*(j-1 + (2*vc + size.y)*k);
+					if( pPhaseId[mw] == -1 ) {
+						std::cout << i << " " << j << " " << k << " " << n << std::endl;
 					}
 				}
 			}
 		}
-		plsPhaseId->ImposeBoundaryCondition(blockManager);
 	}
+*/
+}
 
-	int nBlocks = blockManager.getNumBlock();
-	int nCellsPerBlock = size.x*size.y*size.z;
-	int countAll = nBlocks*nCellsPerBlock;
-	PrintLog(2, "%-20s : %d", "FLUID cells", countF);
-	PrintLog(2, "%-20s : %d", "SOLID cells", countS);
-	PrintLog(2, "%-20s : %d", "Total cells", countAll);
-	delete [] pCountRGN;
-	/* ---------------------------------------------------------- */
-	/* ---------------------------------------------------------- */
-	if( g_pFFVConfig->GridGenerationOutputSTL ) {
-		PrintLog(1, "Printing STL files for cut info");
-		PrintCut(1);
-	}
-
-
-	/* ---------------------------------------------------------- */
-	/* Compute geometrical properties                             */
-	/* ---------------------------------------------------------- */
+void Solver::InitGeometricalProps() {
 	PrintLog(1, "Computing geometrical properties of flow");
-	/* ---------------------------------------------------------- */
+
 	double VGlobal = 0.0;
 	double SGlobal = 0.0;
 	double SGlobal2 = 0.0;
@@ -1272,64 +1626,37 @@ int Solver::Init(int argc, char** argv){
 		MPI_Allreduce(&SLocal, &SGlobal, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 		MPI_Allreduce(&SLocal2, &SGlobal2, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
 	}
-	/* ---------------------------------------------------------- */
+
 	PrintLog(2, "%-20s : %f", "Volume",       VGlobal);
 	PrintLog(2, "%-20s : %f", "Surface area", SGlobal);
 	PrintLog(2, "%-20s : %f", "Surface area (voxel)", SGlobal2);
-	/* ---------------------------------------------------------- */
+
 	PM_Stop(tm_Init_GeometricalProperties, 0, 0, true);
-	/* ---------------------------------------------------------- */
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
-	if( g_pFFVConfig->OperationMode == "gridgeneration" ) {
-		return EX_FAILURE;
-		return EX_SUCCESS;
-	}
+void Solver::InitPhysicalParams() {
+	dt		= g_pFFVConfig->TimeControlTimeStepDeltaT;
 
-	/* ---------------------------------------------------------- */
-	/* Init vars                                                  */
-	/* ---------------------------------------------------------- */
-	PrintLog(1, "Initializing variables");
-	/* ---------------------------------------------------------- */
+	std::string fluid0 = g_pFFVConfig->FillingMedium;
+	rhof	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cpf		= g_pFFVConfig->PPMMap[fluid0].cp;
+	kf		= g_pFFVConfig->PPMMap[fluid0].k;
+	mu		= g_pFFVConfig->PPMMap[fluid0].mu;
+	csf   = g_pFFVConfig->PPMMap[fluid0].cs;
 
-	PM_Start(tm_Init_InitVars, 0, 0, true);
+	rhos	= g_pFFVConfig->PPMMap[fluid0].rho;
+	cps		= g_pFFVConfig->PPMMap[fluid0].cp;
+	ks		= g_pFFVConfig->PPMMap[fluid0].k;
+}
 
-	/* ---------------------------------------------------------- */
-	/* Init mask                                                  */
-	/* ---------------------------------------------------------- */
-	plsMaskId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
-	plsMaskId->Fill(blockManager, 0);
-	plsM = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsM->Fill(blockManager, 0.0);
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-	for (int n=0; n<blockManager.getNumBlock(); ++n) {
-		BlockBase* block = blockManager.getBlock(n);
-		Vec3i size = block->getSize();
-		Vec3r origin = block->getOrigin();
-		Vec3r blockSize = block->getBlockSize();
-		Vec3r cellSize = block->getCellSize();
+void Solver::InitVarsBasic() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-		int sz[3] = {size.x, size.y, size.z};
-		int g[1] = {vc};
-
-		real* pM = plsM->GetBlockData(block);
-		int* pMaskId = plsMaskId->GetBlockData(block);
-
-		setup_mask_(
-				pM, 
-				pMaskId, 
-				sz, g);
-	}
-	/* ---------------------------------------------------------- */
-
-	/* ---------------------------------------------------------- */
-	/* Init vars                                                  */
-	/* ---------------------------------------------------------- */
 	int boundaryTypeUX[NUM_FACE] = {
 		g_pFFVConfig->OuterBCUX[X_M].type,
 		g_pFFVConfig->OuterBCUX[X_P].type,
@@ -1523,12 +1850,7 @@ int Solver::Init(int argc, char** argv){
 	plsP1->Fill(blockManager, p0);
 	plsP0->ImposeBoundaryCondition(blockManager);
 	plsP1->ImposeBoundaryCondition(blockManager);
-	/* ---------------------------------------------------------- */
 
-
-	/* ---------------------------------------------------------- */
-	/* Init time average                                          */
-	/* ---------------------------------------------------------- */
 	plsUXA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
 	plsUYA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
 	plsUZA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 1);
@@ -1554,41 +1876,70 @@ int Solver::Init(int argc, char** argv){
 	ptaUZ->Init();
 	ptaP->Init();
 	ptaT->Init();
-	/* ---------------------------------------------------------- */
+}
 
+void Solver::InitVarsDerived() {
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
-	/* ---------------------------------------------------------- */
-	/* Init A and b                                               */
-	/* ---------------------------------------------------------- */
-	plsAp = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAw = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAe = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAs = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAn = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAb = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAt = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsb  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsAp->Fill(blockManager, 0.0);
-	plsAw->Fill(blockManager, 0.0);
-	plsAe->Fill(blockManager, 0.0);
-	plsAs->Fill(blockManager, 0.0);
-	plsAn->Fill(blockManager, 0.0);
-	plsAb->Fill(blockManager, 0.0);
-	plsAt->Fill(blockManager, 0.0);
-	plsb ->Fill(blockManager, 0.0);
-	plsAp->ImposeBoundaryCondition(blockManager);
-	plsAw->ImposeBoundaryCondition(blockManager);
-	plsAe->ImposeBoundaryCondition(blockManager);
-	plsAs->ImposeBoundaryCondition(blockManager);
-	plsAn->ImposeBoundaryCondition(blockManager);
-	plsAb->ImposeBoundaryCondition(blockManager);
-	plsAt->ImposeBoundaryCondition(blockManager);
-	plsb ->ImposeBoundaryCondition(blockManager);
-	/* ---------------------------------------------------------- */
+	int vc2 = 2;
+	plsFspx = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFspy = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFspz = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFsvx = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFsvy = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFsvz = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFspx->Fill(blockManager, 0.0);
+	plsFspy->Fill(blockManager, 0.0);
+	plsFspz->Fill(blockManager, 0.0);
+	plsFsvx->Fill(blockManager, 0.0);
+	plsFsvy->Fill(blockManager, 0.0);
+	plsFsvz->Fill(blockManager, 0.0);
 
-	/* ---------------------------------------------------------- */
-	/* Init ILS                                                   */
-	/* ---------------------------------------------------------- */
+	int vc3 = 2;
+	plsQx = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQy = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQz = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsQx->Fill(blockManager, 0.0);
+	plsQy->Fill(blockManager, 0.0);
+	plsQz->Fill(blockManager, 0.0);
+
+	plsLapP = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsLapP->Fill(blockManager, 0.0);
+	plsLapP->ImposeBoundaryCondition(blockManager);
+
+	plsMaskId = new LocalScalar3D<int>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULLINT);
+	plsMaskId->Fill(blockManager, 0);
+	plsM = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsM->Fill(blockManager, 0.0);
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+
+		real* pM = plsM->GetBlockData(block);
+		int* pMaskId = plsMaskId->GetBlockData(block);
+
+		setup_mask_(
+				pM, 
+				pMaskId, 
+				sz, g);
+	}
+}
+
+void Solver::InitVarsILS() {
+	pils = new FFVILS();
+
 	omegaU		= g_pFFVConfig->IterationOmegaU;
 	countMaxU	= g_pFFVConfig->IterationMaxCountU;
 	epsilonU	= g_pFFVConfig->IterationEpsilonU;
@@ -1617,8 +1968,34 @@ int Solver::Init(int argc, char** argv){
 	countT		= 0;
 	residualT	= 0.0;
 
-	pils = new FFVILS();
+	int boundaryTypeNULL[NUM_FACE] = { 1, 1, 1, 1, 1, 1, };
+	real boundaryValueNULL[NUM_FACE] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
+	int boundaryValueNULLINT[NUM_FACE] = { 0, 0, 0, 0, 0, 0, };
 
+	plsAp = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAw = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAe = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAs = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAn = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAb = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAt = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsb  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsAp->Fill(blockManager, 0.0);
+	plsAw->Fill(blockManager, 0.0);
+	plsAe->Fill(blockManager, 0.0);
+	plsAs->Fill(blockManager, 0.0);
+	plsAn->Fill(blockManager, 0.0);
+	plsAb->Fill(blockManager, 0.0);
+	plsAt->Fill(blockManager, 0.0);
+	plsb ->Fill(blockManager, 0.0);
+	plsAp->ImposeBoundaryCondition(blockManager);
+	plsAw->ImposeBoundaryCondition(blockManager);
+	plsAe->ImposeBoundaryCondition(blockManager);
+	plsAs->ImposeBoundaryCondition(blockManager);
+	plsAn->ImposeBoundaryCondition(blockManager);
+	plsAb->ImposeBoundaryCondition(blockManager);
+	plsAt->ImposeBoundaryCondition(blockManager);
+	plsb ->ImposeBoundaryCondition(blockManager);
 	int vc1 = 2;
 	plsr  = new LocalScalar3D<real>(blockManager, vc1, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsr0 = new LocalScalar3D<real>(blockManager, vc1, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1636,55 +2013,21 @@ int Solver::Init(int argc, char** argv){
 	plss ->Fill(blockManager, 0.0);
 	plss_->Fill(blockManager, 0.0);
 	plst_->Fill(blockManager, 0.0);
-	/* ---------------------------------------------------------- */
+}
 
+void Solver::InitVars() {
+	PrintLog(1, "Initializing variables");
 
-	/* ---------------------------------------------------------- */
-	/* Init Force                                                 */
-	/* ---------------------------------------------------------- */
-	int vc2 = 2;
-	plsFspx = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFspy = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFspz = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFsvx = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFsvy = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFsvz = new LocalScalar3D<real>(blockManager, vc2, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsFspx->Fill(blockManager, 0.0);
-	plsFspy->Fill(blockManager, 0.0);
-	plsFspz->Fill(blockManager, 0.0);
-	plsFsvx->Fill(blockManager, 0.0);
-	plsFsvy->Fill(blockManager, 0.0);
-	plsFsvz->Fill(blockManager, 0.0);
-	/* ---------------------------------------------------------- */
-
-
-	/* ---------------------------------------------------------- */
-	/* Init Heat flux                                             */
-	/* ---------------------------------------------------------- */
-	int vc3 = 2;
-	plsQx = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsQy = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsQz = new LocalScalar3D<real>(blockManager, vc3, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsQx->Fill(blockManager, 0.0);
-	plsQy->Fill(blockManager, 0.0);
-	plsQz->Fill(blockManager, 0.0);
-	/* ---------------------------------------------------------- */
-
-	/* ---------------------------------------------------------- */
-	/* Init Laplacian P                                           */
-	/* ---------------------------------------------------------- */
-	plsLapP = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
-	plsLapP->Fill(blockManager, 0.0);
-	plsLapP->ImposeBoundaryCondition(blockManager);
-
+	PM_Start(tm_Init_InitVars, 0, 0, true);
+	InitVarsBasic();
+	InitVarsDerived();
+	InitVarsILS();
 	PM_Stop(tm_Init_InitVars);
 
-	/* ---------------------------------------------------------- */
 	PrintLog(2, "Completed");
-	/* ---------------------------------------------------------- */
+}
 
-
-	/////////////////////////////////////////////
+void Solver::InitOutputData() {
 	if( g_pFFVConfig->OutputDataBasicVariablesFormatBCM ) {
 		BCMFileSaverInit(
 				rootGrid,
@@ -1699,15 +2042,12 @@ int Solver::Init(int argc, char** argv){
 				tree,
 				partition);
 	}
-	/////////////////////////////////////////////
+}
 
-
-
+void Solver::InitTimer() {
 	for(int i=0; i<32; i++) {
 		this->times[i] = 0.0;
 	}
-
-	return EX_SUCCESS;
 }
 
 int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, real zs)
@@ -1759,12 +2099,146 @@ int Solver::FillRegion(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, rea
 				int g[1] = {vc};
 				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
 
-				real* pCut0 = plsCut0->GetBlockData(block);
-				real* pCut1 = plsCut1->GetBlockData(block);
-				real* pCut2 = plsCut2->GetBlockData(block);
-				real* pCut3 = plsCut3->GetBlockData(block);
-				real* pCut4 = plsCut4->GetBlockData(block);
-				real* pCut5 = plsCut5->GetBlockData(block);
+				int* pFaceFlag0 = plsFaceFlag0->GetBlockData(block);
+				int* pFaceFlag1 = plsFaceFlag1->GetBlockData(block);
+				int* pFaceFlag2 = plsFaceFlag2->GetBlockData(block);
+				int* pFaceFlag3 = plsFaceFlag3->GetBlockData(block);
+				int* pFaceFlag4 = plsFaceFlag4->GetBlockData(block);
+				int* pFaceFlag5 = plsFaceFlag5->GetBlockData(block);
+
+				int* pId = plsId->GetBlockData(block);
+#ifdef _BLOCK_IS_LARGE_
+				//#pragma omp parallel for reduction(+: nCellsChanged)
+#else
+#endif
+				for(int k=vc; k<=size.z+vc-1; k++) {
+					for(int j=vc; j<=size.y+vc-1; j++) {
+						for(int i=vc; i<=size.x+vc-1; i++) {
+							int mp = i + nc[0]*( j + nc[1]*k );
+							int mw = i-1 + nc[0]*( j + nc[1]*k );
+							int me = i+1 + nc[0]*( j + nc[1]*k );
+							int ms = i + nc[0]*( j-1 + nc[1]*k );
+							int mn = i + nc[0]*( j+1 + nc[1]*k );
+							int mb = i + nc[0]*( j + nc[1]*(k-1) );
+							int mt = i + nc[0]*( j + nc[1]*(k+1) );
+
+							int ff0 = pFaceFlag0[mp];
+							int ff1 = pFaceFlag1[mp];
+							int ff2 = pFaceFlag2[mp];
+							int ff3 = pFaceFlag3[mp];
+							int ff4 = pFaceFlag4[mp];
+							int ff5 = pFaceFlag5[mp];
+
+							if( pId[mp] == Ids ) {
+								continue;
+							}
+
+							if( (pId[mw] == Ids && ff0 != 1) ||
+									(pId[me] == Ids && ff1 != 1) ||
+									(pId[ms] == Ids && ff2 != 1) ||
+									(pId[mn] == Ids && ff3 != 1) ||
+									(pId[mb] == Ids && ff4 != 1) ||
+									(pId[mt] == Ids && ff5 != 1) ) {
+								pId[mp] = Ids;
+								nCellsChanged++;
+							}
+						}
+					}
+				}
+			}
+			plsId->ImposeBoundaryCondition(blockManager);
+
+			long int nCellsChangedTmp = nCellsChanged;
+			MPI_Allreduce(&nCellsChangedTmp, &nCellsChanged, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+
+			nIterationCount++;
+		}while(nCellsChanged>0);
+	}
+
+	long int count = 0;
+	{
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+		for (int n=0; n<blockManager.getNumBlock(); ++n) {
+			BlockBase* block = blockManager.getBlock(n);
+			Vec3i size = block->getSize();
+			Vec3r origin = block->getOrigin();
+			Vec3r blockSize = block->getBlockSize();
+			Vec3r cellSize = block->getCellSize();
+
+			int sz[3] = {size.x, size.y, size.z};
+			int g[1] = {vc};
+			int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
+			int* pId = plsId->GetBlockData(block);
+			for(int k=vc; k<=size.z+vc-1; k++) {
+				for(int j=vc; j<=size.y+vc-1; j++) {
+					for(int i=vc; i<=size.x+vc-1; i++) {
+						int mp = i + nc[0]*( j + nc[1]*k );
+						if( pId[mp] == Ids ) {
+							count++;
+						}
+					}
+				}
+			}
+		}
+
+		long int countTmp = count;
+		MPI_Allreduce(&countTmp, &count, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
+	}
+	return count;
+}
+
+int Solver::FillRegion2(LocalScalar3D<int> *plsId, int Ids, real xs, real ys, real zs)
+{
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		int* pId = plsId->GetBlockData(block);
+
+		bcut_set_seed_(
+				pId,
+				&Ids,
+				&xs, &ys, &zs,
+				&dx,
+				org,
+				sz, g);
+	}
+	plsId->ImposeBoundaryCondition(blockManager);
+
+	{
+		int nIterationCount = 0;
+		long int nCellsChanged = 0;
+		do {
+			nCellsChanged = 0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+			//#pragma omp parallel for reduction(+: nCellsChanged)
+#endif
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				Vec3i size = block->getSize();
+				Vec3r origin = block->getOrigin();
+				Vec3r blockSize = block->getBlockSize();
+				Vec3r cellSize = block->getCellSize();
+
+				int sz[3] = {size.x, size.y, size.z};
+				int g[1] = {vc};
+				int nc[3] = {size.x + 2*vc, size.y + 2*vc, size.z + 2*vc};
+
 				int* pCutId0 = plsCutId0->GetBlockData(block);
 				int* pCutId1 = plsCutId1->GetBlockData(block);
 				int* pCutId2 = plsCutId2->GetBlockData(block);
@@ -2804,14 +3278,26 @@ void Solver::UpdateF(int step) {
 
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		int rid_target = 1;
-		real b = 0.3;
+		int rid_target = 2;
+		real b = 0.025;
 		real nx = 1.0;
 		real ny = 0.0;
 		real nz = 0.0;
-		real dpmax = 1.0;
-		real umax = 1.0;
+		real dpmax = 2.0;
+		real umax = 0.1;
 		bfm_hex_(
+				fx, fy, fz,
+				ux0, uy0, uz0,
+				pRegionId,
+				&rid_target,
+				&b,
+				&nx, &ny, &nz,
+				&dpmax, &umax,
+				&dx, &dt,
+				sz, g);
+
+		rid_target = 1;
+		bfm_fan_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
@@ -3800,7 +4286,6 @@ void Solver::UpdateUX(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -3818,7 +4303,7 @@ void Solver::UpdateUX(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				ux0,
@@ -3838,6 +4323,7 @@ void Solver::UpdateUX(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uxcp,
 				uxc0,
@@ -4090,7 +4576,6 @@ void Solver::UpdateUY(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -4108,7 +4593,7 @@ void Solver::UpdateUY(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uy0,
@@ -4128,6 +4613,7 @@ void Solver::UpdateUY(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uycp,
 				uyc0,
@@ -4380,7 +4866,6 @@ void Solver::UpdateUZ(int step) {
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
-/*
 		bcut_calc_abd_u_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
@@ -4398,7 +4883,7 @@ void Solver::UpdateUZ(int step) {
 				&Uc,
 				&gx, &gy, &gz,
 				sz, g);
-*/
+/*
 		bcut_calc_abd_u_2_(
 				Ap, Aw, Ae, As, An, Ab, At, b,
 				uz0,
@@ -4418,6 +4903,7 @@ void Solver::UpdateUZ(int step) {
 				&gx, &gy, &gz,
 				fx, fy, fz,
 				sz, g);
+*/
 		copy_(
 				uzcp,
 				uzc0,
