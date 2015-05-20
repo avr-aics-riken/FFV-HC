@@ -35,6 +35,8 @@ class Solver {
 		std::vector<std::string>* pgList;
 
 		Divider* divider;
+		BCMOctree::Ordering ordering;
+
 		RootGrid* rootGrid;
 		BCMOctree* tree;
 		Partition* partition;
@@ -220,6 +222,7 @@ class Solver {
 		void InitPMlib();
 		void InitPolylib();
 		void InitDivider();
+		void InitOrdering();
 		void InitTree();
 		void InitBlocks();
 		void InitGridParams();

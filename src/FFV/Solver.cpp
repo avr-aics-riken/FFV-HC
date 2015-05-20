@@ -46,6 +46,7 @@ int Solver::Init(int argc, char** argv){
 	InitPMlib();
 	InitPolylib();
 	InitDivider();
+	InitOrdering();
 	InitTree();
 	InitBlocks();
 	InitGridParams();
@@ -282,24 +283,32 @@ void Solver::InitDivider() {
 	PrintLog(2, "Completed");
 }
 
+void Solver::InitOrdering() {
+	this->ordering = BCMOctree::Z;
+	if(myrank == 0) {
+		if (g_pFFVConfig->TuningBlockOrdering == "Z") {
+			this->ordering = BCMOctree::Z;
+		} else if (g_pFFVConfig->TuningBlockOrdering == "Hilbert") {
+			this->ordering = BCMOctree::HILBERT;
+		} else if (g_pFFVConfig->TuningBlockOrdering == "random") {
+			this->ordering = BCMOctree::RANDOM;
+		} else if (g_pFFVConfig->TuningBlockOrdering == "PedigreeList") {
+			this->ordering = BCMOctree::PEDIGREELIST;
+		} else {
+			exit(EX_READ_CONFIG);
+		}
+	} else {
+	}
+}
+
 void Solver::InitTree() {
 	PrintLog(1, "Creating tree");
 
 	PM_Start(tm_Init_CreateTree, 0, 0, true);
 	if(myrank == 0) {
-		BCMOctree::Ordering ordering;
-		if (g_pFFVConfig->TuningBlockOrdering == "Z") {
-			ordering = BCMOctree::Z;
-		} else if (g_pFFVConfig->TuningBlockOrdering == "Hilbert") {
-			ordering = BCMOctree::HILBERT;
-		} else if (g_pFFVConfig->TuningBlockOrdering == "random") {
-			ordering = BCMOctree::RANDOM;
-		} else if (g_pFFVConfig->TuningBlockOrdering == "PedigreeList") {
-			ordering = BCMOctree::PEDIGREELIST;
-		} else {
-			exit(EX_READ_CONFIG);
-		}
-		this->tree = new BCMOctree(rootGrid, this->divider, ordering);
+		this->tree = new BCMOctree(this->rootGrid, this->divider, this->ordering);
+	}
+	if(myrank == 0) {
 		this->tree->broadcast();
 	} else {
 		this->tree = BCMOctree::ReceiveFromMaster();
