@@ -304,6 +304,8 @@ class Solver {
 	private:
 		void Dump(const int step);
 		void Load(const int step);
+		void Dump3(const int step);
+		void Load3(const int step);
 
 	private:
 		void UpdateTA(int step);

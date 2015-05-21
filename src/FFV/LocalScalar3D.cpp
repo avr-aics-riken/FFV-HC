@@ -360,6 +360,12 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 	ossFileNameTime << "./BIN/";
 	mkdir(ossFileNameTime.str().c_str(), 0755);
 
+	ossFileNameTime.width(10);
+	ossFileNameTime.setf(ios::fixed);
+	ossFileNameTime.fill('0');
+	ossFileNameTime << step;
+	mkdir(ossFileNameTime.str().c_str(), 0755);
+
 #ifdef _BLOCK_IS_LARGE_
 #else
 #endif
@@ -374,6 +380,11 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 
 		ostringstream ossFileName;
 		ossFileName << "./BIN/";
+		ossFileName.width(10);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << step;
+		ossFileName << "/";
 		ossFileName << "dump-";
 		ossFileName << label;
 		ossFileName << "-";
@@ -392,6 +403,7 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 		int cy = size.y + 2*vc;
 		int cz = size.z + 2*vc;
 		int iNE = 1;
+		int iNB = 1;
 
 		real* pData = GetBlockData(block);
 
@@ -402,6 +414,7 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 		ofs.write((char*)&size.z, sizeof(int));
 		ofs.write((char*)&vc    , sizeof(int));
 		ofs.write((char*)&iNE   , sizeof(int));
+		ofs.write((char*)&iNB   , sizeof(int));
 		ofs.write((char*)pData  , sizeof(real)*cx*cy*cz);
 		ofs.close();
 	}
@@ -417,6 +430,11 @@ void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, cons
 	for (int id = 0; id < blockManager.getNumBlock(); ++id) {
 		ostringstream ossFileName;
 		ossFileName << "./BIN/";
+		ossFileName.width(10);
+		ossFileName.setf(ios::fixed);
+		ossFileName.fill('0');
+		ossFileName << step;
+		ossFileName << "/";
 		ossFileName << "dump-";
 		ossFileName << label;
 		ossFileName << "-";
@@ -455,9 +473,9 @@ void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, cons
 		Vec3i size = block->getSize();
 		real* pData = GetBlockData(block);
 		real *pDataS = new real [cx*cy*cz];
-		if( nx == size.x && ny == size.y && nz == size.z && nv == vc && ne == 1 && nb == blockManager.getNumBlock() ) {
+		if( nx == size.x && ny == size.y && nz == size.z && nv == vc && ne == 1 && nb == 1 ) {
 			ifs.read((char*)pData, sizeof(real)*cx*cy*cz);
-		} else if( 2*nx == size.x && 2*ny == size.y && 2*nz == size.z && nv == vc && ne == 1 && nb == blockManager.getNumBlock() ) {
+		} else if( 2*nx == size.x && 2*ny == size.y && 2*nz == size.z && nv == vc && ne == 1 && nb == 1 ) {
 			ifs.read((char*)pDataS, sizeof(real)*cx*cy*cz);
 			int sz[3] = {2*nx, 2*ny, 2*nz};
 			sf3d_copy_x2_(

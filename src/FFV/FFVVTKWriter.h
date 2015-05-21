@@ -38,18 +38,8 @@ namespace BCMT_NAMESPACE {
 		public:
 		VtkWriter()
 			: blockManager(BlockManager::getInstance()),
-			comm(blockManager.getCommunicator()) {
-				int myrank = comm.Get_rank();
-
-				for (int id = 0; id < blockManager.getNumBlock(); ++id) {
-					BlockBase* block = blockManager.getBlock(id);
-				}
-
-				if (myrank == 0) {
-				} else {
-				}
-
-			}
+				comm(blockManager.getCommunicator()) {
+		}
 
 		/// デストラクタ.
 		~VtkWriter() {
@@ -76,11 +66,13 @@ namespace BCMT_NAMESPACE {
 				ossFileName << "/";
 				ossFileName << prefix;
 				ossFileName << label;
+/*
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
 				ossFileName.fill('0');
 				ossFileName << rank;
+*/
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
@@ -213,11 +205,13 @@ namespace BCMT_NAMESPACE {
 				ossFileName << "/";
 				ossFileName << prefix;
 				ossFileName << label;
+/*
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
 				ossFileName.fill('0');
 				ossFileName << rank;
+*/
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
@@ -380,11 +374,13 @@ namespace BCMT_NAMESPACE {
 				ossFileName << "/";
 				ossFileName << prefix;
 				ossFileName << label;
+/*
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
 				ossFileName.fill('0');
 				ossFileName << rank;
+*/
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
@@ -573,11 +569,13 @@ namespace BCMT_NAMESPACE {
 				ossFileName << "/";
 				ossFileName << prefix;
 				ossFileName << label;
+/*
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
 				ossFileName.fill('0');
 				ossFileName << rank;
+*/
 				ossFileName << "-";
 				ossFileName.width(5);
 				ossFileName.setf(ios::fixed);
@@ -810,11 +808,12 @@ namespace BCMT_NAMESPACE {
 					Vec3r blockSize = block->getBlockSize();
 					Vec3r cellSize = block->getCellSize();
 					int level = block->getLevel();
+					int blockid = id + blockManager.getStartID();
 
 					Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
 					T* sDataP = sp->getData();
 
-					//			printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					//			printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
 				}
 
 				delete[] dataP;
@@ -872,16 +871,18 @@ namespace BCMT_NAMESPACE {
 								ossFileName2 << "/";
 								ossFileName2 << prefix;
 								ossFileName2 << name.c_str();
+/*
 								ossFileName2 << "-";
 								ossFileName2.width(5);
 								ossFileName2.setf(ios::fixed);
 								ossFileName2.fill('0');
 								ossFileName2 << iRank;
+*/
 								ossFileName2 << "-";
 								ossFileName2.width(5);
 								ossFileName2.setf(ios::fixed);
 								ossFileName2.fill('0');
-								ossFileName2 << id - partition->getStart(iRank);
+								ossFileName2 << id;
 								ossFileName2 << "-";
 								ossFileName2.width(10);
 								ossFileName2.setf(ios::fixed);
@@ -905,7 +906,7 @@ namespace BCMT_NAMESPACE {
 
 								if( level == n ) {
 									ofs << "\t\t<DataSet index=\"";
-									ofs << id + blockManager.getStartID();
+									ofs << id;
 									ofs << "\" amr_box=\"";
 									ofs << nx0;
 									ofs << " ";
@@ -973,11 +974,12 @@ namespace BCMT_NAMESPACE {
 					Vec3r blockSize = block->getBlockSize();
 					Vec3r cellSize = block->getCellSize();
 					int level = block->getLevel();
+					int blockid = id + blockManager.getStartID();
 
 					Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
 					T* sDataP = sp->getData();
 
-					printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					printVTIC(sDataP, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
 				}
 
 				delete[] dataP;
@@ -1029,16 +1031,18 @@ namespace BCMT_NAMESPACE {
 							ossFileName2 << "/";
 							ossFileName2 << prefix;
 							ossFileName2 << name.c_str();
+/*
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
 							ossFileName2 << iRank;
+*/
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
-							ossFileName2 << id - partition->getStart(iRank);
+							ossFileName2 << id;
 							ossFileName2 << "-";
 							ossFileName2.width(10);
 							ossFileName2.setf(ios::fixed);
@@ -1063,7 +1067,7 @@ namespace BCMT_NAMESPACE {
 							ofs << "<DataSet group=\"";
 							ofs << level;
 							ofs << "\" dataset=\"";
-							ofs << id + blockManager.getStartID();
+							ofs << id;
 							ofs << "\" amr_box=\"";
 							ofs << nx0;
 							ofs << " ";
@@ -1129,6 +1133,7 @@ namespace BCMT_NAMESPACE {
 					Vec3r blockSize = block->getBlockSize();
 					Vec3r cellSize = block->getCellSize();
 					int level = block->getLevel();
+					int blockid = id + blockManager.getStartID();
 
 					Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
 					T* sDataP = sp->getData();
@@ -1139,7 +1144,7 @@ namespace BCMT_NAMESPACE {
 					Scalar3D<T>* suz = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_UZ));
 					T* sDataUZ = suz->getData();
 
-					printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
 				}
 
 				delete[] dataP;
@@ -1194,16 +1199,18 @@ namespace BCMT_NAMESPACE {
 							ossFileName2 << "/";
 							ossFileName2 << prefix;
 							ossFileName2 << name.c_str();
+/*
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
 							ossFileName2 << iRank;
+*/
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
-							ossFileName2 << id - partition->getStart(iRank);
+							ossFileName2 << id;
 							ossFileName2 << "-";
 							ossFileName2.width(10);
 							ossFileName2.setf(ios::fixed);
@@ -1228,7 +1235,7 @@ namespace BCMT_NAMESPACE {
 							ofs << "<DataSet group=\"";
 							ofs << level;
 							ofs << "\" dataset=\"";
-							ofs << id + blockManager.getStartID();
+							ofs << id;
 							ofs << "\" amr_box=\"";
 							ofs << nx0;
 							ofs << " ";
@@ -1296,6 +1303,7 @@ namespace BCMT_NAMESPACE {
 					Vec3r blockSize = block->getBlockSize();
 					Vec3r cellSize = block->getCellSize();
 					int level = block->getLevel();
+					int blockid = id + blockManager.getStartID();
 
 					Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
 					T* sDataP = sp->getData();
@@ -1308,7 +1316,7 @@ namespace BCMT_NAMESPACE {
 					Scalar3D<T>* st = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_T));
 					T* sDataT = st->getData();
 
-					printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, path.c_str(), prefix.c_str(), name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
 				}
 
 				delete[] dataP;
@@ -1364,16 +1372,18 @@ namespace BCMT_NAMESPACE {
 							ossFileName2 << "/";
 							ossFileName2 << prefix;
 							ossFileName2 << name.c_str();
+/*
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
 							ossFileName2 << iRank;
+*/
 							ossFileName2 << "-";
 							ossFileName2.width(5);
 							ossFileName2.setf(ios::fixed);
 							ossFileName2.fill('0');
-							ossFileName2 << id - partition->getStart(iRank);
+							ossFileName2 << id;
 							ossFileName2 << "-";
 							ossFileName2.width(10);
 							ossFileName2.setf(ios::fixed);
@@ -1398,7 +1408,7 @@ namespace BCMT_NAMESPACE {
 							ofs << "<DataSet group=\"";
 							ofs << level;
 							ofs << "\" dataset=\"";
-							ofs << id + blockManager.getStartID();
+							ofs << id;
 							ofs << "\" amr_box=\"";
 							ofs << nx0;
 							ofs << " ";
@@ -1467,6 +1477,7 @@ namespace BCMT_NAMESPACE {
 					Vec3r blockSize = block->getBlockSize();
 					Vec3r cellSize = block->getCellSize();
 					int level = block->getLevel();
+					int blockid = id + blockManager.getStartID();
 
 					Scalar3D<T>* sp = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_P));
 					T* sDataP = sp->getData();
@@ -1479,8 +1490,8 @@ namespace BCMT_NAMESPACE {
 					Scalar3D<T>* st = dynamic_cast<Scalar3D<T>*>(block->getDataClass(dataClassID_T));
 					T* sDataT = st->getData();
 
-					//			printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
-					//			printVTIP(sData, name.c_str(), step, myrank, id, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					//			printVTIC(sDataP, sDataUX, sDataUY, sDataUZ, sDataT, name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
+					//			printVTIP(sData, name.c_str(), step, myrank, blockid, size[0], size[1], size[2], vc, origin[0], origin[1], origin[2], cellSize[0]);
 				}
 
 				delete[] dataP;
@@ -1542,16 +1553,18 @@ namespace BCMT_NAMESPACE {
 								ossFileName2 << "/";
 								ossFileName2 << prefix;
 								ossFileName2 << name.c_str();
+/*
 								ossFileName2 << "-";
 								ossFileName2.width(5);
 								ossFileName2.setf(ios::fixed);
 								ossFileName2.fill('0');
 								ossFileName2 << iRank;
+*/
 								ossFileName2 << "-";
 								ossFileName2.width(5);
 								ossFileName2.setf(ios::fixed);
 								ossFileName2.fill('0');
-								ossFileName2 << id - partition->getStart(iRank);
+								ossFileName2 << id;
 								ossFileName2 << "-";
 								ossFileName2.width(10);
 								ossFileName2.setf(ios::fixed);
@@ -1575,7 +1588,7 @@ namespace BCMT_NAMESPACE {
 
 								if( level == n ) {
 									ofs << "\t\t<DataSet index=\"";
-									ofs << id + blockManager.getStartID();
+									ofs << id;
 									ofs << "\" amr_box=\"";
 									ofs << nx0;
 									ofs << " ";
