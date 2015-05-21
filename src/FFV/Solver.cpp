@@ -6240,3 +6240,66 @@ void Solver::Load(const int step) {
 	}
 }
 
+void Solver::Dump3(const int step) {
+	plsUX0->Dump3(blockManager, step, "ux", partition, myrank);
+	plsUY0->Dump3(blockManager, step, "uy", partition, myrank);
+	plsUZ0->Dump3(blockManager, step, "uz", partition, myrank);
+
+	plsP0->Dump3(blockManager, step, "p", partition, myrank);
+
+	plsVw->Dump3(blockManager, step, "vw", partition, myrank);
+	plsVe->Dump3(blockManager, step, "ve", partition, myrank);
+	plsVs->Dump3(blockManager, step, "vs", partition, myrank);
+	plsVn->Dump3(blockManager, step, "vn", partition, myrank);
+	plsVb->Dump3(blockManager, step, "vb", partition, myrank);
+	plsVt->Dump3(blockManager, step, "vt", partition, myrank);
+
+	plsT0->Dump3(blockManager, step, "t", partition, myrank);
+
+	plsUXCP->Dump3(blockManager, step, "uxcp", partition, myrank);
+	plsUYCP->Dump3(blockManager, step, "uycp", partition, myrank);
+	plsUZCP->Dump3(blockManager, step, "uzcp", partition, myrank);
+	plsTCP->Dump3(blockManager, step, "tcp", partition, myrank);
+
+	plsUXCP->Dump3(blockManager, step, "uxcp", partition, myrank);
+	plsUYCP->Dump3(blockManager, step, "uycp", partition, myrank);
+	plsUZCP->Dump3(blockManager, step, "uzcp", partition, myrank);
+	plsTCP->Dump3(blockManager, step, "tcp", partition, myrank);
+
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
+		plsUXDP->Dump3(blockManager, step, "uxdp", partition, myrank);
+		plsUYDP->Dump3(blockManager, step, "uydp", partition, myrank);
+		plsUZDP->Dump3(blockManager, step, "uzdp", partition, myrank);
+		plsTDP->Dump3(blockManager, step, "tdp", partition, myrank);
+	}
+}
+
+void Solver::Load3(const int step) {
+	plsUX0->Load3(blockManager, step, "ux", partition, myrank);
+	plsUY0->Load3(blockManager, step, "uy", partition, myrank);
+	plsUZ0->Load3(blockManager, step, "uz", partition, myrank);
+
+	plsP0->Load3(blockManager, step, "p", partition, myrank);
+
+	plsVw->Load3(blockManager, step, "vw", partition, myrank);
+	plsVe->Load3(blockManager, step, "ve", partition, myrank);
+	plsVs->Load3(blockManager, step, "vs", partition, myrank);
+	plsVn->Load3(blockManager, step, "vn", partition, myrank);
+	plsVb->Load3(blockManager, step, "vb", partition, myrank);
+	plsVt->Load3(blockManager, step, "vt", partition, myrank);
+
+	plsT0->Load3(blockManager, step, "t", partition, myrank);
+
+	plsUXCP->Load3(blockManager, step, "uxcp", partition, myrank);
+	plsUYCP->Load3(blockManager, step, "uycp", partition, myrank);
+	plsUZCP->Load3(blockManager, step, "uzcp", partition, myrank);
+	plsTCP->Load3(blockManager, step, "tcp", partition, myrank);
+
+	if( !strcasecmp(g_pFFVConfig->TimeIntegrationMethodForU.c_str(), "explicit") ) {
+		plsUXDP->Load3(blockManager, step, "uxdp", partition, myrank);
+		plsUYDP->Load3(blockManager, step, "uydp", partition, myrank);
+		plsUZDP->Load3(blockManager, step, "uzdp", partition, myrank);
+		plsTDP->Load3(blockManager, step, "tdp", partition, myrank);
+	}
+}
+
