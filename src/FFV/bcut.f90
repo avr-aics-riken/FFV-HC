@@ -5415,3 +5415,62 @@ subroutine bcut_set_reference_value( &
 #endif
 end subroutine bcut_set_reference_value
 
+subroutine bcut_get_value_at_referencepoint( &
+								pr, &
+								flag, &
+								p, &
+                xr, yr, zr, &
+                dx, &
+                org, &
+                sz, g)
+  implicit none
+  integer                 :: i, j, k
+  integer                 :: ix, jx, kx
+  integer                 :: g
+  integer, dimension(3)   :: sz
+	real										:: pr
+	integer									:: flag
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: p
+  real                    :: xr, yr, zr
+  real                    :: dx
+  real, dimension(3)      :: org
+  real                    :: x0, y0, z0
+  real                    :: x1, y1, z1
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+	pr = 0.0
+	flag = 0
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp           private(x0, y0, z0) &
+!$omp           private(x1, y1, z1) 
+!$omp do schedule(static, 1)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    x0 = org(1) + (real(i-1))*dx
+    y0 = org(2) + (real(j-1))*dx
+    z0 = org(3) + (real(k-1))*dx
+    x1 = org(1) + (real(i))*dx
+    y1 = org(2) + (real(j))*dx
+    z1 = org(3) + (real(k))*dx
+    if( (x0 <= xr .and. xr < x1) .and. &
+        (y0 <= yr .and. yr < y1) .and. &
+        (z0 <= zr .and. zr < z1) ) then
+			pr = p(i, j, k)
+			flag = 1
+    endif
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine bcut_get_value_at_referencepoint
+

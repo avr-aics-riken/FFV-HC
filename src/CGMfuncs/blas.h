@@ -14,6 +14,7 @@ extern "C" {
 	void copy_(real *y, real *x, int *sz, int *g);
 	void copy_integer_(int *y, int *x, int *sz, int *g);
 	void add_(real *C, real *A, real *B, int *sz, int *g);
+	void adda_(real *y, real *a, int *sz, int *g);
 	void ave_(real *C, real *A, real *B, int *sz, int *g);
 	void triad_(real *C, real *A, real *B, real *d, int *sz, int *g);
 	void scal_(real *y, real *a, int *sz, int *g);

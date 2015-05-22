@@ -747,7 +747,7 @@ void Solver::ModifyCut2() {
 		/* ---------------------------------------------------------- */
 		PrintLog(1, "Detecting zero-cut");
 		/* ---------------------------------------------------------- */
-		int countLocal = 0;
+		long int countLocal = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+: countLocal)
@@ -797,8 +797,8 @@ void Solver::ModifyCut2() {
 		plsCutId4->ImposeBoundaryCondition(blockManager);
 		plsCutId5->ImposeBoundaryCondition(blockManager);
 
-		int countTmp = countLocal;
-		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+		long int countTmp = countLocal;
+		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
 		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d", "Zero distance", countLocal);
@@ -812,7 +812,7 @@ void Solver::ModifyCut2() {
 		/* ---------------------------------------------------------- */
 		PrintLog(1, "Filling hole(s)");
 		/* ---------------------------------------------------------- */
-		int countLocal = 0;
+		long int countLocal = 0;
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for reduction(+: countLocal)
@@ -867,8 +867,8 @@ void Solver::ModifyCut2() {
 		plsCutId4->ImposeBoundaryCondition(blockManager);
 		plsCutId5->ImposeBoundaryCondition(blockManager);
 
-		int countTmp = countLocal;
-		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+		long int countTmp = countLocal;
+		MPI_Allreduce(&countTmp, &countLocal, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
 		/* ---------------------------------------------------------- */
 		PrintLog(2, "%-20s : %d", "Hole faces(single)", countLocal);
@@ -883,8 +883,8 @@ void Solver::ModifyCut2() {
 		PrintLog(1, "Filling hole(s) 2");
 		/* ---------------------------------------------------------- */
 		int nIterationCount = 0;
-		int countLocal = 0;
-		int countTotal = 0;
+		long int countLocal = 0;
+		long int countTotal = 0;
 		do {
 			countLocal = 0;
 
@@ -943,8 +943,8 @@ void Solver::ModifyCut2() {
 			plsCutId4->ImposeBoundaryCondition(blockManager);
 			plsCutId5->ImposeBoundaryCondition(blockManager);
 
-			int countTmp = countLocal;
-			MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+			long int countTmp = countLocal;
+			MPI_Allreduce(&countTmp, &countLocal, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
 			nIterationCount++;
 			countTotal += countLocal;
@@ -962,8 +962,8 @@ void Solver::ModifyCut2() {
 		PrintLog(1, "Filling hole(s) 3");
 		/* ---------------------------------------------------------- */
 		int nIterationCount = 0;
-		int countLocal = 0;
-		int countTotal = 0;
+		long int countLocal = 0;
+		long int countTotal = 0;
 		do {
 			countTotal = countLocal;
 			countLocal = 0;
@@ -1023,8 +1023,8 @@ void Solver::ModifyCut2() {
 			plsCutId4->ImposeBoundaryCondition(blockManager);
 			plsCutId5->ImposeBoundaryCondition(blockManager);
 
-			int countTmp = countLocal;
-			MPI_Allreduce(&countTmp, &countLocal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+			long int countTmp = countLocal;
+			MPI_Allreduce(&countTmp, &countLocal, 1, MPI_LONG_LONG_INT, MPI_SUM, MPI_COMM_WORLD);
 
 			nIterationCount++;
 		}while( countLocal > countTotal && g_pFFVConfig->GridGenerationHoleFilling3 == true);
