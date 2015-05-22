@@ -327,6 +327,15 @@ extern "C" {
 			real* dx, 
 			real* org,
 			int *sz, int *g);
+
+	void bcut_get_value_at_referencepoint_(
+			real* pr,
+			int* flag,
+			real* p,
+			real* xr, real* yr, real* zr,
+			real* dx, 
+			real* org,
+			int *sz, int *g);
 }
 
 #endif

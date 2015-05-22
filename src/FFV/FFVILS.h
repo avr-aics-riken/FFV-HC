@@ -1159,6 +1159,15 @@ class FFVILS {
 						}
 
 						rr0 = rr1;
+
+/*
+						real xr = g_pFFVConfig->IterationReferencePressurePoint.x;
+						real yr = g_pFFVConfig->IterationReferencePressurePoint.y;
+						real zr = g_pFFVConfig->IterationReferencePressurePoint.z;
+						real pr = plsx->GetValue(blockManager, xr, yr, zr);
+						plsx->AddValue(blockManager, -pr);
+						std::cout << pr << std::endl;
+*/
 					}
 
 					plsx->ImposeBoundaryCondition(blockManager);

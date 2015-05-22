@@ -273,7 +273,7 @@ class LocalScalar3D {
 			}
 		}
 
-	private:
+private:
 		void ImposeBlockBoundaryCondition(BlockManager& blockManager) {
 #ifdef _BLOCK_IS_LARGE_
 #else
@@ -394,6 +394,8 @@ class LocalScalar3D {
 		void Load3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank) {
 		}
 
+		T GetValue(BlockManager& blockManager, real xr, real yr, real zr);
+		void AddValue(BlockManager& blockManager, real vr);
 };
 
 template <>
@@ -416,6 +418,12 @@ void LocalScalar3D<real>::Dump3(BlockManager& blockManager, const int step, cons
 
 template <>
 void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, const char* label, Partition* partition, int myrank);
+
+template <>
+real LocalScalar3D<real>::GetValue(BlockManager& blockManager, real xr, real yr, real zr);
+
+template <>
+void LocalScalar3D<real>::AddValue(BlockManager& blockManager, real vr);
 
 #endif
 

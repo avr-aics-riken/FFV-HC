@@ -2,6 +2,8 @@
 
 #include "bsf3d.h"
 #include "comm.h"
+#include "bcut.h"
+#include "blas.h"
 
 template <>
 void LocalScalar3D<real>::CalcStats(BlockManager& blockManager) {
@@ -487,6 +489,70 @@ void LocalScalar3D<real>::Load3(BlockManager& blockManager, const int step, cons
 		}
 		ifs.close();
 		delete [] pDataS;
+	}
+	ImposeBoundaryCondition(blockManager);
+}
+
+template <>
+real LocalScalar3D<real>::GetValue(BlockManager& blockManager, real xr, real yr, real zr) {
+	real vr_local = 0.0;
+	int  flag_local = 0;
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		real* pData = this->GetBlockData(block);
+
+		real vr_block = 0.0;
+		int  flag_block = 0;
+		bcut_get_value_at_referencepoint_(&vr_block, &flag_block, pData, &xr, &yr, &zr, &dx, org, sz, g);
+
+		if( flag_block == 1 ) {
+			vr_local = vr_block;
+			flag_local = 1;
+		}
+	}
+
+	int flag_global = 0;
+	MPI_Allreduce(&flag_local, &flag_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+	if( flag_global != 1 ) {
+		Exit(1);
+	}
+
+	real vr_global = 0.0;
+	MPI_Allreduce(&vr_local, &vr_global, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD);
+
+	return vr_global;
+}
+
+template <>
+void LocalScalar3D<real>::AddValue(BlockManager& blockManager, real vr) {
+#ifdef _BLOCK_IS_LARGE_
+#else
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+		real org[3] = {origin.x, origin.y, origin.z};
+
+		real* pData = this->GetBlockData(block);
+		adda_(pData, &vr, sz, g);
 	}
 	ImposeBoundaryCondition(blockManager);
 }
