@@ -3262,6 +3262,11 @@ void Solver::UpdateTA(int step) {
 }
 
 void Solver::UpdateF(int step) {
+	static real factor = 0.0;
+	if( g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI > 0 && step <= g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI ) {
+		factor = (real)step/(real)g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI;
+	}
+
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3287,14 +3292,26 @@ void Solver::UpdateF(int step) {
 
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		int rid_target = 2;
-		real b = 0.025;
+		int rid_target = 3;
+		real b = 0.05;
 		real nx = 1.0;
 		real ny = 0.0;
 		real nz = 0.0;
-		real dpmax = 2.0;
-		real umax = 0.1;
-		bfm_hex_(
+		real dpmax = 120.0*factor;
+		real umax = 1.0;
+		bfm_fan_(
+				fx, fy, fz,
+				ux0, uy0, uz0,
+				pRegionId,
+				&rid_target,
+				&b,
+				&nx, &ny, &nz,
+				&dpmax, &umax,
+				&dx, &dt,
+				sz, g);
+
+		rid_target = 4;
+		bfm_fan_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
@@ -3306,7 +3323,23 @@ void Solver::UpdateF(int step) {
 				sz, g);
 
 		rid_target = 1;
-		bfm_fan_(
+		b = 0.02;
+		dpmax = 100.0*factor;
+		umax = 4.0;
+		bfm_hex_(
+				fx, fy, fz,
+				ux0, uy0, uz0,
+				pRegionId,
+				&rid_target,
+				&b,
+				&nx, &ny, &nz,
+				&dpmax, &umax,
+				&dx, &dt,
+				sz, g);
+
+		rid_target = 2;
+		b = 0.012;
+		bfm_hex_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
@@ -5059,6 +5092,10 @@ void Solver::UpdateP(int step) {
 
 		int* pPhaseId = plsPhaseId->GetBlockData(block);
 
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
+
 		real gx = g_pFFVConfig->GravityX;
 		real gy = g_pFFVConfig->GravityY;
 		real gz = g_pFFVConfig->GravityZ;
@@ -5070,6 +5107,13 @@ void Solver::UpdateP(int step) {
 				t0,
 				&gx, &gy, &gz,
 				&betag, &tr,
+				&dx, &dt,
+				sz, g);
+
+		bcut_add_f_(
+				ux, uy, uz,
+				fx, fy, fz,
+				&rhof,
 				&dx, &dt,
 				sz, g);
 

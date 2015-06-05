@@ -50,6 +50,7 @@ subroutine bfm_fan( &
 			else if( un > umax ) then
 				dp = 0.0
 			end if
+      write(*,*) dp
 			fx(i, j, k) = (dp/b)*nx
 			fy(i, j, k) = (dp/b)*ny
 			fz(i, j, k) = (dp/b)*nz
@@ -111,6 +112,7 @@ subroutine bfm_hex( &
 			ul = sqrt(u2)
 			dp = dpmax*(ul/umax)**2
 			dp_= dpmax*(ul/umax**2)
+      write(*,*) dp
 			fx(i, j, k) = -(dp_/b)*ux
 			fy(i, j, k) = -(dp_/b)*uy
 			fz(i, j, k) = -(dp_/b)*uz

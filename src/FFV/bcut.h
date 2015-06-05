@@ -194,6 +194,12 @@ extern "C" {
 			real* betag, real* tr,
 			real* dx, real* dt,
 			int *sz, int *g);
+	void bcut_add_f_(
+			real* ux, real* uy, real* uz,
+			real* fx, real* fy, real* fz,
+			real* rhof,
+			real* dx, real* dt,
+			int *sz, int *g);
 
 	void bcut_remove_p_(
 			real* ux, real* uy, real* uz,
