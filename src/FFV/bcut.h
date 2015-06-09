@@ -197,6 +197,7 @@ extern "C" {
 	void bcut_add_f_(
 			real* ux, real* uy, real* uz,
 			real* fx, real* fy, real* fz,
+			int* pid,
 			real* rhof,
 			real* dx, real* dt,
 			int *sz, int *g);

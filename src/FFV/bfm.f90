@@ -6,7 +6,7 @@ subroutine bfm_fan( &
                 rid_target, &
 								b, &
 								nx, ny, nz, &
-								dpmax, umax, &
+								c0, c1 ,c2, &
                 dx, dt, &
                 sz, g)
   implicit none
@@ -20,16 +20,16 @@ subroutine bfm_fan( &
 	integer									:: rid_target
 	real										:: b
 	real										:: nx, ny, nz
-	real										:: dpmax, umax
+	real										:: c0, c1, c2
   real                    :: dx, dt
-	real										:: ux, uy, uz, un
+	real										:: ux, uy, uz, un, u2, ul
 	real										:: dp
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
 #ifdef _BLOCK_IS_LARGE_
 !$omp parallel private(i, j, k) &
-!$omp          private(ux, uy, uz, un) &
+!$omp          private(ux, uy, uz, un, u2, ul) &
 !$omp          private(dp)
 !$omp do schedule(static, 1)
 #else
@@ -42,15 +42,9 @@ subroutine bfm_fan( &
 			ux = ux0(i ,j, k)
 			uy = uy0(i ,j, k)
 			uz = uz0(i ,j, k)
-			un = ux*nx + uy*ny + uz*nz
-			dp = dpmax*(1.0 - (un/umax)**2)
-			dp = dpmax*(1.0 - (un/umax))
-			if( un < 0.0 ) then
-				dp = dpmax
-			else if( un > umax ) then
-				dp = 0.0
-			end if
-      write(*,*) dp
+			u2 = ux*ux + uy*uy + uz*uz
+			ul = sqrt(u2)
+			dp = c0 + c1*ul + c2*ul*ul
 			fx(i, j, k) = (dp/b)*nx
 			fy(i, j, k) = (dp/b)*ny
 			fz(i, j, k) = (dp/b)*nz
@@ -72,7 +66,7 @@ subroutine bfm_hex( &
                 rid_target, &
 								b, &
 								nx, ny, nz, &
-								dpmax, umax, &
+								c0, c1 ,c2, &
                 dx, dt, &
                 sz, g)
   implicit none
@@ -86,7 +80,7 @@ subroutine bfm_hex( &
 	integer									:: rid_target
 	real										:: b
 	real										:: nx, ny, nz
-	real										:: dpmax, umax
+	real										:: c0, c1, c2
   real                    :: dx, dt
 	real										:: ux, uy, uz, un, u2, ul
 	real										:: dp, dp_
@@ -110,9 +104,8 @@ subroutine bfm_hex( &
 			uz = uz0(i ,j, k)
 			u2 = ux*ux + uy*uy + uz*uz
 			ul = sqrt(u2)
-			dp = dpmax*(ul/umax)**2
-			dp_= dpmax*(ul/umax**2)
-      write(*,*) dp
+			dp = c0 + c1*ul + c2*ul*ul
+			dp_= c1 + c2*ul
 			fx(i, j, k) = -(dp_/b)*ux
 			fy(i, j, k) = -(dp_/b)*uy
 			fz(i, j, k) = -(dp_/b)*uz

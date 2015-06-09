@@ -3190,6 +3190,9 @@ int Solver::Update(int step) {
 		real vb = g_pFFVConfig->OuterBCUX[X_M].value*(real)step/(real)g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI;
 		plsUX0->ResetBoundaryConditionValue(blockManager, 0, vb);
 		plsUX1->ResetBoundaryConditionValue(blockManager, 0, vb);
+		accelerationFactor = (real)step/(real)g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI;
+	} else {
+		accelerationFactor = 1.0;
 	}
 
 	PM_Start(tm_UpdateT, 0, 0, true);
@@ -3262,11 +3265,6 @@ void Solver::UpdateTA(int step) {
 }
 
 void Solver::UpdateF(int step) {
-	static real factor = 0.0;
-	if( g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI > 0 && step <= g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI ) {
-		factor = (real)step/(real)g_pFFVConfig->TimeControlAccelerationAcceleratingTimeI;
-	}
-
 #ifdef _BLOCK_IS_LARGE_
 #else
 #pragma omp parallel for
@@ -3292,63 +3290,45 @@ void Solver::UpdateF(int step) {
 
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		int rid_target = 3;
+		int rid_target = 1;
 		real b = 0.05;
 		real nx = 1.0;
 		real ny = 0.0;
 		real nz = 0.0;
-		real dpmax = 120.0*factor;
-		real umax = 1.0;
-		bfm_fan_(
-				fx, fy, fz,
-				ux0, uy0, uz0,
-				pRegionId,
-				&rid_target,
-				&b,
-				&nx, &ny, &nz,
-				&dpmax, &umax,
-				&dx, &dt,
-				sz, g);
+		real c0 = 0.0;
+		real c1 = 0.0;
+		real c2 = 1.0;
 
-		rid_target = 4;
-		bfm_fan_(
+		rid_target = 2;
+		c0 = 0.0;
+		c1 = 0.0;
+		c2 = 1.0;
+		bfm_hex_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
 				&rid_target,
 				&b,
 				&nx, &ny, &nz,
-				&dpmax, &umax,
+				&c0, &c1, &c2,
 				&dx, &dt,
 				sz, g);
 
 		rid_target = 1;
-		b = 0.02;
-		dpmax = 100.0*factor;
-		umax = 4.0;
-		bfm_hex_(
+		c0 = 1.0;
+		c1 = 0.0;
+		c2 =-1.0;
+		bfm_fan_(
 				fx, fy, fz,
 				ux0, uy0, uz0,
 				pRegionId,
 				&rid_target,
 				&b,
 				&nx, &ny, &nz,
-				&dpmax, &umax,
+				&c0, &c1, &c2,
 				&dx, &dt,
 				sz, g);
 
-		rid_target = 2;
-		b = 0.012;
-		bfm_hex_(
-				fx, fy, fz,
-				ux0, uy0, uz0,
-				pRegionId,
-				&rid_target,
-				&b,
-				&nx, &ny, &nz,
-				&dpmax, &umax,
-				&dx, &dt,
-				sz, g);
 	}
 }
 
@@ -5113,6 +5093,7 @@ void Solver::UpdateP(int step) {
 		bcut_add_f_(
 				ux, uy, uz,
 				fx, fy, fz,
+				pPhaseId,
 				&rhof,
 				&dx, &dt,
 				sz, g);

@@ -43,6 +43,8 @@ class Solver {
 
 		bool bRestart;
 
+		double accelerationFactor;
+
 	private:
 		real dt;
 

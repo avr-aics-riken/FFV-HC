@@ -11,7 +11,7 @@ extern "C" {
 			int* rid_target,
 			real* b,
 			real* nx, real* ny, real* nz,
-			real* dpmax, real* umax,
+			real* c0, real* c1, real* c2,
 			real* dx, real* dt,
 			int *sz, int *g);
 
@@ -22,7 +22,7 @@ extern "C" {
 			int* rid_target,
 			real* b,
 			real* nx, real* ny, real* nz,
-			real* dpmax, real* umax,
+			real* c0, real* c1, real* c2,
 			real* dx, real* dt,
 			int *sz, int *g);
 }

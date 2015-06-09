@@ -3652,6 +3652,7 @@ end subroutine bcut_add_g
 subroutine bcut_add_f( &
                 ux_, uy_, uz_, &
                 fx, fy, fz, &
+                pid, &
                 rhof, &
                 dx, dt, &
                 sz, g)
@@ -3662,6 +3663,7 @@ subroutine bcut_add_f( &
   integer, dimension(3)   :: sz
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ux_, uy_, uz_
   real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fx, fy, fz
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: pid
   real                    :: rhof
   real                    :: dx, dt
   ix = sz(1)
@@ -3676,9 +3678,11 @@ subroutine bcut_add_f( &
   do j=1, jx
 !ocl nouxsimd
   do i=1, ix
-    ux_(i, j, k) = ux_(i, j, k) + fx(i, j, k)/rhof*dt
-    uy_(i, j, k) = uy_(i, j, k) + fy(i, j, k)/rhof*dt
-    uz_(i, j, k) = uz_(i, j, k) + fz(i, j, k)/rhof*dt
+    if( pid(i, j, k) == 1 ) then
+	    ux_(i, j, k) = ux_(i, j, k) + fx(i, j, k)/rhof*dt
+	    uy_(i, j, k) = uy_(i, j, k) + fy(i, j, k)/rhof*dt
+	    uz_(i, j, k) = uz_(i, j, k) + fz(i, j, k)/rhof*dt
+    endif
   end do
   end do
   end do
