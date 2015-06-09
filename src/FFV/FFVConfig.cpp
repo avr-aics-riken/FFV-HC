@@ -211,6 +211,20 @@ void FFVConfig::Load(std::string filename) {
 	for(int n=0; n<rgnlist.size(); n++) {
 		rgn0.origin						= Read<Vec3d>					(rgnlist[n] + "/Origin");
 		rgn0.cid_target				= Read<int>						(rgnlist[n] + "/ID");
+		rgn0.type							= Read<std::string>		(rgnlist[n] + "/Type");
+		rgn0.normal						= Vec3d(0.0, 0.0, 0.0);
+		rgn0.width						= 0.0;
+		rgn0.c0								= 0.0;
+		rgn0.c1								= 0.0;
+		rgn0.c2								= 0.0;
+		if( !strcasecmp(rgn0.type.c_str(), "fan") ||
+				!strcasecmp(rgn0.type.c_str(), "heatexchanger") ) {
+			rgn0.normal					= Read<Vec3d>					(rgnlist[n] + "/Normal");
+			rgn0.width					= Read<double>				(rgnlist[n] + "/Width");
+			rgn0.c0							= Read<double>				(rgnlist[n] + "/C0");
+			rgn0.c1							= Read<double>				(rgnlist[n] + "/C1");
+			rgn0.c2							= Read<double>				(rgnlist[n] + "/C2");
+		}
 		RegionList.push_back(rgn0);
 	}
 

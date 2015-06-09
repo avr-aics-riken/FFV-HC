@@ -29,6 +29,12 @@ typedef struct _PPM {
 typedef struct _RGN {
 	Vec3d origin;
 	int cid_target;
+	std::string type;
+	Vec3d normal;
+	double width;
+	double c0;
+	double c1;
+	double c2;
 }RGN;
 
 class FFVConfig {

@@ -3290,7 +3290,43 @@ void Solver::UpdateF(int step) {
 
 		int* pRegionId = plsRegionId->GetBlockData(block);
 
-		int rid_target = 1;
+		for(int nRGN=1; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
+			int ids						= nRGN;
+			int rid_target		= nRGN;
+			std::string type	= g_pFFVConfig->RegionList[ids].type;
+			real nx						= g_pFFVConfig->RegionList[ids].normal.x;
+			real ny						= g_pFFVConfig->RegionList[ids].normal.y;
+			real nz						= g_pFFVConfig->RegionList[ids].normal.z;
+			real width				= g_pFFVConfig->RegionList[ids].width;
+			real c0						= g_pFFVConfig->RegionList[ids].c0;
+			real c1						= g_pFFVConfig->RegionList[ids].c1;
+			real c2						= g_pFFVConfig->RegionList[ids].c2;
+			if( !strcasecmp(type.c_str(), "fan") ) {
+				bfm_fan_(
+						fx, fy, fz,
+						ux0, uy0, uz0,
+						pRegionId,
+						&rid_target,
+						&width,
+						&nx, &ny, &nz,
+						&c0, &c1, &c2,
+						&dx, &dt,
+						sz, g);
+			} else if( !strcasecmp(type.c_str(), "heatexchanger") ) {
+				bfm_hex_(
+						fx, fy, fz,
+						ux0, uy0, uz0,
+						pRegionId,
+						&rid_target,
+						&width,
+						&nx, &ny, &nz,
+						&c0, &c1, &c2,
+						&dx, &dt,
+						sz, g);
+			}
+		}
+
+/*
 		real b = 0.05;
 		real nx = 1.0;
 		real ny = 0.0;
@@ -3298,8 +3334,10 @@ void Solver::UpdateF(int step) {
 		real c0 = 0.0;
 		real c1 = 0.0;
 		real c2 = 1.0;
+*/
 
-		rid_target = 2;
+/*
+		int rid_target = 2;
 		c0 = 0.0;
 		c1 = 0.0;
 		c2 = 1.0;
@@ -3313,8 +3351,10 @@ void Solver::UpdateF(int step) {
 				&c0, &c1, &c2,
 				&dx, &dt,
 				sz, g);
+*/
 
-		rid_target = 1;
+/*
+		int rid_target = 1;
 		c0 = 1.0;
 		c1 = 0.0;
 		c2 =-1.0;
@@ -3328,6 +3368,7 @@ void Solver::UpdateF(int step) {
 				&c0, &c1, &c2,
 				&dx, &dt,
 				sz, g);
+*/
 
 	}
 }
