@@ -437,6 +437,9 @@ void Solver::InitSTL() {
 	}
 	PM_Stop(tm_Init_DistributeSTL);
 
+printf("#   %-20s : #%05d %u MB\n", "Polylib memory usage", myrank, this->pl->used_memory_size()/1024/1024);
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	PrintLog(2, "Completed");
 }
 
