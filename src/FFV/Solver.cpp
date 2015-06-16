@@ -209,8 +209,10 @@ void Solver::InitPolylib() {
 	int ret = stat(g_pFFVConfig->PolylibConfig.c_str(), &st);
 	if( ret == 0 ) {
 		this->pl->load(g_pFFVConfig->PolylibConfig);
+		PrintLog(2, "%-20s : #%d %u", "Polylib memory", myrank, this->pl->used_memory_size());
 	} else {
 	}
+//	MPI_Barrier(MPI_COMM_WORLD);
 	PM_Stop(tm_Init_LoadSTL);
 
 	PrintLog(2, "Completed");
