@@ -205,16 +205,12 @@ void Solver::InitPolylib() {
 
 	PM_Start(tm_Init_LoadSTL, 0, 0, true);
 	this->pl = new PolylibNS::BCMPolylib;
-	struct stat st;
-	int ret = stat(g_pFFVConfig->PolylibConfig.c_str(), &st);
-	if( ret == 0 ) {
-		this->pl->load(g_pFFVConfig->PolylibConfig);
-		PrintLog(2, "%-20s : #%d %u", "Polylib memory", myrank, this->pl->used_memory_size());
-	} else {
-	}
-//	MPI_Barrier(MPI_COMM_WORLD);
+	this->pl->load(g_pFFVConfig->PolylibConfig);
 	PM_Stop(tm_Init_LoadSTL);
 
+	if( myrank == 0 ) {
+		PrintLog(2, "%-20s : #%05d %u MB", "Polylib memory usage", myrank, this->pl->used_memory_size()/1024/1024);
+	}
 	PrintLog(2, "Completed");
 }
 
@@ -280,6 +276,7 @@ void Solver::InitDivider() {
 			exit(EX_READ_CONFIG);
 		}
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 	PM_Stop(tm_Init_DivideDomain);
 
 	PrintLog(2, "Completed");
@@ -301,6 +298,7 @@ void Solver::InitOrdering() {
 		}
 	} else {
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void Solver::InitTree() {
@@ -309,12 +307,11 @@ void Solver::InitTree() {
 	PM_Start(tm_Init_CreateTree, 0, 0, true);
 	if(myrank == 0) {
 		this->tree = new BCMOctree(this->rootGrid, this->divider, this->ordering);
-	}
-	if(myrank == 0) {
 		this->tree->broadcast();
 	} else {
 		this->tree = BCMOctree::ReceiveFromMaster();
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 	PM_Stop(tm_Init_CreateTree);
 
 	int numLeafNode = tree->getNumLeafNode();
@@ -322,9 +319,15 @@ void Solver::InitTree() {
 	partition = new Partition(comm.Get_size(), numLeafNode);
 	for(int n=0; n<comm.Get_size(); n++) {
 		if( n==0 ) {
-			PrintLog(2, "%-20s : #%05d [%04d:%04d] (%04d)",  "Partitions", n, partition->getStart(n), partition->getEnd(n)-1, partition->getEnd(n) - partition->getStart(n));
+			PrintLog(2, "%-20s : #%05d [%04d:%04d] (%04d)",
+									"Partitions", n,
+									partition->getStart(n), partition->getEnd(n)-1,
+									partition->getEnd(n) - partition->getStart(n));
 		} else {
-			PrintLog(2, "%-20s : #%05d [%04d:%04d] (%04d)",  "", n, partition->getStart(n), partition->getEnd(n)-1, partition->getEnd(n) - partition->getStart(n));
+			PrintLog(2, "%-20s : #%05d [%04d:%04d] (%04d)",
+									"", n,
+									partition->getStart(n), partition->getEnd(n)-1,
+									partition->getEnd(n) - partition->getStart(n));
 		}
 	}
 	PrintLog(2, "Completed");
