@@ -1788,6 +1788,9 @@ void Solver::InitVarsBasic() {
 	plsFX  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsFY  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsFZ  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
+	plsFX->Fill(blockManager, 0.0);
+	plsFY->Fill(blockManager, 0.0);
+	plsFZ->Fill(blockManager, 0.0);
 
 	plsVw = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsVe = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
