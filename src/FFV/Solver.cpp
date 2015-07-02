@@ -5259,6 +5259,15 @@ void Solver::UpdateP(int step) {
 	PM_Stop(tm_UpdateP03);
 	/////////////////////////////////////////////
 
+/*
+	plsb->CalcStats(blockManager);
+	real b_sum_old = plsb->GetSum();
+	plsb->Shift(blockManager, -b_sum_old);
+	plsb->CalcStats(blockManager);
+	real b_sum_new = plsb->GetSum();
+	std::cout << "b:" << b_sum_old << "," << b_sum_new << std::endl;
+*/
+
 	/////////////////////////////////////////////
 	// Set ref. P
 	/////////////////////////////////////////////
