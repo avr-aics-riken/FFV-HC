@@ -574,6 +574,7 @@ subroutine bstl_detect_zerocut_1( &
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
+	n = 0
 #ifdef _BLOCK_IS_LARGE_
 !$omp parallel private(i, j, k) &
 !$omp           private(cidp) &
@@ -1585,6 +1586,7 @@ subroutine bstl_detect_zerocut( &
   ix = sz(1)
   jx = sz(2)
   kx = sz(3)
+	n = 0
 #ifdef _BLOCK_IS_LARGE_
 !$omp parallel private(i, j, k) &
 !$omp           private(cidp) &
