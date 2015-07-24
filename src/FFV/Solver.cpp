@@ -2842,6 +2842,146 @@ void Solver::PrintForce(int step) {
 	for(int n=1; n<MaxCID; n++) {
 		PrintForceCID(step, n);
 	}
+
+	for(int nRGN=1; nRGN<g_pFFVConfig->RegionList.size(); nRGN++) {
+		PrintForceRID(step, nRGN);
+	}
+}
+
+void Solver::PrintForceRID(int step, int rid_target) {
+	real fsp_local[3] = {0.0, 0.0, 0.0};
+	real fsv_local[3] = {0.0, 0.0, 0.0};
+	real fsp_local_x = 0.0;
+	real fsp_local_y = 0.0;
+	real fsp_local_z = 0.0;
+	real fsv_local_x = 0.0;
+	real fsv_local_y = 0.0;
+	real fsv_local_z = 0.0;
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for reduction(+:fsp_local_x, fsp_local_y, fsp_local_z, fsv_local_x, fsv_local_y, fsv_local_z)
+#endif
+	for (int n=0; n<blockManager.getNumBlock(); ++n) {
+		BlockBase* block = blockManager.getBlock(n);
+		Vec3i size = block->getSize();
+		Vec3r origin = block->getOrigin();
+		Vec3r blockSize = block->getBlockSize();
+		Vec3r cellSize = block->getCellSize();
+
+		int sz[3] = {size.x, size.y, size.z};
+		int g[1] = {vc};
+		real dx = cellSize.x;
+
+		real* fx = plsFX->GetBlockData(block);
+		real* fy = plsFY->GetBlockData(block);
+		real* fz = plsFZ->GetBlockData(block);
+
+		real* ux0  = plsUX0->GetBlockData(block);
+		real* uy0  = plsUY0->GetBlockData(block);
+		real* uz0  = plsUZ0->GetBlockData(block);
+
+		int* pRegionId = plsRegionId->GetBlockData(block);
+
+		real* fspx = plsFspx->GetBlockData(block);
+		real* fspy = plsFspy->GetBlockData(block);
+		real* fspz = plsFspz->GetBlockData(block);
+		real* fsvx = plsFsvx->GetBlockData(block);
+		real* fsvy = plsFsvy->GetBlockData(block);
+		real* fsvz = plsFsvz->GetBlockData(block);
+
+		real fsp_block[3] = {0.0, 0.0, 0.0};
+		real fsv_block[3] = {0.0, 0.0, 0.0};
+
+		bcut_calc_f_r_(
+				fspx,
+				fspy,
+				fspz,
+				fsp_block,
+				&rid_target,
+				fx, fy, fz,
+				pRegionId,
+				&dx, &dt,
+				sz, g);
+
+		fsp_local_x += fsp_block[0];
+		fsp_local_y += fsp_block[1];
+		fsp_local_z += fsp_block[2];
+		fsv_local_x += fsv_block[0];
+		fsv_local_y += fsv_block[1];
+		fsv_local_z += fsv_block[2];
+	}
+
+	real fsp_global[3] = {0.0, 0.0, 0.0};
+	real fsv_global[3] = {0.0, 0.0, 0.0};
+
+	real sum = fsp_local_x;
+	real sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsp_global[0] = sum;
+
+	sum = fsp_local_y;
+	sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsp_global[1] = sum;
+
+	sum = fsp_local_z;
+	sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsp_global[2] = sum;
+
+	sum = fsv_local_x;
+	sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsv_global[0] = sum;
+
+	sum = fsv_local_y;
+	sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsv_global[1] = sum;
+
+	sum = fsv_local_z;
+	sum_tmp = sum;
+	comm_sum_(&sum, &sum_tmp);
+	fsv_global[2] = sum;
+
+	if( myrank != 0 ) {
+		return;
+	}
+
+	std::ostringstream ossFileName;
+	ossFileName << "data-force";
+	ossFileName << "-";
+	ossFileName << "r";
+	ossFileName.width(3);
+	ossFileName.setf(std::ios::fixed);
+	ossFileName.fill('0');
+	ossFileName << rid_target;
+	ossFileName << ".txt";
+
+	std::string filename = ossFileName.str();
+
+	std::ofstream ofs;
+	if( step==0 ) {
+		ofs.open(filename.c_str(), std::ios::out);
+		ofs.close();
+	}
+	ofs.open(filename.c_str(), std::ios::out | std::ios::app);
+
+	ofs.width(10);
+	ofs.setf(std::ios::fixed);
+	ofs.fill('0');
+	ofs << step << " ";
+
+	ofs.setf(std::ios::scientific, std::ios::floatfield);
+	ofs.precision(16);
+	ofs << fsp_global[0] << " ";
+	ofs << fsp_global[1] << " ";
+	ofs << fsp_global[2] << " ";
+	ofs << fsv_global[0] << " ";
+	ofs << fsv_global[1] << " ";
+	ofs << fsv_global[2] << " ";
+	ofs << std::endl;
+	ofs.close();
 }
 
 void Solver::PrintForceCID(int step, int cid_target) {
@@ -2979,6 +3119,7 @@ void Solver::PrintForceCID(int step, int cid_target) {
 	std::ostringstream ossFileName;
 	ossFileName << "data-force";
 	ossFileName << "-";
+	ossFileName << "c";
 	ossFileName.width(3);
 	ossFileName.setf(std::ios::fixed);
 	ossFileName.fill('0');

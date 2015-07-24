@@ -4413,6 +4413,73 @@ subroutine bcut_update_t( &
 #endif
 end subroutine bcut_update_t
 
+subroutine bcut_calc_f_r( &
+                fspx, &
+                fspy, &
+                fspz, &
+                fsp, &
+                rid_target, &
+								fx, fy, fz, &
+                rid, &
+                dx, dt, &
+                sz, g)
+  implicit none
+  integer                  :: i, j, k
+  integer                  :: ix, jx, kx
+  integer                  :: g
+  integer, dimension(3)    :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fspx, fspy, fspz
+  real, dimension(1:3)    :: fsp
+  integer                  :: rid_target
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: fx, fy, fz
+  integer, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: rid
+  real                    :: dx, dt
+  real                    :: fsx, fsy, fsz
+	integer									:: ridp0
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+  fsx = 0.0
+  fsy = 0.0
+  fsz = 0.0
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp          private(ridp0)
+!$omp do schedule(static, 1), &
+!$omp     reduction(+:fsx, fsy, fsz)
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+!ocl nouxsimd
+  do i=1, ix
+    ridp0 = rid(i, j, k)
+
+		fspx(i, j, k) = 0.0
+		fspy(i, j, k) = 0.0
+		fspz(i, j, k) = 0.0
+    if( ridp0 == rid_target ) then
+			fspx(i, j, k) = -fx(i, j, k)
+			fspy(i, j, k) = -fy(i, j, k)
+			fspz(i, j, k) = -fz(i, j, k)
+    endif
+
+    fsx = fsx + fspx(i, j, k)*dx*dx*dx
+    fsy = fsy + fspy(i, j, k)*dx*dx*dx
+    fsz = fsz + fspz(i, j, k)*dx*dx*dx
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+  fsp(1) = fsx
+  fsp(2) = fsy
+  fsp(3) = fsz
+end subroutine bcut_calc_f_r
+
 subroutine bcut_calc_f_p( &
                 fspx, &
                 fspy, &

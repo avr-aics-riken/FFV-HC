@@ -281,6 +281,7 @@ class Solver {
 		void PrintILS(int step);
 		void PrintStats(int step);
 		void PrintForceCID(int step, int cid_target);
+		void PrintForceRID(int step, int rid_target);
 		void PrintForce(int step);
 		void PrintHeatFluxCID(int step, int cid_target);
 		void PrintHeatFlux(int step);
