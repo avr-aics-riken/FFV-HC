@@ -1087,6 +1087,34 @@ class FFVILS {
 
 						plss->ImposeBoundaryCondition(blockManager);
 
+/*
+						real ss = 0.0;
+						DOT_Mask(
+								blockManager,
+								ss,
+								plss,
+								plss,
+								plsMaskId);
+
+						bool bResult2 = IsConverged(
+								blockManager,
+								residual,
+								ss,
+								bb,
+								epsilon,
+								count,
+								countMax);
+						if( bResult2 == true ) {
+							AXPY(
+									blockManager,
+									plsx,
+									plsp_,
+									alpha);
+							std::cout << "CP2" << std::endl;
+							break;
+						}
+*/
+
 						Fill(blockManager, plss_, 0.0);
 
 						Jacobi_PreConditioner_Mask(
