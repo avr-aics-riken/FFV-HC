@@ -1866,8 +1866,9 @@ void Solver::InitVarsBasic() {
 	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
 	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
 	double p0 = g_pFFVConfig->InitialValueP;
-	plsP0->Fill(blockManager, p0);
-	plsP1->Fill(blockManager, p0);
+	double dp0 = g_pFFVConfig->InitialValueDP;
+	plsP0->Fill(blockManager, p0, dp0);
+	plsP1->Fill(blockManager, p0, dp0);
 	plsP0->ImposeBoundaryCondition(blockManager);
 	plsP1->ImposeBoundaryCondition(blockManager);
 
