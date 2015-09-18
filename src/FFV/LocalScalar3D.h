@@ -13,6 +13,8 @@
 #include "FFVGlobalVars.h"
 #include "FFVVTKWriter.h"
 
+#include "bsf3d.h"
+
 template <typename T>
 class LocalScalar3D {
 	public:
@@ -118,6 +120,37 @@ class LocalScalar3D {
 
 		int GetID() {
 			return id;
+		}
+
+		void CalcSum(BlockManager& blockManager) {
+			BlockBase* block0 = blockManager.getBlock(0);
+			Vec3i size = block0->getSize();
+			real* pData0 = GetBlockData(block0);
+
+			int m0 = vc + (size.x+2*vc)*(vc + (size.y+2*vc)*vc);
+			sum_l = 0.0;
+			for (int id = 0; id < blockManager.getNumBlock(); ++id) {
+				BlockBase* block	= blockManager.getBlock(id);
+				Vec3i size				= block->getSize();
+				Vec3r origin			= block->getOrigin();
+				Vec3r blockSize		= block->getBlockSize();
+				Vec3r cellSize		= block->getCellSize();
+
+				int sz[3]		= {size.x, size.y, size.z};
+				int g[1]		= {vc};
+				real dx			= cellSize.x;
+
+				real* pData = GetBlockData(block);
+				real sum_b = 0.0;
+				sf3d_calc_sum_(
+						&sum_b,
+						pData,
+						sz, g);
+
+				sum_l += sum_b;
+			}
+			sum_g = 0.0;
+			comm_sum_(&sum_g, &sum_l);
 		}
 
 		T GetSum() {
@@ -373,7 +406,7 @@ private:
 			}
 		}
 
-		void CalcStats(BlockManager& BlockManager) {
+		void CalcStats(BlockManager& blockManager) {
 		}
 
 		void Dump(BlockManager& blockManager, const int step, const char* label) {

@@ -12,6 +12,11 @@ extern "C" {
 					real *xc,
 					int *sz, int *g);
 
+	void sf3d_calc_sum_(
+					real *sum,
+					real *data,
+					int *sz, int *g);
+
 	void sf3d_calc_stats_(
 					real *sum,
 					real *max,

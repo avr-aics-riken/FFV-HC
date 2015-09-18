@@ -32,6 +32,40 @@ subroutine sf3d_copy_x2(x, xc, sz, g)
 #endif
 end subroutine sf3d_copy_x2
 
+subroutine sf3d_calc_sum(dsum, ddata, sz, g)
+  implicit none
+  integer                  :: i, j, k
+  integer                  :: ix, jx, kx
+  integer                  :: g
+  integer, dimension(3)    :: sz
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: ddata
+  real                    :: ddata0
+  real                    :: dsum
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+  dsum = 0.0
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k) &
+!$omp         ,private(ddata0)
+!$omp do reduction(+: dsum) 
+#else
+#endif
+  do k=1, kx
+  do j=1, jx
+  do i=1, ix
+    ddata0 = ddata(i, j, k)
+    dsum = dsum + ddata0
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine sf3d_calc_sum
+
 subroutine sf3d_calc_stats(dsum, dmax, dmin, dabsmax, dabsmin, ddata, sz, g)
   implicit none
   integer                  :: i, j, k

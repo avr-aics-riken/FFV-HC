@@ -29,8 +29,8 @@ class FFVILS {
 				real& epsilon,
 				int count,
 				int countMax) {
-			residual = (fabs(bb)>FLT_MIN) ? fabs(rr)/fabs(bb) : fabs(rr);
-			if( residual <= epsilon*epsilon ) {
+			residual = (fabs(bb)>FLT_MIN) ? sqrt(fabs(rr)/fabs(bb)) : sqrt(fabs(rr));
+			if( residual <= epsilon ) {
 				return true;
 			}
 			if( isnan(residual) ) {
@@ -161,6 +161,88 @@ class FFVILS {
 
 			plsx->ImposeBoundaryCondition(blockManager);
 
+		}
+
+		void RBGS_Smoother_ForSingularMatrix(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				real omega) {
+			int vc = plsx->GetVC();
+
+			int NB							= blockManager.getNumBlock();
+			BlockBase* block0		= blockManager.getBlock(0);
+			Vec3i size					= block0->getSize();
+			int NX							= size.x;
+			int NY							= size.y;
+			int NZ							= size.z;
+			int sz[3]						= {NX, NY, NZ};
+
+/*
+			plsx ->CalcSum(blockManager);
+			real sum_x0  = plsx ->GetSum();
+*/
+
+#ifdef _BLOCK_IS_LARGE_
+#else
+#pragma omp parallel for
+#endif
+			for (int n=0; n<NB; ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x  = plsx ->GetBlockData(block);
+				real* Ap = plsAp->GetBlockData(block);
+				real* Aw = plsAw->GetBlockData(block);
+				real* Ae = plsAe->GetBlockData(block);
+				real* As = plsAs->GetBlockData(block);
+				real* An = plsAn->GetBlockData(block);
+				real* Ab = plsAb->GetBlockData(block);
+				real* At = plsAt->GetBlockData(block);
+				real* b  = plsb ->GetBlockData(block);
+				real pomega = omega;
+
+				int offset = 0;
+				int color = 0;
+				rbgs_smoother_(
+						x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						&pomega,
+						&color, &offset,
+						sz, &vc);
+				color = 1;
+				rbgs_smoother_(
+						x,
+						Ap, Aw, Ae, As, An, Ab, At,
+						b,
+						&pomega,
+						&color, &offset,
+						sz, &vc);
+			}
+
+			plsx ->CalcSum(blockManager);
+			real sum_x1  = plsx ->GetSum();
+
+			real a = -sum_x1/(NX*NY*NZ);
+			for (int n=0; n<blockManager.getNumBlock(); ++n) {
+				BlockBase* block = blockManager.getBlock(n);
+				real* x = plsx->GetBlockData(block);
+				adda_(x, &a, sz, &vc);
+			}
+
+/*
+			plsx ->CalcSum(blockManager);
+			real sum_x2  = plsx ->GetSum();
+			std::cout << sum_x0 << " " << sum_x1 << " " << sum_x2 << std::endl;
+*/
+
+			plsx->ImposeBoundaryCondition(blockManager);
 		}
 
 		void CalcAx(
