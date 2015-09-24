@@ -1484,6 +1484,8 @@ void Solver::InitPhase() {
 	PrintLog(2, "%-20s : %d", "Total cells", countAll);
 
 	this->numFluidCells = countF;
+	this->numSolidCells = countS;
+	this->numTotalCells = countAll;
 
 /*
 #ifdef _BLOCK_IS_LARGE_
@@ -5594,7 +5596,7 @@ void Solver::UpdateP(int step) {
 				residualP);
 	} else if( g_pFFVConfig->IterationSolverP == "RBGS_WithFixedAverage" ) {
 		real pave = 0.0;
-		int Ncells = this->numFluidCells;
+		int Ncells = this->numTotalCells;
 		pils->RBGS_WithFixedAverage(
 				blockManager,
 				plsP0,

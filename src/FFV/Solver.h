@@ -46,6 +46,8 @@ class Solver {
 		double accelerationFactor;
 
 		int numFluidCells;
+		int numSolidCells;
+		int numTotalCells;
 
 	private:
 		real dt;
