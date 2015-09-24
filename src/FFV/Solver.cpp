@@ -3648,6 +3648,17 @@ void Solver::UpdateUXe(int step) {
 					&Uc,
 					&alpha,
 					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
 		} else {
 			bcut_calc_c_f_c2_(
 					uxc0,
@@ -3848,6 +3859,17 @@ void Solver::UpdateUYe(int step) {
 					&Uc,
 					&alpha,
 					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
 		} else {
 			bcut_calc_c_f_c2_(
 					uyc0,
@@ -4046,6 +4068,17 @@ void Solver::UpdateUZe(int step) {
 					&dx, &dt,
 					&Uc,
 					&alpha,
+					sz, g);
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
 					sz, g);
 		} else {
 			bcut_calc_c_f_c2_(
@@ -4259,7 +4292,18 @@ void Solver::UpdateTe(int step) {
 					&Tc,
 					&alpha,
 					sz, g);
-		} else {
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+	} else {
 			bcut_calc_c_f_c2_(
 					tc0,
 					t0,
@@ -4472,7 +4516,18 @@ void Solver::UpdateUX(int step) {
 					&Uc,
 					&alpha,
 					sz, g);
-		} else {
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uxc0,
+					ux0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+	} else {
 			bcut_calc_c_f_c2_(
 					uxc0,
 					ux0,
@@ -4762,7 +4817,18 @@ void Solver::UpdateUY(int step) {
 					&Uc,
 					&alpha,
 					sz, g);
-		} else {
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uyc0,
+					uy0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+	} else {
 			bcut_calc_c_f_c2_(
 					uyc0,
 					uy0,
@@ -5052,7 +5118,18 @@ void Solver::UpdateUZ(int step) {
 					&Uc,
 					&alpha,
 					sz, g);
-		} else {
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					uzc0,
+					uz0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Uc,
+					sz, g);
+	} else {
 			bcut_calc_c_f_c2_(
 					uzc0,
 					uz0,
@@ -5809,7 +5886,18 @@ void Solver::UpdateT(int step) {
 					&Tc,
 					&alpha,
 					sz, g);
-		} else {
+		} else if( g_pFFVConfig->ConvectionTermScheme == "C2SS" ) {
+			bcut_calc_c_f_c2_ss_(
+					tc0,
+					t0,
+					vw, ve, vs, vn, vb, vt,
+					pCut0, pCut1, pCut2, pCut3, pCut4, pCut5,
+					pCutId0, pCutId1, pCutId2, pCutId3, pCutId4, pCutId5,
+					pPhaseId,
+					&dx, &dt,
+					&Tc,
+					sz, g);
+	} else {
 			bcut_calc_c_f_c2_(
 					tc0,
 					t0,
