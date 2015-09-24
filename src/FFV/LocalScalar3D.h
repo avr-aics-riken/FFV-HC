@@ -14,6 +14,7 @@
 #include "FFVVTKWriter.h"
 
 #include "bsf3d.h"
+#include "blas.h"
 
 template <typename T>
 class LocalScalar3D {
@@ -151,6 +152,29 @@ class LocalScalar3D {
 			}
 			sum_g = 0.0;
 			comm_sum_(&sum_g, &sum_l);
+		}
+
+		void ShiftByA(BlockManager& blockManager, real a) {
+			BlockBase* block0 = blockManager.getBlock(0);
+			Vec3i size = block0->getSize();
+			real* pData0 = GetBlockData(block0);
+
+			int m0 = vc + (size.x+2*vc)*(vc + (size.y+2*vc)*vc);
+			for (int id = 0; id < blockManager.getNumBlock(); ++id) {
+				BlockBase* block	= blockManager.getBlock(id);
+				Vec3i size				= block->getSize();
+				Vec3r origin			= block->getOrigin();
+				Vec3r blockSize		= block->getBlockSize();
+				Vec3r cellSize		= block->getCellSize();
+
+				int sz[3]		= {size.x, size.y, size.z};
+				int g[1]		= {vc};
+				real dx			= cellSize.x;
+
+				real* pData = GetBlockData(block);
+				adda_(pData, &a, sz, g);
+			}
+			ImposeBoundaryCondition(blockManager);
 		}
 
 		T GetSum() {

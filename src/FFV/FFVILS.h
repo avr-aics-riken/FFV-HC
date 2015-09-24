@@ -158,90 +158,6 @@ class FFVILS {
 						&color, &offset,
 						sz, &vc);
 			}
-
-			plsx->ImposeBoundaryCondition(blockManager);
-
-		}
-
-		void RBGS_Smoother_ForSingularMatrix(
-				BlockManager& blockManager,
-				LocalScalar3D<real>* plsx,
-				LocalScalar3D<real>* plsAp,
-				LocalScalar3D<real>* plsAw,
-				LocalScalar3D<real>* plsAe,
-				LocalScalar3D<real>* plsAs,
-				LocalScalar3D<real>* plsAn,
-				LocalScalar3D<real>* plsAb,
-				LocalScalar3D<real>* plsAt,
-				LocalScalar3D<real>* plsb,
-				real omega) {
-			int vc = plsx->GetVC();
-
-			int NB							= blockManager.getNumBlock();
-			BlockBase* block0		= blockManager.getBlock(0);
-			Vec3i size					= block0->getSize();
-			int NX							= size.x;
-			int NY							= size.y;
-			int NZ							= size.z;
-			int sz[3]						= {NX, NY, NZ};
-
-/*
-			plsx ->CalcSum(blockManager);
-			real sum_x0  = plsx ->GetSum();
-*/
-
-#ifdef _BLOCK_IS_LARGE_
-#else
-#pragma omp parallel for
-#endif
-			for (int n=0; n<NB; ++n) {
-				BlockBase* block = blockManager.getBlock(n);
-				real* x  = plsx ->GetBlockData(block);
-				real* Ap = plsAp->GetBlockData(block);
-				real* Aw = plsAw->GetBlockData(block);
-				real* Ae = plsAe->GetBlockData(block);
-				real* As = plsAs->GetBlockData(block);
-				real* An = plsAn->GetBlockData(block);
-				real* Ab = plsAb->GetBlockData(block);
-				real* At = plsAt->GetBlockData(block);
-				real* b  = plsb ->GetBlockData(block);
-				real pomega = omega;
-
-				int offset = 0;
-				int color = 0;
-				rbgs_smoother_(
-						x,
-						Ap, Aw, Ae, As, An, Ab, At,
-						b,
-						&pomega,
-						&color, &offset,
-						sz, &vc);
-				color = 1;
-				rbgs_smoother_(
-						x,
-						Ap, Aw, Ae, As, An, Ab, At,
-						b,
-						&pomega,
-						&color, &offset,
-						sz, &vc);
-			}
-
-			plsx ->CalcSum(blockManager);
-			real sum_x1  = plsx ->GetSum();
-
-			real a = -sum_x1/(NX*NY*NZ);
-			for (int n=0; n<blockManager.getNumBlock(); ++n) {
-				BlockBase* block = blockManager.getBlock(n);
-				real* x = plsx->GetBlockData(block);
-				adda_(x, &a, sz, &vc);
-			}
-
-/*
-			plsx ->CalcSum(blockManager);
-			real sum_x2  = plsx ->GetSum();
-			std::cout << sum_x0 << " " << sum_x1 << " " << sum_x2 << std::endl;
-*/
-
 			plsx->ImposeBoundaryCondition(blockManager);
 		}
 
@@ -674,9 +590,72 @@ class FFVILS {
 				if( bResult == true ) {
 					break;
 				}
-
 			}
-			//		plsx->ImposeBoundaryCondition(blockManager);
+		}
+
+		void RBGS_WithFixedAverage(
+				BlockManager& blockManager,
+				LocalScalar3D<real>* plsx,
+				LocalScalar3D<real>* plsAp,
+				LocalScalar3D<real>* plsAw,
+				LocalScalar3D<real>* plsAe,
+				LocalScalar3D<real>* plsAs,
+				LocalScalar3D<real>* plsAn,
+				LocalScalar3D<real>* plsAb,
+				LocalScalar3D<real>* plsAt,
+				LocalScalar3D<real>* plsb,
+				real xave,
+				int Ncells,
+				real omega,
+				int countMax,
+				real epsilon,
+				int& count,
+				real& residual) {
+			int vc = plsx->GetVC();
+			int NB							= blockManager.getNumBlock();
+			BlockBase* block0		= blockManager.getBlock(0);
+			Vec3i size					= block0->getSize();
+			int NX							= size.x;
+			int NY							= size.y;
+			int NZ							= size.z;
+			int sz[3]						= {NX, NY, NZ};
+
+			real bb = 0.0;
+			DOT(blockManager, bb, plsb, plsb);
+
+			for(count=1; count<=countMax; ++count) {
+				RBGS_Smoother(
+						blockManager,
+						plsx, 
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsb,
+						omega);
+
+				plsx ->CalcSum(blockManager);
+				real sum_x1  = plsx ->GetSum();
+				real a = -sum_x1/(double)Ncells;
+				plsx ->ShiftByA(blockManager, a);
+
+				real rr = 0.0;
+				CalcR2(
+						blockManager,
+						rr,
+						plsAp, plsAw, plsAe, plsAs, plsAn, plsAb, plsAt,
+						plsx,
+						plsb);
+
+				bool bResult = IsConverged(
+						blockManager,
+						residual,
+						rr,
+						bb,
+						epsilon,
+						count,
+						countMax);
+				if( bResult == true ) {
+					break;
+				}
+			}
 		}
 
 		void CG(
