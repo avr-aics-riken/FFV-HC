@@ -105,6 +105,16 @@ extern "C" {
 			real* dx, real* dt,
 			real* fg,
 			int *sz, int *g);
+	void bcut_calc_c_f_c2_ss_(
+			real* fc,
+			real* f,
+			real* vw, real* ve, real* vs, real* vn, real* vb, real* vt,
+			real* c0, real* c1, real* c2, real* c3, real* c4, real* c5,
+			int* cid0, int* cid1, int* cid2, int* cid3, int* cid4, int* cid5,
+			int* pid,
+			real* dx, real* dt,
+			real* fg,
+			int *sz, int *g);
 	void bcut_calc_c_f_e3_(
 			real* fc,
 			real* f,
