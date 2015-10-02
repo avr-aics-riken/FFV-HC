@@ -1863,12 +1863,12 @@ subroutine bcut_calc_c_f_c2_ss( &
 
     pidp = pid(i, j, k)
 
-    f0 = fw
-    f1 = fe
-    f2 = fs
-    f3 = fn
-    f4 = fb
-    f5 = ft
+    f0 = 0.5*fw
+    f1 = 0.5*fe
+    f2 = 0.5*fs
+    f3 = 0.5*fn
+    f4 = 0.5*fb
+    f5 = 0.5*ft
 
     q0 = vx0*f0
     q1 = vx1*f1
