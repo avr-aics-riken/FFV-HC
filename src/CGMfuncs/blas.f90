@@ -326,6 +326,40 @@ subroutine avew(y, x, a, sz, g)
 #endif
 end subroutine avew
 
+subroutine avew_2(y, x0, x1, a, sz, g)
+  implicit none
+  integer, dimension(3)    :: sz
+  integer                  :: g
+  integer                  :: i, j, k
+  integer                  :: ix, jx, kx
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: y
+  real, dimension(1-g:sz(1)+g, 1-g:sz(2)+g, 1-g:sz(3)+g)  :: x0, x1
+  real                    :: a
+  ix = sz(1)
+  jx = sz(2)
+  kx = sz(3)
+#ifdef _BLOCK_IS_LARGE_
+!$omp parallel private(i, j, k)
+!$omp do
+#else
+!ocl nouxsimd
+!ocl serial
+!dir$ noparallel
+#endif
+  do k=1, kx
+  do j=1, jx
+  do i=1, ix
+    y(i, j, k) = (1.0 - a)*y(i, j, k) + a*x0(i, j, k)*x1(i, j, k)
+  end do
+  end do
+  end do
+#ifdef _BLOCK_IS_LARGE_
+!$omp end do
+!$omp end parallel
+#else
+#endif
+end subroutine avew_2
+
 subroutine axpy(y, x, a, sz, g)
   implicit none
   integer, dimension(3)    :: sz

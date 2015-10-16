@@ -103,13 +103,6 @@ class Solver {
 		LocalScalar3D<real> *plsTD;
 		LocalScalar3D<real> *plsTDP;
 
-// For time average
-		LocalScalar3D<real> *plsUXA;
-		LocalScalar3D<real> *plsUYA;
-		LocalScalar3D<real> *plsUZA;
-		LocalScalar3D<real> *plsPA;
-		LocalScalar3D<real> *plsTA;
-
 // For grids
 		LocalScalar3D<real> *plsCut0;
 		LocalScalar3D<real> *plsCut1;
@@ -211,7 +204,16 @@ class Solver {
 		real residualT;
 
 	private:
+// For time average
+		LocalScalar3D<real> *plsUXA;
+		LocalScalar3D<real> *plsUX2A;
+		LocalScalar3D<real> *plsUYA;
+		LocalScalar3D<real> *plsUZA;
+		LocalScalar3D<real> *plsPA;
+		LocalScalar3D<real> *plsTA;
+
 		FFVTA* ptaUX;
+		FFVTA* ptaUX2;
 		FFVTA* ptaUY;
 		FFVTA* ptaUZ;
 		FFVTA* ptaP;
@@ -392,7 +394,7 @@ class Solver {
 					this->plsUXA->GetID(),
 					this->plsUYA->GetID(),
 					this->plsUZA->GetID(),
-					this->plsTA->GetID(),
+					this->plsUX2A->GetID(),
 					this->vc,
 					g_pFFVConfig->OutputDataFormatOptionVTKPath,
 					g_pFFVConfig->OutputDataFormatOptionVTKPrefix,
@@ -410,7 +412,7 @@ class Solver {
 					this->plsUXA->GetID(),
 					this->plsUYA->GetID(),
 					this->plsUZA->GetID(),
-					this->plsTA->GetID(),
+					this->plsUX2A->GetID(),
 					this->vc,
 					g_pFFVConfig->OutputDataFormatOptionVTKPath,
 					g_pFFVConfig->OutputDataFormatOptionVTKPrefix,

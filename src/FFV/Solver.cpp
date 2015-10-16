@@ -1877,26 +1877,31 @@ void Solver::InitVarsBasic() {
 	plsP1->ImposeBoundaryCondition(blockManager);
 
 	plsUXA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
+	plsUX2A= new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
 	plsUYA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
 	plsUZA = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 1);
 	plsPA  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
 	plsTA  = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 1);
 	plsUXA->Fill(blockManager, 0.0);
+	plsUX2A->Fill(blockManager, 0.0);
 	plsUYA->Fill(blockManager, 0.0);
 	plsUZA->Fill(blockManager, 0.0);
 	plsPA->Fill(blockManager, 0.0);
 	plsTA->Fill(blockManager, 0.0);
 	plsUXA->ImposeBoundaryCondition(blockManager);
+	plsUX2A->ImposeBoundaryCondition(blockManager);
 	plsUYA->ImposeBoundaryCondition(blockManager);
 	plsUZA->ImposeBoundaryCondition(blockManager);
 	plsPA->ImposeBoundaryCondition(blockManager);
 	plsTA->ImposeBoundaryCondition(blockManager);
 	ptaUX = new FFVTA();
+	ptaUX2 = new FFVTA();
 	ptaUY = new FFVTA();
 	ptaUZ = new FFVTA();
 	ptaP = new FFVTA();
 	ptaT = new FFVTA();
 	ptaUX->Init();
+	ptaUX2->Init();
 	ptaUY->Init();
 	ptaUZ->Init();
 	ptaP->Init();
@@ -3415,6 +3420,7 @@ int Solver::Update(int step) {
 
 void Solver::UpdateTA(int step) {
 	ptaUX->Update(blockManager, plsUXA, plsUX0);	
+	ptaUX2->Update(blockManager, plsUX2A, plsUX0, plsUX0);	
 	ptaUY->Update(blockManager, plsUYA, plsUY0);	
 	ptaUZ->Update(blockManager, plsUZA, plsUZ0);	
 	ptaP->Update(blockManager, plsPA, plsP0);	
