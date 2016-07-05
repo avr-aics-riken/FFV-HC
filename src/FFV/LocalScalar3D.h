@@ -15,6 +15,7 @@
 
 #include "bsf3d.h"
 #include "blas.h"
+#include "comm.h"
 
 template <typename T>
 class LocalScalar3D {
