@@ -12,7 +12,7 @@
 #include "FFVBC.h"
 
 //3d vector value of double
-typedef Vec3<double> Vec3d;
+//typedef Vec3<double> Vec3d;
 
 //PhysicalParametersForMedium
 typedef struct _PPM {
