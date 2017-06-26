@@ -996,6 +996,18 @@ namespace BCMT_NAMESPACE {
 				ossFileName << step;
 				ossFileName << ".vthb";
 
+				ostringstream ossFileNamePVD;
+				ossFileNamePVD << path;
+				ossFileNamePVD << "/";
+				ossFileNamePVD << prefix;
+				ossFileNamePVD << name.c_str();
+				ossFileNamePVD << "-";
+				ossFileNamePVD.width(10);
+				ossFileNamePVD.setf(ios::fixed);
+				ossFileNamePVD.fill('0');
+				ossFileNamePVD << step;
+				ossFileNamePVD << ".pvd";
+
 				if( myrank == 0 ) {
 					ofstream ofs;
 					ofs.open(ossFileName.str().c_str(), ios::out);
@@ -1009,6 +1021,12 @@ namespace BCMT_NAMESPACE {
 						ofs << endl;
 					}
 					ofs << endl;
+
+					ofstream ofsPVD;
+					ofsPVD.open(ossFileNamePVD.str().c_str(), ios::out);
+					ofsPVD << "<VTKFile type=\"Collection\" version=\"0.1\">" << endl;
+					ofsPVD << "<Collection>" << endl;
+					ofsPVD << endl;
 
 					std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
 					for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
@@ -1084,12 +1102,25 @@ namespace BCMT_NAMESPACE {
 							ofs << ossFileName2.str().c_str();
 							ofs << "\"/>";
 							ofs << endl;
+
+							ofsPVD << "<DataSet group=\"";
+							ofsPVD << level;
+							ofsPVD << "\" part=\"";
+							ofsPVD << id;
+							ofsPVD << "\" file=\"";
+							ofsPVD << ossFileName2.str().c_str();
+							ofsPVD << "\"/>";
+							ofsPVD << endl;
 						}
 					}
 
 					ofs << "</vtkHierarchicalBoxDataSet>" << endl;
 					ofs << "</VTKFile>" << endl;
 					ofs.close();
+
+					ofsPVD << "</Collection>" << endl;
+					ofsPVD << "</VTKFile>" << endl;
+					ofsPVD.close();
 				}
 			}
 
@@ -1164,6 +1195,18 @@ namespace BCMT_NAMESPACE {
 				ossFileName << step;
 				ossFileName << ".vthb";
 
+				ostringstream ossFileNamePVD;
+				ossFileNamePVD << path;
+				ossFileNamePVD << "/";
+				ossFileNamePVD << prefix;
+				ossFileNamePVD << name.c_str();
+				ossFileNamePVD << "-";
+				ossFileNamePVD.width(10);
+				ossFileNamePVD.setf(ios::fixed);
+				ossFileNamePVD.fill('0');
+				ossFileNamePVD << step;
+				ossFileNamePVD << ".pvd";
+
 				if( myrank == 0 ) {
 					ofstream ofs;
 					ofs.open(ossFileName.str().c_str(), ios::out);
@@ -1177,6 +1220,12 @@ namespace BCMT_NAMESPACE {
 						ofs << endl;
 					}
 					ofs << endl;
+
+					ofstream ofsPVD;
+					ofsPVD.open(ossFileNamePVD.str().c_str(), ios::out);
+					ofsPVD << "<VTKFile type=\"Collection\" version=\"0.1\">" << endl;
+					ofsPVD << "<Collection>" << endl;
+					ofsPVD << endl;
 
 					std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
 					for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
@@ -1252,12 +1301,25 @@ namespace BCMT_NAMESPACE {
 							ofs << ossFileName2.str().c_str();
 							ofs << "\"/>";
 							ofs << endl;
+
+							ofsPVD << "<DataSet group=\"";
+							ofsPVD << level;
+							ofsPVD << "\" part=\"";
+							ofsPVD << id;
+							ofsPVD << "\" file=\"";
+							ofsPVD << ossFileName2.str().c_str();
+							ofsPVD << "\"/>";
+							ofsPVD << endl;
 						}
 					}
 
 					ofs << "</vtkHierarchicalBoxDataSet>" << endl;
 					ofs << "</VTKFile>" << endl;
 					ofs.close();
+
+					ofsPVD << "</Collection>" << endl;
+					ofsPVD << "</VTKFile>" << endl;
+					ofsPVD.close();
 				}
 			}
 
@@ -1337,6 +1399,18 @@ namespace BCMT_NAMESPACE {
 				ossFileName << step;
 				ossFileName << ".vthb";
 
+				ostringstream ossFileNamePVD;
+				ossFileNamePVD << path;
+				ossFileNamePVD << "/";
+				ossFileNamePVD << prefix;
+				ossFileNamePVD << name.c_str();
+				ossFileNamePVD << "-";
+				ossFileNamePVD.width(10);
+				ossFileNamePVD.setf(ios::fixed);
+				ossFileNamePVD.fill('0');
+				ossFileNamePVD << step;
+				ossFileNamePVD << ".pvd";
+
 				if( myrank == 0 ) {
 					ofstream ofs;
 					ofs.open(ossFileName.str().c_str(), ios::out);
@@ -1350,6 +1424,12 @@ namespace BCMT_NAMESPACE {
 						ofs << endl;
 					}
 					ofs << endl;
+
+					ofstream ofsPVD;
+					ofsPVD.open(ossFileNamePVD.str().c_str(), ios::out);
+					ofsPVD << "<VTKFile type=\"Collection\" version=\"0.1\">" << endl;
+					ofsPVD << "<Collection>" << endl;
+					ofsPVD << endl;
 
 					std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
 					for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
@@ -1425,12 +1505,25 @@ namespace BCMT_NAMESPACE {
 							ofs << ossFileName2.str().c_str();
 							ofs << "\"/>";
 							ofs << endl;
+
+							ofsPVD << "<DataSet group=\"";
+							ofsPVD << level;
+							ofsPVD << "\" part=\"";
+							ofsPVD << id;
+							ofsPVD << "\" file=\"";
+							ofsPVD << ossFileName2.str().c_str();
+							ofsPVD << "\"/>";
+							ofsPVD << endl;
 						}
 					}
 
 					ofs << "</vtkHierarchicalBoxDataSet>" << endl;
 					ofs << "</VTKFile>" << endl;
 					ofs.close();
+
+					ofsPVD << "</Collection>" << endl;
+					ofsPVD << "</VTKFile>" << endl;
+					ofsPVD.close();
 				}
 			}
 
