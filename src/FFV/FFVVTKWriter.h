@@ -833,8 +833,8 @@ namespace BCMT_NAMESPACE {
 				if( myrank == 0 ) {
 					ofstream ofs;
 					ofs.open(ossFileName.str().c_str(), ios::out);
-					ofs << "<VTKFile type=\"vtkOverlappingAMR\" version=\"1.1\">" << endl;
-					ofs << "<vtkOverlappingAMR origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
+					ofs << "<VTKFile type=\"vtkHierarchicalBoxDataSet\" version=\"1.1\">" << endl;
+					ofs << "<vtkHierarchicalBoxDataSet origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
 
 					std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
 					//			int lmax = difflevel+1;
@@ -932,7 +932,7 @@ namespace BCMT_NAMESPACE {
 						ofs << endl;
 					}
 
-					ofs << "</vtkOverlappingAMR>" << endl;
+					ofs << "</vtkHierarchicalBoxDataSet>" << endl;
 					ofs << "</VTKFile>" << endl;
 					ofs.close();
 				}
@@ -1555,6 +1555,7 @@ namespace BCMT_NAMESPACE {
 				mkdir(ossFileNameTime.str().c_str(), 0755);
 
 				const Vec3i& size = blockManager.getSize();
+				const Vec3r& origin = blockManager.getBlock(0)->getOrigin();
 				int myrank = comm.Get_rank();
 
 				float* dataP  = new float[(size.x) * (size.y) * (size.z)];
@@ -1608,16 +1609,22 @@ namespace BCMT_NAMESPACE {
 				if( myrank == 0 ) {
 					ofstream ofs;
 					ofs.open(ossFileName.str().c_str(), ios::out);
-					ofs << "<VTKFile type=\"vtkOverlappingAMR\" version=\"1.1\">" << endl;
-					ofs << "<vtkOverlappingAMR origin=\"0 0 0\" grid_description=\"XYZ\">" << endl;
-
+					ofs << "<VTKFile type=\"vtkHierarchicalBoxDataSet\" version=\"1.1\">" << endl;
+					ofs << "<vtkHierarchicalBoxDataSet origin=\"";
+					ofs << origin.x;
+					ofs << " ";
+					ofs << origin.y;
+					ofs << " ";
+					ofs << origin.z;
+					ofs << "\" grid_description=\"XYZ\">" << endl;
 					std::vector<Node*>& leafNodeArray = tree->getLeafNodeArray();
 					//			int lmax = difflevel+1;
 					int lmax = maxLevel+1;
-					for(int n=0; n<lmax; n++) {
-						double dx = rootLength/(1 << n);
+					int lmin = minLevel;
+					for(int n=lmin; n<lmax; n++) {
+						double dx = rootLength/(1 << n)/size.x;
 						ofs << "\t<Block level=\"";
-						ofs << n;
+						ofs << n - lmin;
 						ofs << "\" spacing=\"";
 						ofs << dx;
 						ofs << " ";
@@ -1626,6 +1633,7 @@ namespace BCMT_NAMESPACE {
 						ofs << dx;
 						ofs << "\">";
 						ofs << endl;
+						int lid = 0;
 						for (int iRank = 0; iRank < comm.Get_size(); iRank++) {
 							for (int id = partition->getStart(iRank); id < partition->getEnd(iRank); id++) {
 								Node* node = leafNodeArray[id];
@@ -1681,7 +1689,7 @@ namespace BCMT_NAMESPACE {
 
 								if( level == n ) {
 									ofs << "\t\t<DataSet index=\"";
-									ofs << id;
+									ofs << lid;
 									ofs << "\" amr_box=\"";
 									ofs << nx0;
 									ofs << " ";
@@ -1699,6 +1707,7 @@ namespace BCMT_NAMESPACE {
 									ofs << "\">";
 									ofs << endl;
 									ofs << "\t\t</DataSet>" << endl;	
+									lid++;
 								}
 							}
 						}
@@ -1707,7 +1716,7 @@ namespace BCMT_NAMESPACE {
 						ofs << endl;
 					}
 
-					ofs << "</vtkOverlappingAMR>" << endl;
+					ofs << "</vtkHierarchicalBoxDataSet>" << endl;
 					ofs << "</VTKFile>" << endl;
 					ofs.close();
 				}
