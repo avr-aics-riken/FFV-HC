@@ -6,10 +6,10 @@ LIBS     := -lmpi -lmpi_cxx -lmpi_f90 -lmpi_f77
 
 TARGET = libcgmfuncs.a
 
-CSRC = $(wildcard *.cpp)
-CHDR = $(wildcard *.h)
-FSRC = $(wildcard *.f90)
-OBJS = $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
+CSRC := $(wildcard *.cpp)
+CHDR := $(wildcard *.h)
+FSRC := $(wildcard *.f90)
+OBJS := $(CSRC:.cpp=.o) $(FSRC:.f90=.o)
 
 all:		$(TARGET)
 
@@ -19,7 +19,7 @@ $(TARGET):	$(OBJS)
 
 .SUFFIXES: .cpp
 .cpp.o:
-	$(CXX) $(CXXFLAGS) $(INC_APTH) -c $<
+	$(CXX) $(CXXFLAGS) $(INC_PATH) -c $<
 
 .SUFFIXES: .f90
 .f90.o:

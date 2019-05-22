@@ -15,13 +15,16 @@
 
 all:
 	(cd CGMfuncs; make)
+	(cd CGMtools; make)
 	(cd FFV; make)
 
 clean:
 	(cd CGMfuncs; make clean)
+	(cd CGMtools; make clean)
 	(cd FFV; make clean)
 
 depend:
 	(cd CGMfuncs; make depend)
+	(cd CGMtools; make depend)
 	(cd FFV; make depend)
 

@@ -6,6 +6,7 @@ subroutine sup_get_intp_index(ic, r, i, n)
   integer                  :: n
   ic = i/2
   r = 0.25 + 0.5*mod(i, 2)
+#ifdef __test__
   if( i < 2 ) then
     ic = 1
     r = -0.25
@@ -13,6 +14,7 @@ subroutine sup_get_intp_index(ic, r, i, n)
     ic = n-1
     r = 1.25
   end if
+#endif
 end subroutine sup_get_intp_index
 
 subroutine sup_copy_from_neighbor( &
@@ -100,12 +102,15 @@ subroutine sup_copy_from_neighbor_c2f( &
     data_src_pnp = data_src(i1+1, j1  , k1+1)
     data_src_ppn = data_src(i1+1, j1+1, k1  )
     data_src_ppp = data_src(i1+1, j1+1, k1+1)
-    data_dst(i + i1_dst(1), j + i1_dst(2), k + i1_dst(3)) = (1.0 - t)*( &
-                                                                (1.0 - s)*( (1.0 - r)*data_src_nnn + r*data_src_pnn ) &
-                                                              +         s*( (1.0 - r)*data_src_npn + r*data_src_ppn ) ) &
-                                                            +       t*( &
-                                                                (1.0 - s)*( (1.0 - r)*data_src_nnp + r*data_src_pnp ) &
-                                                              +         s*( (1.0 - r)*data_src_npp + r*data_src_ppp ) ) 
+    data_dst(i + i1_dst(1), j + i1_dst(2), k + i1_dst(3)) = &
+      + (1.0 - t)*( &
+        + (1.0 - s)*( (1.0 - r)*data_src_nnn + r*data_src_pnn ) &
+        +        s *( (1.0 - r)*data_src_npn + r*data_src_ppn ) &
+      ) &
+      +        t *( &
+        + (1.0 - s)*( (1.0 - r)*data_src_nnp + r*data_src_pnp ) &
+        +        s *( (1.0 - r)*data_src_npp + r*data_src_ppp ) &
+      ) 
   end do
   end do
   end do

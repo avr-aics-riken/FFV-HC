@@ -6,6 +6,8 @@
 #include <omp.h>
 #endif
 
+#include <limits.h>
+
 #include "real.h"
 #include "comm.h"
 
