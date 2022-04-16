@@ -1696,8 +1696,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCUX[Z_M].value,
 		g_pFFVConfig->OuterBCUX[Z_P].value,
 	};
-	plsUX0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
-	plsUX1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 1);
+	plsUX0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 5);
+	plsUX1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUX, boundaryValueUX, 5);
 	plsUXC = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUXCP= new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUXD = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1733,8 +1733,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCUY[Z_M].value,
 		g_pFFVConfig->OuterBCUY[Z_P].value,
 	};
-	plsUY0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
-	plsUY1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 1);
+	plsUY0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 5);
+	plsUY1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUY, boundaryValueUY, 5);
 	plsUYC = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUYCP= new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUYD = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1770,8 +1770,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCUZ[Z_M].value,
 		g_pFFVConfig->OuterBCUZ[Z_P].value,
 	};
-	plsUZ0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 1);
-	plsUZ1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 1);
+	plsUZ0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 5);
+	plsUZ1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeUZ, boundaryValueUZ, 5);
 	plsUZC = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUZCP= new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsUZD = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1833,8 +1833,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCT[Z_M].value,
 		g_pFFVConfig->OuterBCT[Z_P].value,
 	};
-	plsT0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 1);
-	plsT1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 1);
+	plsT0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 5);
+	plsT1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeT, boundaryValueT, 5);
 	plsTC = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsTCP= new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
 	plsTD = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeNULL, boundaryValueNULL);
@@ -1869,8 +1869,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCP[Z_M].value,
 		g_pFFVConfig->OuterBCP[Z_P].value,
 	};
-	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
-	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
+	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 5);
+	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 5);
 	double p0 = g_pFFVConfig->InitialValueP;
 	double dp0 = g_pFFVConfig->InitialValueDP;
 	plsP0->Fill(blockManager, p0, dp0);
