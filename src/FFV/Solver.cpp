@@ -1869,8 +1869,8 @@ void Solver::InitVarsBasic() {
 		g_pFFVConfig->OuterBCP[Z_M].value,
 		g_pFFVConfig->OuterBCP[Z_P].value,
 	};
-	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 5);
-	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 5);
+	plsP0 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
+	plsP1 = new LocalScalar3D<real>(blockManager, vc, updateMethod, boundaryTypeP, boundaryValueP, 1);
 	double p0 = g_pFFVConfig->InitialValueP;
 	double dp0 = g_pFFVConfig->InitialValueDP;
 	plsP0->Fill(blockManager, p0, dp0);
