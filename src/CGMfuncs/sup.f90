@@ -6,7 +6,6 @@ subroutine sup_get_intp_index(ic, r, i, n)
   integer                  :: n
   ic = i/2
   r = 0.25 + 0.5*mod(i, 2)
-#ifdef __test__
   if( i < 2 ) then
     ic = 1
     r = -0.25
@@ -14,7 +13,6 @@ subroutine sup_get_intp_index(ic, r, i, n)
     ic = n-1
     r = 1.25
   end if
-#endif
 end subroutine sup_get_intp_index
 
 subroutine sup_copy_from_neighbor( &
