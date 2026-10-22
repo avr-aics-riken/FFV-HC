@@ -290,7 +290,7 @@ subroutine bcut_calc_abd_u( &
     At(i, j, k) = -alpha*l5*(1.0d0 - m5)
      b(i, j, k) = u0_(i, j, k) &
                   - (1.5d0*uc0_(i, j, k) - 0.5d0*ucp_(i, j, k) )*dt &
-                  + (1.0 - alpha)*ud0_(i, j, k)*dt &
+                  + (1.0 - alpha)*ud0_(i, j, k) &
                   - rdp*dt &
                   + alpha*l0*Uc*m0 &
                   + alpha*l1*Uc*m1 &
@@ -5679,7 +5679,7 @@ subroutine bcut_set_reference_value( &
       b (i+1, j, k) = b (i+1, j, k) - Aw(i+1, j, k)*pr*2.0
       Aw(i+1, j, k) = 0.0d0
 
-      Ap(i-1, j, k) = Ap(i-1, j, k) - Ae(i+1, j, k)
+      Ap(i-1, j, k) = Ap(i-1, j, k) - Ae(i-1, j, k)
       b (i-1, j, k) = b (i-1, j, k) - Ae(i-1, j, k)*pr*2.0
       Ae(i-1, j, k) = 0.0d0
 
